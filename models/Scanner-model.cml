@@ -1,0 +1,221 @@
+/* The Wafer stage application modeled in CML. */
+ContextMap ScannerWaferStageContextMap {
+
+	/* Measure */	
+	contains StageAlignmentContext /* Horizontal & Vertical Stage Align measure the Reference Point */
+	contains WaferAlignmentContext /* Determines the wafer coordinate system by measuring the wafer alignment marks */
+	contains HeightMapContext /* Leveling, measurement of the wafer heigh map (height differences due to wafer wobble/warping) */
+
+	/* Wafer Swap */
+	//contains WaferSwapContext /* Swapping the position module, including the wafer, between measure and expose stages */
+
+	/* Expose */
+	contains ReticleAlignContext /* The reticle contains the image to be printed and is aligned to the reference 
+	                              * point on the Position Module (Using the alignment sensor) */
+	contains ExposeContext /* Exposure of the wafer, using the heighmap for vertical beam focus correction */
+	/* After exposure the position module is moved back to measure and finally unloaded */
+	
+	
+	/* The expose application can be seen as separated bounded context. 
+	 * However, it still shares code with the measuring application (LevelingContext).
+	 * Thus, they are in a 'Shared-Kernel' relationship.
+	 */
+	HeightMapContext [SK]<->[SK] WaferAlignmentContext
+	StageAlignmentContext [SK]<->[SK] HeightMapContext
+	HeightMapContext [SK]<->[SK] ExposeContext
+	ExposeContext [SK]<->[SK] WaferAlignmentContext
+	ExposeContext [SK]<->[SK] ReticleAlignContext
+	
+}
+
+Domain ScannerDomain {
+	// Current focus on Wafer stage
+	Subdomain MeasureDomain {
+		type = GENERIC_SUBDOMAIN
+		domainVisionStatement = "Subdomain managing everything measure-related."
+	}
+	Subdomain ExposeDomain {
+		type = GENERIC_SUBDOMAIN
+		domainVisionStatement = "Subdomain managing everything expose-related."
+	}
+}
+
+/***********************************/
+/* Measure Domain bounded contexts */
+/***********************************/
+BoundedContext StageAlignmentContext implements MeasureDomain {
+	type = SYSTEM
+	domainVisionStatement = "Stage Align measures the Reference Point of the Wafer on the Chuck for alignment purposes."
+	responsibilities = "Alignment, ReferencePoint"
+	implementationTechnology = "C++"
+	Aggregate Wafer {
+		Entity Wafer {
+			aggregateRoot
+
+			- WaferId waferId
+
+			def @WaferId GetWaferId();
+		}
+		ValueObject WaferId {
+			string id;
+		}
+	}
+
+	Aggregate StageAlignment {
+			Entity ReferencePoint {
+				aggregateRoot
+
+				/* To distinguish references from simple attributes, declarations of references starts with a -. 
+				 * In the same way as in other places you must also use an @ in front of the declaration when 
+				 * referring to a Domain Object. */
+				ReferencePointId referencePointId
+				- HorizontalStageAlignment hsa
+				- VerticalStageAlignment vsa
+
+				def void ReferencePoint(@WaferId waferId); // Constructor with WaferID as foreign key
+
+				def @ReferencePoint GetReferencePoint(); // Return reference to reference point
+
+				Repository StageAlignmentRepository {
+	                 @ReferencePoint find(ReferencePointId referencePointId) throws ReferencePointNotFoundException;
+	                 List<@ReferencePoint> findAll;
+	                 store(@ReferencePoint rPoint);
+	                 ReferencePointId nextReferencePointId();
+				}
+			}
+
+			ValueObject HorizontalStageAlignment {
+				// Filled by sensor input
+				double xpos
+				double ypos
+			}
+
+			ValueObject VerticalStageAlignment {
+				// Filled by sensor input
+				double xpos
+				double ypos
+			}
+	}
+}
+
+/* The Measure heightmap application context. 
+ */
+BoundedContext HeightMapContext implements MeasureDomain {
+	type = SYSTEM
+	domainVisionStatement = "Leveling measures any point of a wafer and records its height (z-axis)."
+	responsibilities = "WaferMeasurement, HeightMap"
+	implementationTechnology = "C++"
+	Aggregate WaferHeightMap {
+		Entity WaferHeightMap {
+			aggregateRoot
+			
+			HeightMapId heightMapId
+			- private List<Measurement> measurementsList
+
+			def void WaferHeightMap(@WaferId waferId); // Constructor with WaferID as foreign key to a different aggregate root "Wafer"
+
+			def @WaferHeightMap GetWaferHeightMap(); // Return the whole heightmap for the wafer
+			def void CreateWaferHeightMap(); // Creating a wafer map takes time and is not done at constructor time
+			def private @Measurement DoMeasurement(@Position position); // Point sensor at a position and request a measurement
+			def private void AddMeasurement(@Measurement measurement); // Add one measurement to measurementsList that make the heightmap
+			
+			/* Note: The wafer heightmap is a list of measurements at different points, Application layer moves the measurement sensor 
+			 * to the next point? Should we have a method DoMeasurement()? */
+
+			Repository WaferHeightMapRepository {
+					@WaferHeightMap find(HeightMapId heightMapId) throws WaferHeightMapNotFoundException;
+					List<@WaferHeightMap> findAll;
+					store(@WaferHeightMap heightMap);
+					HeightMapId nextHeightMapId();
+			}
+		}
+		
+		ValueObject Measurement {
+			- Position position_
+			double z_
+
+			/* A Measurement object contains the measurement result, the caller must the actual measurement and store here
+			 * the result. To be discussed if this is a good thing or if the Measurement VO should contain a DoMeasurement()
+			 */
+			def Measurement(@Position position, double z); 
+			def Position GetPosition();
+  			def double GetZ();
+		}
+		
+		ValueObject Position {
+			double xpos_
+			double ypos_
+
+			def Position(double xpos, double ypos_);
+			def double GetX();
+			def double GetY();
+		}
+	}
+}
+
+BoundedContext WaferAlignmentContext implements MeasureDomain {
+	type = SYSTEM
+	domainVisionStatement = "Wafer aligment determines the wafer coordinate system by measuring the wafer alignment marks."
+	responsibilities = "WaferAlignment, WCS"
+	implementationTechnology = "C++"
+	Aggregate AlignmentMarks {
+		Entity AlignmentMarks {
+			aggregateRoot
+			
+			AlignmentsMarksId alignmentsMarksId
+			- List<AlignmentMark> alignmentMarks
+			
+			Repository AlignmentMarksRepository {
+				@AlignmentMarks find(@AlignmentMark alignmentMark);
+				List<@AlignmentMarks> findAll();
+			}
+		}
+		
+		/* describe the projected position of an alignment marker in 2D space */
+		ValueObject AlignmentMark {
+			double xpos
+			double ypos
+		}
+	}
+}
+
+
+/********************************/
+/* Expose side bounded contexts */
+/********************************/
+BoundedContext ReticleAlignContext implements ExposeDomain {
+	type = SYSTEM
+	domainVisionStatement = "Aligns the image to be printed to the reference point on the Position Module (Using the alignment sensor)."
+	responsibilities = "ImageAlignment"
+	implementationTechnology = "C++"
+	Aggregate ImageAlignment {
+		Entity ImageAlignment {
+			aggregateRoot
+			
+			ImageId imageId
+			
+		}
+	}
+}
+
+
+BoundedContext ExposeContext implements ExposeDomain {
+	type = SYSTEM
+	domainVisionStatement = "Prints images on the wafer."
+	responsibilities = "Exposures"
+	implementationTechnology = "C++"
+	Aggregate Image {
+		Entity Image {
+			aggregateRoot
+			
+			ImageId imageId
+			
+			Repository ImageRepository {
+				@Image find(HeightMapId heightMapId) throws ImageNotFoundException;
+				List<@Image> findAll;
+				store(@Image image);
+				ImageId nextImageId();
+			}
+		}
+	}
+}
