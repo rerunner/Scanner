@@ -2,14 +2,16 @@
 ContextMap ScannerWaferStageContextMap {
 
 	/* Measure */	
+	contains MeasureManagement 
 	contains StageAlignmentContext /* Horizontal & Vertical Stage Align measure the Reference Point */
 	contains WaferAlignmentContext /* Determines the wafer coordinate system by measuring the wafer alignment marks */
 	contains HeightMapContext /* Leveling, measurement of the wafer heigh map (height differences due to wafer wobble/warping) */
-
+	
 	/* Wafer Swap */
 	//contains WaferSwapContext /* Swapping the position module, including the wafer, between measure and expose stages */
 
 	/* Expose */
+	contains ExposeManagement
 	contains ReticleAlignContext /* The reticle contains the image to be printed and is aligned to the reference 
 	                              * point on the Position Module (Using the alignment sensor) */
 	contains ExposeContext /* Exposure of the wafer, using the heighmap for vertical beam focus correction */
@@ -22,10 +24,11 @@ ContextMap ScannerWaferStageContextMap {
 	 */
 	HeightMapContext [SK]<->[SK] WaferAlignmentContext
 	StageAlignmentContext [SK]<->[SK] HeightMapContext
+	StageAlignmentContext [SK]<->[SK] MeasureManagement
 	HeightMapContext [SK]<->[SK] ExposeContext
 	ExposeContext [SK]<->[SK] WaferAlignmentContext
 	ExposeContext [SK]<->[SK] ReticleAlignContext
-	
+	StageAlignmentContext [SK]<->[SK] ExposeManagement
 }
 
 Domain ScannerDomain {
@@ -100,11 +103,31 @@ BoundedContext StageAlignmentContext implements MeasureDomain {
 
 /* The Measure heightmap application context. 
  */
+BoundedContext MeasureManagement implements MeasureDomain {
+
+	Application MeasureManagementApplicationLayer {
+		Command MeasureWafer {
+			- WaferId waferIdToMeasure;
+		}
+
+		//CQRS events
+		Event MeasureWaferRequested	{
+			- WaferId waferIdToMeasure
+      		Date timestamp
+		}
+		Event MeasureWaferCompleted {
+			- WaferId waferIdToMeasure
+      		Date timestamp
+		}
+	}
+}
+
 BoundedContext HeightMapContext implements MeasureDomain {
 	type = SYSTEM
 	domainVisionStatement = "Leveling measures any point of a wafer and records its height (z-axis)."
 	responsibilities = "WaferMeasurement, HeightMap"
 	implementationTechnology = "C++"
+
 	Aggregate WaferHeightMap {
 		Entity WaferHeightMap {
 			aggregateRoot
@@ -178,6 +201,28 @@ BoundedContext WaferAlignmentContext implements MeasureDomain {
 /********************************/
 /* Expose side bounded contexts */
 /********************************/
+/* The Expose application context. 
+ */
+BoundedContext ExposeManagement implements ExposeDomain {
+
+	Application ExposeManagementApplicationLayer {
+		Command ExposeWafer {
+			- WaferId waferIdToExpose;
+		}
+
+		//CQRS events
+		Event ExposeWaferRequested	{
+			- WaferId waferIdToExpose
+      		Date timestamp
+		}
+		Event ExposeWaferCompleted {
+			- WaferId waferIdToExpose
+      		Date timestamp
+		}
+	}
+}
+
+
 BoundedContext ReticleAlignContext implements ExposeDomain {
 	type = SYSTEM
 	domainVisionStatement = "Aligns the image to be printed to the reference point on the Position Module (Using the alignment sensor)."
