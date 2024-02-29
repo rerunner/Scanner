@@ -113,10 +113,10 @@ BoundedContext HeightMapContext implements MeasureDomain {
 			- private List<Measurement> measurementsList
 
 			def void WaferHeightMap(@WaferId waferId); // Constructor with WaferID as foreign key to a different aggregate root "Wafer"
+			def void WaferHeightMap(@WaferId waferId, @Measurement firstMeasurement); // Constructor with initial measurement
 
 			def @WaferHeightMap GetWaferHeightMap(); // Return the whole heightmap for the wafer
-			def void CreateWaferHeightMap(); // Creating a wafer map takes time and is not done at constructor time
-			def private @Measurement AddMeasurement(@Position position, double measuredHeight); // Store a measurement in the heightmap
+			
 			def private void AddMeasurement(@Measurement measurement); // Add one measurement to measurementsList that make the heightmap
 			// Note: The wafer heightmap is a list of measurements at different points, It does not control the actual sensors.			
 
