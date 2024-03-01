@@ -8,61 +8,16 @@
 #include "domain/Measurement.hpp"
 #include "domain/WaferHeightMap.hpp"
 #include "infrastructure/IWaferHeightMapRepository.hpp"
+// Streaming graph
+#include <raft>
+#include <raftio>
+// Streaming Kernel definitions
+#include "infrastructure/kernels/PositionSetUnit.hpp"
+#include "infrastructure/kernels/MeasureUnit.hpp"
 
 namespace Commands
 {
-  // Streaming Kernel definitions
-
-//Source unit generates positions to measure on the wafer.
-class PositionSetUnit : public raft::kernel
-{
-public:
-  PositionSetUnit() : kernel()
-  {
-    output.addPort< Position >( "outputPosition" );
-  }
-
-  virtual ~PositionSetUnit() = default;
-
-  virtual raft::kstatus run()
-  {
-    double xpos = 0.0, ypos = 0.0;
-    for (int i = 0; i < 10000; i++)
-    {
-      const Position out{xpos++, ypos++};
-      output[ "outputPosition" ].push( out );
-    }
-    return( raft::stop );
-  }
-
-private:
-};
-
-//Measure unit measures the height for every input position
-class MeasureUnit : public raft::kernel
-{
-public:
-    MeasureUnit() : kernel()
-    {
-      input.addPort< Position >("inputPosition");
-      output.addPort< Measurement >( "outputMeasurement" );
-    }
-
-    virtual ~MeasureUnit() = default;
-
-    virtual raft::kstatus run()
-    {
-      Position positionContainer;
-      input[ "inputPosition" ].pop( positionContainer ); // Receive position from input port
-      const Measurement measurementContainer{positionContainer, 1.0}; // Do Measurement
-      output[ "outputMeasurement" ].push( measurementContainer ); // Push measurement to output port
-      return( raft::proceed );
-    }
-
-private:
-};
-
-void measureWaferCommandTask(std::string waferId)
+  void measureWaferCommandTask(std::string waferId)
   {
     std::cout << "measureWaferCommandTask received with wafer Id = " << waferId << std::endl;
 

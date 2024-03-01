@@ -9,9 +9,6 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include <raft>
-#include <raftio>
-
 #include "application/MeasureWaferCommand.hpp"
 
 int main()
