@@ -2,10 +2,10 @@
 ContextMap ScannerWaferStageContextMap {
 
 	/* Measure */	
-	contains MeasureManagement 
+	contains MeasureManagementContext
 	contains StageAlignmentContext /* Horizontal & Vertical Stage Align measure the Reference Point */
 	contains WaferAlignmentContext /* Determines the wafer coordinate system by measuring the wafer alignment marks */
-	contains HeightMapContext /* Leveling, measurement of the wafer heigh map (height differences due to wafer wobble/warping) */
+	contains LevelingContext /* Leveling, measurement of the wafer heigh map (height differences due to wafer wobble/warping) */
 	
 	/* Wafer Swap */
 	//contains WaferSwapContext /* Swapping the position module, including the wafer, between measure and expose stages */
@@ -22,10 +22,10 @@ ContextMap ScannerWaferStageContextMap {
 	 * However, it still shares code with the measuring application (LevelingContext).
 	 * Thus, they are in a 'Shared-Kernel' relationship.
 	 */
-	HeightMapContext [SK]<->[SK] WaferAlignmentContext
-	StageAlignmentContext [SK]<->[SK] HeightMapContext
-	StageAlignmentContext [SK]<->[SK] MeasureManagement
-	HeightMapContext [SK]<->[SK] ExposeContext
+	LevelingContext [SK]<->[SK] WaferAlignmentContext
+	StageAlignmentContext [SK]<->[SK] LevelingContext
+	StageAlignmentContext [SK]<->[SK] MeasureManagementContext
+	LevelingContext [SK]<->[SK] ExposeContext
 	ExposeContext [SK]<->[SK] WaferAlignmentContext
 	ExposeContext [SK]<->[SK] ReticleAlignContext
 	StageAlignmentContext [SK]<->[SK] ExposeManagement
@@ -101,9 +101,58 @@ BoundedContext StageAlignmentContext implements MeasureDomain {
 	}
 }
 
+BoundedContext WaferAlignmentContext implements MeasureDomain {
+	type = SYSTEM
+	domainVisionStatement = "Wafer aligment determines the wafer coordinate system by measuring the wafer alignment marks."
+	responsibilities = "WaferAlignment, WCS"
+	implementationTechnology = "C++"
+	Aggregate AlignmentMarks {
+		Entity WaferCoordinateSystem {
+			aggregateRoot
+			
+			WaferCoordinateSystemId waferCoordinateSystemId_
+			- List<AlignmentMark> alignmentMarks
+
+			def void WaferCoordinateSystem(@WaferId waferId); // Constructor with WaferID as foreign key to a different aggregate root "Wafer"
+			def @WaferCoordinateSystem GetWaferCoordinateSystem(); // Return the coordinate system for the aligned wafer
+			
+			Repository WaferCoordinateSystemRepository {
+				@WaferCoordinateSystem find(@AlignmentMark alignmentMark);
+				List<@WaferCoordinateSystem> findAll();
+			}
+		}
+		
+		/* describe the projected position of an alignment marker in 2D space */
+		ValueObject AlignmentMark {
+			- MarkPosition alignedPosition_
+			- MarkMeasurementSpecification markMeasurementSpecification_
+
+			def AlignmentMark(@MarkMeasurementSpecification markMeasurementSpecification);
+			def MarkPosition GetAlignedPosition();
+		}
+
+		ValueObject MarkMeasurementSpecification {
+			- MarkPosition expectedPosition_
+			int alignmentStep_
+
+			def MarkMeasurementSpecification(int alignmentStep, @MarkPosition expectedPosition);
+		}
+
+		ValueObject MarkPosition {
+			double xpos_
+			double ypos_
+
+			def MarkPosition(double xpos, double ypos);
+			def double GetX();
+			def double GetY();
+		}
+	}
+}
+
+
 /* The Measure heightmap application context. 
  */
-BoundedContext MeasureManagement implements MeasureDomain {
+BoundedContext MeasureManagementContext implements MeasureDomain {
 
 	Application MeasureManagementApplicationLayer {
 		Command MeasureWafer {
@@ -122,7 +171,7 @@ BoundedContext MeasureManagement implements MeasureDomain {
 	}
 }
 
-BoundedContext HeightMapContext implements MeasureDomain {
+BoundedContext LevelingContext implements MeasureDomain {
 	type = SYSTEM
 	domainVisionStatement = "Leveling measures any point of a wafer and records its height (z-axis)."
 	responsibilities = "WaferMeasurement, HeightMap"
@@ -157,7 +206,7 @@ BoundedContext HeightMapContext implements MeasureDomain {
 
 			def Measurement(@Position position, double z); 
 			def Position GetPosition();
-  			def double GetZ();
+			def double GetZ();
 		}
 		
 		ValueObject Position {
@@ -169,33 +218,9 @@ BoundedContext HeightMapContext implements MeasureDomain {
 			def double GetY();
 		}
 	}
+
 }
 
-BoundedContext WaferAlignmentContext implements MeasureDomain {
-	type = SYSTEM
-	domainVisionStatement = "Wafer aligment determines the wafer coordinate system by measuring the wafer alignment marks."
-	responsibilities = "WaferAlignment, WCS"
-	implementationTechnology = "C++"
-	Aggregate AlignmentMarks {
-		Entity AlignmentMarks {
-			aggregateRoot
-			
-			AlignmentsMarksId alignmentsMarksId
-			- List<AlignmentMark> alignmentMarks
-			
-			Repository AlignmentMarksRepository {
-				@AlignmentMarks find(@AlignmentMark alignmentMark);
-				List<@AlignmentMarks> findAll();
-			}
-		}
-		
-		/* describe the projected position of an alignment marker in 2D space */
-		ValueObject AlignmentMark {
-			double xpos
-			double ypos
-		}
-	}
-}
 
 
 /********************************/
