@@ -9,7 +9,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include "application/MeasureWaferCommand.hpp"
+#include "Measure/Leveling/application/MeasureWaferCommand.hpp"
 
 int main()
 {

@@ -1,7 +1,7 @@
 #pragma once
 #include <list>
 #include "hiberlite.h"
-#include "base/AggregateRootBase.hpp"
+#include "domain/base/AggregateRootBase.hpp"
 #include "Measurement.hpp" //Value Object
 
 

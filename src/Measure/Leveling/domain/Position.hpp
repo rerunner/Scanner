@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/ValueObjectBase.hpp"
+#include "domain/base/ValueObjectBase.hpp"
 
 
 class Position : public ValueObjectBase

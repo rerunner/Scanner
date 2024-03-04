@@ -1,7 +1,7 @@
 #pragma once
 
-#include "base/IRepositoryFactory.h"
-#include "base/IRepositoryBase.h"
+#include "infrastructure/base/IRepositoryFactory.h"
+#include "infrastructure/base/IRepositoryBase.h"
 
 #include "domain/WaferHeightMap.hpp"
 
