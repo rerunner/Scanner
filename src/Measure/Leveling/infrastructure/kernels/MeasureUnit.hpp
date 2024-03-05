@@ -22,7 +22,8 @@ public:
     {
       Position positionContainer;
       input[ "inputPosition" ].pop( positionContainer ); // Receive position from input port
-      const Measurement measurementContainer{positionContainer, 1.0}; // Do Measurement
+      double randomZ = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+      const Measurement measurementContainer{positionContainer, randomZ}; // Do Measurement
       output[ "outputMeasurement" ].push( measurementContainer ); // Push measurement to output port
       return( raft::proceed );
     }
