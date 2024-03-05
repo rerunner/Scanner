@@ -136,6 +136,7 @@ BoundedContext WaferAlignmentContext implements MeasureDomain {
 			int alignmentStep_
 
 			def MarkMeasurementSpecification(int alignmentStep, @MarkPosition expectedPosition);
+			def MarkMeasurementSpecification GetMarkMeasurementSpecification();
 		}
 
 		ValueObject MarkPosition {

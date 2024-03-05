@@ -29,6 +29,7 @@ public:
     return false;
   }
 
+  MarkMeasurementSpecification GetMarkMeasurementSpecification(){return *this;};
 };
 
 // Boilerplate

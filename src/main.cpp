@@ -4,6 +4,7 @@
 #include <iostream>
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
+#include <variant>        // std::visit
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -15,9 +16,12 @@ int main()
 {
     std::cout << "Scanner application\n\n";
 
-    Commands::MeasureWaferCommand *applicationCommand; //factorise later on
+    Leveling::Leveling leveling();
+    Commands::CommandExecutor executor(leveling);
 
-    applicationCommand = new Commands::MeasureWaferCommand("1"); // Measure Wafer number one
+    //actual execution, can be moved to queue command processor
+    Commands::Command command = MeasureWafer("1"); //Wafer number 1
+    std::visit(executor, command); 
 
     //Sleep forever
     for (;;) 
