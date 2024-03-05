@@ -87,5 +87,5 @@ namespace Leveling
 
       std::cout << "measureWafer done" << std::endl;
     }
-  }
+  };
 }

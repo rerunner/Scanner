@@ -10,18 +10,20 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include "Measure/Leveling/application/MeasureWaferCommand.hpp"
+#include "Measure/Leveling/application/Leveling.hpp"
+#include "Measure/Leveling/application/LevelingCommand.hpp"
 
 int main()
 {
     std::cout << "Scanner application\n\n";
 
-    Leveling::Leveling leveling();
-    Commands::CommandExecutor executor(leveling);
+    Leveling::Leveling leveling; // Create leveling object
+    Commands::CommandExecutor executor(leveling); // Give commands to leveling object
 
     //actual execution, can be moved to queue command processor
-    Commands::Command command = MeasureWafer("1"); //Wafer number 1
-    std::visit(executor, command); 
+    Commands::Command command; 
+    command = Commands::MeasureWafer{"1"}; // Command: Measure Wafer number 1
+    std::visit(executor, command); // execute the command
 
     //Sleep forever
     for (;;) 
