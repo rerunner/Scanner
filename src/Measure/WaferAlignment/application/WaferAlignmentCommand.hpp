@@ -3,42 +3,42 @@
 #include <thread>         // std::thread
 #include <variant>        // std::variant
 
-#include "Leveling.hpp"
+#include "WaferAlignment.hpp"
 
 #include "domain/Position.hpp"
 #include "domain/Measurement.hpp"
 #include "domain/WaferHeightMap.hpp"
 
-namespace LevelingCommands
+namespace WaferAlignmentCommands
 {
   struct DummyMethod 
   {
     std::string waferId;
   };
 
-  struct MeasureWafer 
+  struct AlignWafer 
   {
     std::string waferId;
   };
 
-  using Command = std::variant<DummyMethod, MeasureWafer>;
+  using Command = std::variant<DummyMethod, AlignWafer>;
 
   class CommandExecutor
   {
     public:
-    CommandExecutor(Leveling::Leveling& leveling) : leveling_(leveling){};
+    CommandExecutor(WaferAlignment::WaferAlignment& waferAlignment) : waferAlignment_(waferAlignment){};
 
-    void operator()(const MeasureWafer& cmd)
+    void operator()(const AlignWafer& cmd)
     {
-      leveling_.measureWafer(cmd.waferId);
+      waferAlignment_.alignWafer(cmd.waferId);
     }
 
     void operator()(const DummyMethod& cmd)
     {
-      leveling_.dummyMethod(cmd.waferId);
+      waferAlignment_.dummyMethod(cmd.waferId);
     }
 
   private:
-    Leveling::Leveling& leveling_;
+    WaferAlignment::WaferAlignment& waferAlignment_;
   };
 }
