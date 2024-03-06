@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hiberlite.h"
 #include "domain/base/ValueObjectBase.hpp"
 
 
@@ -24,9 +25,9 @@ public:
 
   bool operator==(const ValueObjectBase& other) const override
   {
-    if (const Position* otherPosition = dynamic_cast<const Position*>(&other))
+    if (const MarkPosition* otherMarkPosition = dynamic_cast<const MarkPosition*>(&other))
     {
-      return (xpos_ == otherPosition->xpos_) && (ypos_ == otherPosition->ypos_);
+      return (xpos_ == otherMarkPosition->xpos_) && (ypos_ == otherMarkPosition->ypos_);
     }
     return false;
   }
