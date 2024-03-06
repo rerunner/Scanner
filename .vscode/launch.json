@@ -1,0 +1,58 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "C/C++: g++ build and debug active file",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/test.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "-std=c++17",
+                "-DSTRING_NAMES=1",
+                "-DL1D_CACHE_LINE_SIZE=64",
+                "-I/usr/local/include",
+                "-I/usr/include/hiberlite",
+                "-I${workspaceFolder}/src",
+                "-I${workspaceFolder}/src/Measure/Leveling",
+                "-I${workspaceFolder}/include",
+                "${workspaceFolder}/src/main.cpp",
+                "-o",
+                "${workspaceFolder}/test.exe",
+                "-L/usr/local/lib",
+                "-lraft",
+                "-lshm",
+                "-lrt",
+                "-laffinity",
+                "-ldemangle",
+                "-lcmdargs",
+                "-lboost_system",
+                "-lhiberlite"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: g++ build active file",
+            "miDebuggerPath": "/usr/bin/gdb"
+        }
+
+    ]
+}

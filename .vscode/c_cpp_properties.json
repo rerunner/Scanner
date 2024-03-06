@@ -1,0 +1,14 @@
+{
+    "configurations": [
+      {
+        "name": "Linux",
+        "includePath": ["${workspaceFolder}/src", "${workspaceFolder}/src/Measure/Leveling", 
+                        "${workspaceFolder}/include", "/usr/local/include", "/usr/include/hiberlite"],
+        "defines": ["STRING_NAMES=1","L1D_CACHE_LINE_SIZE=64"],
+        "compilerPath": "/usr/bin/g++",
+        "cppStandard": "c++17",
+        "intelliSenseMode": "linux-gcc-x64"
+      }
+    ],
+    "version": 4
+  }
