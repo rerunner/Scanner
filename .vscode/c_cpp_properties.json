@@ -2,7 +2,7 @@
     "configurations": [
       {
         "name": "Linux",
-        "includePath": ["${workspaceFolder}/src", "${workspaceFolder}/src/Measure/Leveling", 
+        "includePath": ["${workspaceFolder}/src", "${workspaceFolder}/src/Measure/Leveling", "${workspaceFolder}/src/MachineControl", 
                         "${workspaceFolder}/include", "/usr/local/include", "/usr/include/hiberlite"],
         "defines": ["STRING_NAMES=1","L1D_CACHE_LINE_SIZE=64"],
         "compilerPath": "/usr/bin/g++",

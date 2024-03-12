@@ -10,4 +10,4 @@ Requires: shm affinity demangle cmdargs
 Conflicts: 
 Libs:  -L${libdir} -lraft     
 Libs.private: shm affinity demangle cmdargs
-Cflags:  -std=c++17 -DSTRING_NAMES=1 -DL1D_CACHE_LINE_SIZE=64 -I${includedir}  
+Cflags:  -std=c++20 -DSTRING_NAMES=1 -DL1D_CACHE_LINE_SIZE=64 -I${includedir}  

@@ -1,28 +1,23 @@
 #pragma once
 
+#include <iostream>
+#include <source_location>
 #include "FiniteStateMachine.hpp"
-
-// specific state transition types we support
-//Initialized, StartExecution, EndExecution, ErrorReceived
-struct transition_to_Executing{};
-struct transition_to_Idle{};
 
 namespace MachineControl
 {
+    // specific state transition types we support
+    struct transition_to_Executing{};
+    struct transition_to_Idle{};
+
     // Statemachine start
     // SEMI Machine states
     // state definitions
-    struct Error;
-    struct Idle;
-    struct Executing;
-    
     namespace state {
         struct Error;
         struct Idle;
         struct Executing;
-    }
     
-    namespace state {
         struct Error 
         { 
             void on_update() const {
@@ -30,13 +25,13 @@ namespace MachineControl
             }
 
             state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                std::cout << "leaving Error with transition to Idle \n";
+                std::cout << "Leaving Error state with transition to Idle state\n";
                 return {};
             }
 
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                std::cout << "state transition: " <<  typeid(Transition).name() << " is not supported in Error! \n";
+                std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Error state! \n";
                 return {};
             }
         };
@@ -50,31 +45,31 @@ namespace MachineControl
             // specific transition to run, where we return the concrete state transition to Executing
             // to distinguish different state transitions, we use an empty function argument here
             state_transition_to<Executing> on_state_transition(const transition_to_Executing&) const{
-                std::cout << "leaving Idle with transition to Executing \n";
+                std::cout << "Leaving Idle state with transition to Executing state\n";
                 return {};
             }
 
             // a template function to indicate all non supported state transitions.
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                std::cout << "state transition: " <<  typeid(Transition).name() << " is not supported in Idle! \n";
+                std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Idle state! \n";
                 return {};
             }
         };
         struct Executing 
         { 
             void on_update() const {
-            std::cout << "we are running! \n";
+            std::cout << "Machine Control is running! \n";
             }
 
             state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                std::cout << "leaving run with transition to Idle \n";
+                std::cout << "Leaving Executing state with transition to Idle state\n";
                 return {};
             }
 
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                std::cout << "state transition: " <<  typeid(Transition).name() << " is not supported in run! \n";
+                std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Executing state! \n";
                 return {};
             }
         };

@@ -73,9 +73,11 @@ namespace Leveling
       for (Measurement myMeas : myHeightMap)
       {
         Position myPosition = myMeas.GetPosition();
+#if 0
         std::cout << " Measurement X = " << myPosition.GetX();
         std::cout << " Measurement Y = " << myPosition.GetY();
         std::cout << " Measurement Z = " << myMeas.GetZ() << std::endl;
+#endif
       }
     
       myRepo->Delete(waferHeightMap);

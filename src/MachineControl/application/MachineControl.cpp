@@ -1,6 +1,7 @@
 
 #include "MachineControl.hpp"
 #include "Measure/Leveling/application/LevelingCommand.hpp"
+#include "domain/Wafer.hpp"
 
 
 namespace MachineControl
@@ -13,6 +14,9 @@ namespace MachineControl
     void MachineControl::Execute()
     {
         machineControlStateMachine.on_state_transition(transition_to_Executing{});
+
+        Wafer newWafer; // load new wafer
+        newWafer.PreAligned(); // Move wafer to prealigned state (will be event later)
 
         Leveling::Leveling leveling; // Create leveling object
         LevelingCommands::CommandExecutor executor(leveling); // Give commands to leveling object
