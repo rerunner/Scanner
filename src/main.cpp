@@ -6,33 +6,23 @@
 #include <chrono>         // std::chrono::seconds
 #include <variant>        // std::visit
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp> 
-#include <boost/uuid/uuid_io.hpp>
-
-#include "Measure/WaferAlignment/application/WaferAlignment.hpp"
-#include "Measure/WaferAlignment/application/WaferAlignmentCommand.hpp"
-
-#include "Measure/Leveling/application/Leveling.hpp"
-#include "Measure/Leveling/application/LevelingCommand.hpp"
+#include "MachineControl/application/MachineControl.hpp"
 
 int main()
 {
     std::cout << "Scanner application\n\n";
 
-    Leveling::Leveling leveling; // Create leveling object
-    LevelingCommands::CommandExecutor executor(leveling); // Give commands to leveling object
+    MachineControl::MachineControl machineCTRL; // Create machine control
+    machineCTRL.Initialize(); // Initialize
+    machineCTRL.Execute(); // Start Execution
 
-    //actual execution, can be moved to queue command processor
-    LevelingCommands::Command command; 
-    command = LevelingCommands::MeasureWafer{"1"}; // Command: Measure Wafer number 1
-    std::visit(executor, command); // execute the command
-
+#if 0
     //Sleep forever
     for (;;) 
     {
       std::this_thread::sleep_for (std::chrono::seconds(1));
     }
+#endif
 
     return 0;
 }

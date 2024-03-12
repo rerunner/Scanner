@@ -21,6 +21,7 @@
                 "-I${workspaceFolder}/src/Measure/Leveling",
                 "-I${workspaceFolder}/include",
                 "${workspaceFolder}/src/main.cpp",
+                "${workspaceFolder}/src/MachineControl/application/MachineControl.cpp",
                 "-o",
                 "${workspaceFolder}/test.exe",
                 "-L/usr/local/lib",
