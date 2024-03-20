@@ -1,12 +1,14 @@
-#pragma once
+#ifndef LEVELINGCOMMAND_H
+#define LEVELINGCOMMAND_H
+
 #include <iostream>       // std::cout
 #include <thread>         // std::thread
 #include <variant>        // std::variant
 
 #include "Leveling.hpp"
 
-#include "domain/Position.hpp"
-#include "domain/Measurement.hpp"
+//#include "domain/Position.hpp"
+//#include "domain/Measurement.hpp"
 #include "domain/WaferHeightMap.hpp"
 
 namespace LevelingCommands
@@ -42,3 +44,5 @@ namespace LevelingCommands
     Leveling::Leveling& leveling_;
   };
 }
+
+#endif

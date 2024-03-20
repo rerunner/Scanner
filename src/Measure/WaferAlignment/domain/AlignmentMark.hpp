@@ -1,5 +1,5 @@
 #pragma once
-
+#include "hiberlite"
 #include "domain/base/ValueObjectBase.hpp"
 #include "MarkPosition.hpp"
 #include "MarkMeasurementSpecification.hpp"

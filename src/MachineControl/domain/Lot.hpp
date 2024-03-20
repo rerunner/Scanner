@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOT_H
+#define LOT_H
 
 #include <list>
 #include "hiberlite.h"
@@ -24,3 +25,5 @@ public:
 
 // Boilerplate
 HIBERLITE_EXPORT_CLASS(Lot)
+
+#endif

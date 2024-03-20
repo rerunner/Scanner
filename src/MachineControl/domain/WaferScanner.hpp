@@ -1,4 +1,5 @@
-#pragma once
+#ifndef WAFERSCANNER_H
+#define WAFERSCANNER_H
 
 #include <list>
 #include "hiberlite.h"
@@ -23,3 +24,5 @@ public:
 
 // Boilerplate
 HIBERLITE_EXPORT_CLASS(WaferScanner)
+
+#endif

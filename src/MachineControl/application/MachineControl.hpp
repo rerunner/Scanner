@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MACHINECONTROL_H
+#define MACHINECONTROL_H
 
 #include <iostream>
 #include <source_location>
@@ -93,3 +94,5 @@ namespace MachineControl
         void Execute();
     };
 }
+
+#endif

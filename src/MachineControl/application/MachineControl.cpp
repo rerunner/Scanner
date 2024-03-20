@@ -23,7 +23,7 @@ namespace MachineControl
 
         //actual execution, can be moved to queue command processor
         LevelingCommands::Command command; 
-        command = LevelingCommands::MeasureWafer{"1"}; // Command: Measure Wafer number 1
+        command = LevelingCommands::MeasureWafer{newWafer.GetId()}; // Command: Measure Wafer with uuid
         std::visit(executor, command); // execute the command
     }
 }

@@ -1,6 +1,8 @@
-#pragma once
+#ifndef WAFERHEIGHTMAP_H
+#define WAFERHEIGHTMAP_H
+
 #include <list>
-#include "hiberlite.h"
+//#include "hiberlite.h"
 #include "domain/base/AggregateRootBase.hpp"
 #include "Measurement.hpp" //Value Object
 
@@ -20,18 +22,11 @@ private:
   }
   //Boilerplate end
 public:
-  WaferHeightMap() : AggregateRootBase(){};
-  WaferHeightMap(Measurement m) : AggregateRootBase()
-  {
-    measurements_.push_back(m); //First entry
-  }
+  WaferHeightMap();
+  WaferHeightMap(Measurement m);
 
-  std::list<Measurement> GetHeightMap(void){return measurements_;}
-
-  void AddMeasurement(Measurement m) { measurements_.push_back(m); }
-
+  std::list<Measurement> GetHeightMap(void);
+  void AddMeasurement(Measurement m);
 };
 
-// Boilerplate
-HIBERLITE_EXPORT_CLASS(WaferHeightMap)
-
+#endif /* WAFERHEIGHTMAP_H */

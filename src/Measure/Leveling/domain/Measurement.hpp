@@ -1,5 +1,7 @@
-#pragma once
+#ifndef MEASUREMENT_H
+#define MEASUREMENT_H
 
+//#include "hiberlite.h"
 #include "domain/base/ValueObjectBase.hpp"
 #include "Position.hpp"
 
@@ -21,23 +23,13 @@ private:
   //Boilerplate end
   
 public:
-  Measurement() : ValueObjectBase() {};
-  Measurement(Position position, double zvalue = 0.0) : ValueObjectBase()
-  {
-    position_ = position;
-    z_ = zvalue;
-  }
+  Measurement();
+  Measurement(Position position, double zvalue = 0.0);
+  
+  bool operator==(const ValueObjectBase& other) const;
 
-  bool operator==(const ValueObjectBase& other) const override
-  {
-    //TODO
-    return false;
-  }
-
-  Position GetPosition() const {return position_;}
-  double GetZ() const {return z_;}
+  Position GetPosition() const;
+  double GetZ() const;
 };
 
-// Boilerplate
-HIBERLITE_EXPORT_CLASS(Measurement)
-
+#endif //MEASUREMENT_H

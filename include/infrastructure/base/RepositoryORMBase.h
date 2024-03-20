@@ -15,7 +15,8 @@ public:
   //Constructor creates DB
   RepositoryORMBase()
   {
-    db = new hiberlite::Database("sample.db");
+    //db = new hiberlite::Database("repository.db");
+    db = new hiberlite::Database(":memory:");
     db->registerBeanClass<RepositoryBaseType>();
     db->dropModel();
     db->createModel();

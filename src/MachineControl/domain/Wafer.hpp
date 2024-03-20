@@ -1,4 +1,5 @@
-#pragma once
+#ifndef WAFER_H
+#define WAFER_H
 
 #include <list>
 #include "hiberlite.h"
@@ -178,3 +179,5 @@ public:
 
 // Boilerplate
 HIBERLITE_EXPORT_CLASS(Wafer)
+
+#endif

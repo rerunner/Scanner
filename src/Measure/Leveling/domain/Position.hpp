@@ -1,7 +1,8 @@
-#pragma once
+#ifndef POSITION_H
+#define POSITION_H
 
+#include "hiberlite.h"
 #include "domain/base/ValueObjectBase.hpp"
-
 
 class Position : public ValueObjectBase
 {
@@ -20,21 +21,12 @@ private:
   //Boilerplate end
   
 public:
-  Position(double x = 0.0, double y = 0.0) : x_(x), y_(y) {}
+  Position(double x = 0.0, double y = 0.0);
 
-  bool operator==(const ValueObjectBase& other) const override
-  {
-    if (const Position* otherPosition = dynamic_cast<const Position*>(&other))
-    {
-      return (x_ == otherPosition->x_) && (y_ == otherPosition->y_);
-    }
-    return false;
-  }
+  bool operator==(const ValueObjectBase& other) const override;
 
-  double GetX() const {return x_;}
-  double GetY() const {return y_;}
+  double GetX() const;
+  double GetY() const;
 };
 
-// Boilerplate
-HIBERLITE_EXPORT_CLASS(Position)
-
+#endif // POSITION_H
