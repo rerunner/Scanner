@@ -13,16 +13,21 @@ namespace Leveling
   class Leveling
   {
     private:
-    // constants for Stock Quoter domain Id, types, and topic
+    // constants & declarations for DDS WaferHeightMap domain Id, types, and topic
     DDS::DomainId_t WAFER_DOMAIN_ID;
-    const char* WAFER_HEIGHTMAP_TYPE;
-    const char* WAFER_HEIGHTMAP_TOPIC;
+    DDS::Topic_var waferheightmap_topic;
+    //scanner::generated::WaferHeightMapTypeSupport_var waferheightmap_servant;
+    DDS::Publisher_var pub;
+    scanner::generated::WaferHeightMap whm_evt;
+    DDS::InstanceHandle_t whm_handle;
+    DDS::DataWriter_var waferHeightMap_base_dw;
+    scanner::generated::WaferHeightMapDataWriter_var waferHeightMap_dw;
 
     void SetupDataWriter(); 
     void Publish(); 
 
     public:
-    Leveling(): WAFER_DOMAIN_ID(1066), WAFER_HEIGHTMAP_TYPE("Quote Type"), WAFER_HEIGHTMAP_TOPIC("Stock Quotes"){}
+    Leveling();
 
     void dummyMethod(std::string waferId){}
 
