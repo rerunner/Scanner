@@ -4,6 +4,9 @@ src-gen/
 # Generated Build files
 build/
 
+# Generated vscode files
+.vscode/
+
 # Prerequisites
 *.d
 
