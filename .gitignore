@@ -1,6 +1,9 @@
 # Generated Model files
 src-gen/
 
+# Generated Build files
+build/
+
 # Prerequisites
 *.d
 

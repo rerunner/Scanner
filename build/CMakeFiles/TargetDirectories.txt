@@ -1,3 +1,0 @@
-/home/rerun/Projects/LithoFab/Scanner/build/CMakeFiles/Scanner.dir
-/home/rerun/Projects/LithoFab/Scanner/build/CMakeFiles/edit_cache.dir
-/home/rerun/Projects/LithoFab/Scanner/build/CMakeFiles/rebuild_cache.dir
