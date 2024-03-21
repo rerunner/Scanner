@@ -2,9 +2,6 @@
 #include <thread>         // std::thread
 
 #include "Leveling.hpp"
-#include "domain/WaferHeightMap.hpp"
-#include "infrastructure/base/RepositoryFactory.h"
-#include "infrastructure/IWaferHeightMapRepository.hpp"
 
 // Streaming graph
 #include <raft>
@@ -39,21 +36,32 @@ namespace Leveling
     Leveling::Leveling(): WAFER_DOMAIN_ID(0)
     {
       std::cout << "WAFER_DOMAIN_ID " << WAFER_DOMAIN_ID << std::endl;
+
+      //Create Factory for the WaferHeightMap repository
+      repositoryFactory = new RepositoryFactory<WaferHeightMap>;
+      
+      //Use factory to create specialized repository to store on Heap Memory or ORM
+      //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
+      myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
     }
 
     void Leveling::SetupDataWriter()
     {
         // Initialize, and create a DomainParticipant
         int argc = 5; 
-        char* argv[] = {"./Scanner", "-DCPSInfoRepo", "127.0.0.1:12345", "-DCPSConfigFile", "rtps.ini"};
+        char* argv[] = {const_cast<char *>("./Scanner"), 
+                        const_cast<char *>("-DCPSInfoRepo"), 
+                        const_cast<char *>("127.0.0.1:12345"), 
+                        const_cast<char *>("-DCPSConfigFile"), 
+                        const_cast<char *>("rtps.ini")};
         DDS::DomainParticipantFactory_var dpf = DDS::DomainParticipantFactory::_nil();
         DDS::DomainParticipant_var participant = DDS::DomainParticipant::_nil();
 
         dpf = TheParticipantFactoryWithArgs(argc, argv);
-        //WAFER_DOMAIN_ID = 0;
+        
         participant = dpf->create_participant(  WAFER_DOMAIN_ID,
                                                 PARTICIPANT_QOS_DEFAULT,
-                                                0,  // No listener required DDS::DomainParticipantListener::_nil(),
+                                                DDS::DomainParticipantListener::_nil(),  // No listener required
                                                 ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
         if (!participant) 
 	      {
@@ -121,26 +129,35 @@ namespace Leveling
         whm_handle = waferHeightMap_dw->register_instance(whm_evt);
     }
     
-    void Leveling::Publish()
+    void Leveling::Publish(std::string waferHeightMapId)
     {
+        // Get the heightmap to publish
+        WaferHeightMap whm_clone = myRepo->Get(waferHeightMapId);
+        std::cout << "WaferHeightMap clone created with ID = " << whm_clone.GetId() << "\n";
+        std::list<Measurement> myHeightMap = whm_clone.GetHeightMap();
+
+        // DTO assembler start
+        scanner::generated::WaferHeightMap newWaferHeightMapDTO;
+        newWaferHeightMapDTO.waferID = whm_clone.GetId().c_str();
+        newWaferHeightMapDTO.measurements.length(10000); // Looping through all of the elements:
+        for (int i = 0; Measurement myMeas : myHeightMap) //C++20 syntax
+        {
+          Position myPosition = myMeas.GetPosition();
+          newWaferHeightMapDTO.measurements[i].xyPosition.xPos = myPosition.GetX(); 
+          newWaferHeightMapDTO.measurements[i].xyPosition.yPos = myPosition.GetY(); 
+          newWaferHeightMapDTO.measurements[i].zPos = myMeas.GetZ();
+          i++;
+        }
+        // DTO assembler end
+
         // call the write method of the WaferHeightMap datawriter
-        // Publish
-        scanner::generated::WaferHeightMap newWaferHeightMap;
-        newWaferHeightMap.waferID = "1";
-        std::cout << "Publishing WAFER 1 using DDS" << std::endl;
-        DDS::ReturnCode_t ret = waferHeightMap_dw->write(newWaferHeightMap, whm_handle);
+        std::cout << "Publishing WAFER " << newWaferHeightMapDTO.waferID << " using DDS datawriter." << std::endl;
+        DDS::ReturnCode_t ret = waferHeightMap_dw->write(newWaferHeightMapDTO, whm_handle);
     }
 
-    void Leveling::measureWafer(std::string waferId)
+    std::string Leveling::measureWafer(std::string waferId)
     {
       std::cout << "measureWafer starts with wafer Id = " << waferId << std::endl;
-
-      //Create Factory for the WaferHeightMap repository
-      IRepositoryFactory<WaferHeightMap> *repositoryFactory = new RepositoryFactory<WaferHeightMap>;
-      
-      //Use factory to create specialized repository to store on Heap Memory or ORM
-      //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
-      auto *myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
 
       // Create empty wafer heightmap
       WaferHeightMap waferHeightMap;
@@ -171,31 +188,9 @@ namespace Leveling
       myRepo->Store(waferHeightMap); //Use case "measure height map" ended
       std::cout << "WaferHeightMap with ID = " << waferHeightMap.GetId() << " persisted.\n";
 
-#if 0      
-      WaferHeightMap whm_clone = myRepo->Get(waferHeightMap.GetId());
-      std::cout << "WaferHeightMap clone created with ID = " << whm_clone.GetId() << "\n";
-      
-      std::list<Measurement> myHeightMap = whm_clone.GetHeightMap();
-      // Looping through all of the elements:
-      for (Measurement myMeas : myHeightMap)
-      {
-        Position myPosition = myMeas.GetPosition();
-
-        std::cout << " Measurement X = " << myPosition.GetX();
-        std::cout << " Measurement Y = " << myPosition.GetY();
-        std::cout << " Measurement Z = " << myMeas.GetZ() << std::endl;
-
-      }
-    
-      myRepo->Delete(waferHeightMap);
-
-      std::cout << "trying again";
-      myRepo->Delete(waferHeightMap);
-      std::cout << " should do nothing" << std::endl;
-#endif
-
       this->SetupDataWriter();
-      this->Publish();
+      this->Publish(waferHeightMap.GetId());
       std::cout << "measureWafer done" << std::endl;
+      return waferHeightMap.GetId();
     }
 }

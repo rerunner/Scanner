@@ -6,14 +6,14 @@ const long MAX_MEASUREMENT_STEPS = 10000; // Maximum number of measurements for 
 
 struct Position
 {
-	long xPos;
-	long yPos;
+	double xPos;
+	double yPos;
 };
 
 struct Measurement
 {
 	Position xyPosition;
-	long zPos;
+	double zPos;
 };
 
 typedef sequence<Measurement,MAX_MEASUREMENT_STEPS> measurementsType;
