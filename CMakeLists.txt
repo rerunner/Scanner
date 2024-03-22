@@ -38,11 +38,28 @@ add_executable(Scanner
 	${src}/src/Measure/Leveling/domain/Measurement.cpp
 	${src}/src/Measure/Leveling/domain/WaferHeightMap.cpp
 	${src}/src/Measure/Leveling/application/Leveling.cpp
+)
+
+add_executable(Expose 
+	${src}/src/Expose/Expose/application/main.cpp
+	${src}/src/Measure/Leveling/domain/Position.cpp
+	${src}/src/Measure/Leveling/domain/Measurement.cpp
+	${src}/src/Measure/Leveling/domain/WaferHeightMap.cpp
+	${src}/src/Expose/Expose/application/Expose.cpp
+	${src}/src/Expose/Expose/application/DataReaderListenerImpl.cpp
   )
 
 OPENDDS_TARGET_SOURCES(Scanner
 	${dst}/Scanner.idl
   )
 
+OPENDDS_TARGET_SOURCES(Expose
+	${dst}/Scanner.idl
+  )
+
 target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include")
 target_link_libraries(Scanner OpenDDS::OpenDDS ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} )
+
+target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include")
+target_link_libraries(Expose OpenDDS::OpenDDS ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} )
+

@@ -16,7 +16,7 @@ int main()
     machineCTRL.Initialize(); // Initialize
     machineCTRL.Execute(); // Start Execution
 
-#if 0
+#if 1
     //Sleep forever
     for (;;) 
     {

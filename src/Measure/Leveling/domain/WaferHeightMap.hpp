@@ -27,6 +27,7 @@ public:
 
   std::list<Measurement> GetHeightMap(void);
   void AddMeasurement(Measurement m);
+  void LogHeightMap();
 };
 
 #endif /* WAFERHEIGHTMAP_H */

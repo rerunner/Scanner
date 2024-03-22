@@ -43,4 +43,6 @@ build/
 # Databases
 *.db
 
+# DDS repositories
+*.ior
 

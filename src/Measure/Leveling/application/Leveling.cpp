@@ -19,9 +19,7 @@
 #include "dds/DCPS/transport/framework/TransportConfig_rch.h"
 #include "dds/DCPS/transport/framework/TransportInst.h"
 #include "dds/DCPS/StaticIncludes.h"
-//#ifdef ACE_AS_STATIC_LIBS
 #include "dds/DCPS/transport/rtps_udp/RtpsUdp.h"
-//#endif
 #include "dds/DCPS/transport/rtps_udp/RtpsUdpInst.h"
 #include "dds/DCPS/transport/rtps_udp/RtpsUdpInst_rch.h"
 
@@ -48,12 +46,15 @@ namespace Leveling
     void Leveling::SetupDataWriter()
     {
         // Initialize, and create a DomainParticipant
-        int argc = 5; 
+        int argc = 7; 
         char* argv[] = {const_cast<char *>("./Scanner"), 
-                        const_cast<char *>("-DCPSInfoRepo"), 
-                        const_cast<char *>("127.0.0.1:12345"), 
-                        const_cast<char *>("-DCPSConfigFile"), 
-                        const_cast<char *>("rtps.ini")};
+                        const_cast<char *>("-ORBDebugLevel"), 
+                        const_cast<char *>("10"), 
+                        const_cast<char *>("-DCPSDebugLevel"), 
+                        const_cast<char *>("10"),
+                        const_cast<char *>("-ORBLogFile"),
+                        const_cast<char *>("LevelingPublisher.log")
+                        };
         DDS::DomainParticipantFactory_var dpf = DDS::DomainParticipantFactory::_nil();
         DDS::DomainParticipant_var participant = DDS::DomainParticipant::_nil();
 
@@ -61,7 +62,7 @@ namespace Leveling
         
         participant = dpf->create_participant(  WAFER_DOMAIN_ID,
                                                 PARTICIPANT_QOS_DEFAULT,
-                                                DDS::DomainParticipantListener::_nil(),  // No listener required
+                                                0,  // No listener required
                                                 ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
         if (!participant) 
 	      {
@@ -86,44 +87,28 @@ namespace Leveling
         // Create a topic for the WaferHeightMap type...
         DDS::Topic_var waferheightmap_topic = participant->create_topic ( scanner::generated::WAFER_HEIGHTMAP_TOPIC,
                                                                           waferheightmap_servant->get_type_name (),
-                                                                          default_topic_qos,
-                                                                          DDS::TopicListener::_nil(),
+                                                                          TOPIC_QOS_DEFAULT,
+                                                                          0,
                                                                           ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
-        if (!waferheightmap_topic) 
-	      {
-          std::stringstream errss;
-          errss << "Failed to create waferheightmap_topic.";
-          throw errss.str();
-	      }
 
         // Create a publisher for the topic
         pub = participant->create_publisher(PUBLISHER_QOS_DEFAULT,
-                                            DDS::PublisherListener::_nil(),
+                                            0,
                                             ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
-        if (!pub.in()) 
-	      {
-          std::stringstream errss;
-          errss << "Failed to create publisher.";
-          throw errss.str();
-	      }
 
-        DDS::TopicDescription_ptr const topic_description = participant->lookup_topicdescription(scanner::generated::WAFER_HEIGHTMAP_TOPIC);
-
-        if (topic_description == nullptr) 
-	      {
-          std::cout << "troubles ahead?" << std::endl;
-        }
-
-        // Get the default QoS for the Data Writer, could also use DATAWRITER_QOS_DEFAULT
-        DDS::DataWriterQos dw_default_qos;
-        pub->get_default_datawriter_qos (dw_default_qos);
+        //DDS::TopicDescription_ptr const topic_description = participant->lookup_topicdescription(scanner::generated::WAFER_HEIGHTMAP_TOPIC);
 
         // Create a DataWriter for the WaferHeightMap topic
-        waferHeightMap_base_dw = pub->create_datawriter(  waferheightmap_topic.in (),
-                                                          dw_default_qos,
-                                                          DDS::DataWriterListener::_nil(),
+        waferHeightMap_base_dw = pub->create_datawriter(  waferheightmap_topic,
+                                                          DATAWRITER_QOS_DEFAULT,
+                                                          0,
                                                           ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
-        waferHeightMap_dw = scanner::generated::WaferHeightMapDataWriter::_narrow(waferHeightMap_base_dw.in());
+
+        // Safely downcast data writer to type-specific data writer
+        //waferHeightMap_dw = scanner::generated::WaferHeightMapDataWriter::_narrow(waferHeightMap_base_dw.in());
+        waferHeightMap_dw = scanner::generated::WaferHeightMapDataWriter::_narrow(waferHeightMap_base_dw);
+
+        std::cout << "Leveling datawriter created, subscribed to topic " << waferheightmap_topic->get_name() << std::endl;
 
         // Register the WaferHeightMap
         whm_handle = waferHeightMap_dw->register_instance(whm_evt);
@@ -151,7 +136,7 @@ namespace Leveling
         // DTO assembler end
 
         // call the write method of the WaferHeightMap datawriter
-        std::cout << "Publishing WAFER " << newWaferHeightMapDTO.waferID << " using DDS datawriter." << std::endl;
+        std::cout << "Publishing HeightMap of WAFER ID = " << newWaferHeightMapDTO.waferID << " using DDS datawriter." << std::endl;
         DDS::ReturnCode_t ret = waferHeightMap_dw->write(newWaferHeightMapDTO, whm_handle);
     }
 

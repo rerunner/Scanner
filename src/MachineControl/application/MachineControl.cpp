@@ -1,6 +1,7 @@
 
 #include "MachineControl.hpp"
 #include "Measure/Leveling/application/LevelingCommand.hpp"
+#include "Expose/Expose/application/Expose.hpp"
 #include "domain/Wafer.hpp"
 
 
