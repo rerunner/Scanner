@@ -17,7 +17,7 @@
 
 #include <dds/DCPS/WaitSet.h>
 
-namespace Expose
+namespace Expose { namespace Application
 {
   class Expose
   {
@@ -31,7 +31,9 @@ namespace Expose
 
     public:
     Expose();
+    void dummyMethod(std::string waferId){}
+    void exposeWafer(std::string waferId); // expose the measured wafer identified with waferID
   };
-}
+}}
 
 #endif // EXPOSE_H

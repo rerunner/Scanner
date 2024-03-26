@@ -15,8 +15,8 @@ ContextMap ScannerWaferStageContextMap {
 
 	/* Expose */
 	contains ExposeManagement
-	contains ReticleAlignContext /* The reticle contains the image to be printed and is aligned to the reference 
-	                              * point on the Position Module (Using the alignment sensor) */
+	contains ReticleAlignContext /* The reticle contains the image (the integrated circuit pattern) to be printed and is
+								  * aligned to the reference point on the Position Module (Using the alignment sensor) */
 	contains ExposeContext /* Exposure of the wafer, using the heighmap for vertical beam focus correction */
 	/* After exposure the position module is moved back to measure and finally unloaded */
 	

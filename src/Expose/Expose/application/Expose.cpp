@@ -1,4 +1,4 @@
-#include "Expose.hpp"
+#include "application/Expose.hpp"
 #include "DataReaderListenerImpl.h"
 
 #include "dds/DCPS/RTPS/RtpsDiscovery.h"
@@ -21,7 +21,7 @@
 
 #include "ScannerC.h"
 
-namespace Expose
+namespace Expose { namespace Application 
 {
     Expose::Expose(): WAFER_DOMAIN_ID(0)
     {
@@ -124,8 +124,15 @@ namespace Expose
         // Block thread for chocolate lot state updates to arrive
         DDS::ConditionSeq activeConditions;
 	    // How long to block for data at a time
-	    DDS::Duration_t timeout = { 30,0 }; // 30 seconds
+	    DDS::Duration_t timeout = { 3*60,0 }; // 3 minutes
 	    DDS::ReturnCode_t retcode = _waitSet->wait(activeConditions, timeout);
         TheServiceParticipant->shutdown ();
     }
-}
+
+    void Expose::exposeWafer(std::string waferID)
+    {
+        // expose the whole wafer die by die with the provided image
+        // Uses the wafer heightmap for lens correction.
+        // Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
+    }
+}}

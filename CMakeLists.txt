@@ -5,6 +5,11 @@ project(Scanner VERSION 1.0
 	LANGUAGES CXX)
 
 find_package(OpenDDS)
+find_package(oatpp)
+find_package(oatpp-swagger)
+
+## define path to swagger-ui res folder
+add_definitions(-DOATPP_SWAGGER_RES_PATH="${OATPP_BASE_DIR}/bin/oatpp-swagger/res")
 
 find_library(RAFT_LIB raft)
 find_library(RAFT_SHM shm)
@@ -46,6 +51,8 @@ add_executable(Expose
 	${src}/src/Measure/Leveling/domain/Measurement.cpp
 	${src}/src/Measure/Leveling/domain/WaferHeightMap.cpp
 	${src}/src/Expose/Expose/application/Expose.cpp
+	${src}/src/Expose/Expose/application/Runner.cpp
+	${src}/src/Expose/Expose/application/ExposeCommand.hpp
 	${src}/src/Expose/Expose/application/DataReaderListenerImpl.cpp
   )
 
@@ -58,8 +65,7 @@ OPENDDS_TARGET_SOURCES(Expose
   )
 
 target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include")
-target_link_libraries(Scanner OpenDDS::OpenDDS ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} )
+target_link_libraries(Scanner OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} )
 
 target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include")
-target_link_libraries(Expose OpenDDS::OpenDDS ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} )
-
+target_link_libraries(Expose OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} )
