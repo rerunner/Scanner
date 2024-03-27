@@ -28,6 +28,10 @@ namespace Expose { namespace Application
         std::cout << "Expose object created" << std::endl;
         this->Subscribe();
     }
+    Expose::~Expose()
+    {
+        this->UnSubscribe();
+    }
 
     void Expose::Subscribe()
     {
@@ -101,7 +105,7 @@ namespace Expose { namespace Application
         if (_waitSet == NULL) 
         {
             std::stringstream errss;
-            errss << "ChocolateLotStateReader(): failure to create WaitSet.";
+            errss << "Expose::Subscribe(): failure to create WaitSet.";
             throw errss.str();
         }
 
@@ -114,19 +118,17 @@ namespace Expose { namespace Application
         if (_condition == NULL) 
         {
             std::stringstream errss;
-            errss << "ChocolateLotStateReader(): failure to initialize condition.";
+            errss << "Expose::Subscribe(): failure to initialize condition.";
             throw errss.str();
         }
+    }
 
-        // Attaching the condition to the WaitSet
-        _waitSet->attach_condition(_condition);
-
-        // Block thread for chocolate lot state updates to arrive
-        DDS::ConditionSeq activeConditions;
-	    // How long to block for data at a time
-	    DDS::Duration_t timeout = { 3*60,0 }; // 3 minutes
-	    DDS::ReturnCode_t retcode = _waitSet->wait(activeConditions, timeout);
-        TheServiceParticipant->shutdown ();
+    void Expose::UnSubscribe()
+    {
+        if (TheServiceParticipant)
+        {
+            TheServiceParticipant->shutdown ();
+        }
     }
 
     void Expose::exposeWafer(std::string waferID)
@@ -134,5 +136,15 @@ namespace Expose { namespace Application
         // expose the whole wafer die by die with the provided image
         // Uses the wafer heightmap for lens correction.
         // Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
+#if 0
+        // Attaching the condition to the WaitSet
+        _waitSet->attach_condition(_condition);
+        // Block thread for chocolate lot state updates to arrive
+        DDS::ConditionSeq activeConditions;
+	    // How long to block for data at a time
+	    DDS::Duration_t timeout = { 60,0 }; // 1 minute
+	    DDS::ReturnCode_t retcode = _waitSet->wait(activeConditions, timeout);
+#endif
+
     }
 }}

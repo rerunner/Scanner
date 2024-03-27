@@ -28,9 +28,11 @@ namespace Expose { namespace Application
 	  DDS::StatusCondition_ptr _condition;
 
     void Subscribe();
+    void UnSubscribe();
 
     public:
     Expose();
+    ~Expose();
     void dummyMethod(std::string waferId){}
     void exposeWafer(std::string waferId); // expose the measured wafer identified with waferID
   };

@@ -20,6 +20,7 @@ class ExposeController : public oatpp::web::server::api::ApiController
   private:
   // Inject Expose component
   //OATPP_COMPONENT(std::shared_ptr<Application::Expose>, m_expose, Qualifiers::SERVICE_EXPOSE);
+  Application::Expose myExpose; 
 
   public:
   ExposeController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper, Qualifiers::SERVICE_EXPOSE) /* Inject object mapper */)
@@ -37,12 +38,14 @@ class ExposeController : public oatpp::web::server::api::ApiController
   }
   ENDPOINT("PUT", "/expose/{waferId}", exposeWafer,
            PATH(String, waferId)) {
-    Application::Expose myExpose; // create expose object
-    ExposeCommands::CommandExecutor executor(myExpose); // Give commands to expose object
+    std::cout << "Give commands to expose object" << std::endl;
+    ExposeCommands::CommandExecutor executor(myExpose); 
     // actual execution, can be moved to queue command processor
     ExposeCommands::Command command; 
-    command = ExposeCommands::ExposeWafer{waferId}; // Command: Expose Wafer with uuid
-    std::visit(executor, command); // execute the command
+    std::cout << "Command: Expose Wafer with uuid" << std::endl;
+    command = ExposeCommands::ExposeWafer{waferId}; 
+    std::cout << "execute the command" << std::endl;
+    std::visit(executor, command);  
     return createResponse(Status::CODE_200, "Exposure started!");
   }
 };
