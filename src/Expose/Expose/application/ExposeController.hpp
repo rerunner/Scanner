@@ -42,7 +42,8 @@ class ExposeController : public oatpp::web::server::api::ApiController
     ExposeCommands::CommandExecutor executor(myExpose); 
     // actual execution, can be moved to queue command processor
     ExposeCommands::Command command; 
-    std::cout << "Command: Expose Wafer with uuid" << std::endl;
+    std::string mywId = waferId;
+    std::cout << "Command: Expose Wafer with uuid = " << mywId << std::endl;
     command = ExposeCommands::ExposeWafer{waferId}; 
     std::cout << "execute the command" << std::endl;
     std::visit(executor, command);  

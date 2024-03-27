@@ -7,6 +7,7 @@ project(Scanner VERSION 1.0
 find_package(OpenDDS)
 find_package(oatpp)
 find_package(oatpp-swagger)
+find_package(CURL) 
 
 ## define path to swagger-ui res folder
 add_definitions(-DOATPP_SWAGGER_RES_PATH="${OATPP_BASE_DIR}/bin/oatpp-swagger/res")
@@ -21,6 +22,11 @@ find_library(RAFT_CMDARGS cmdargs)
 find_library(BOOST_SYSTEM boost_system)
 
 find_library(HIBERLITE hiberlite)
+
+find_library(CURL_LIBRARIES curl)
+
+include(FindPkgConfig)
+pkg_check_modules(CURLPP REQUIRED curlpp)
 
 #set(CMAKE_CXX_COMPILER ${OPENDDS_COMPILER})
 set(CXXFLAGS  "-fdiagnostics-color=always -g -std=c++20 -DSTRING_NAMES=1 -DL1D_CACHE_LINE_SIZE=64")
@@ -65,7 +71,7 @@ OPENDDS_TARGET_SOURCES(Expose
   )
 
 target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include")
-target_link_libraries(Scanner OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} )
+target_link_libraries(Scanner OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES} ${CURLPP_LDFLAGS})
 
 target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include")
-target_link_libraries(Expose OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} )
+target_link_libraries(Expose OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE})
