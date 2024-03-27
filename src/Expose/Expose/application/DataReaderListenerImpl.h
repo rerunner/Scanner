@@ -8,18 +8,34 @@
 #ifndef DATAREADER_LISTENER_IMPL_H
 #define DATAREADER_LISTENER_IMPL_H
 
+#include <future>
+
 #include <ace/Global_Macros.h>
 
 #include <dds/DdsDcpsSubscriptionC.h>
 #include <dds/DCPS/LocalObject.h>
 #include <dds/DCPS/Definitions.h>
 
+#include "domain/WaferHeightMap.hpp"
+#include "infrastructure/base/RepositoryFactory.h"
+#include "infrastructure/IWaferHeightMapRepository.hpp"
+
+
 class DataReaderListenerImpl : public virtual OpenDDS::DCPS::LocalObject<DDS::DataReaderListener>
 {
 private:
   CORBA::Boolean is_exchange_closed_received_;
-  //ACE_Mutex lock_;
+  WaferHeightMap myHeightMap;
+  // Repository
+  IRepositoryFactory<WaferHeightMap> *repositoryFactory;
+  IRepositoryBase<WaferHeightMap> *myRepo;
+  std::promise<std::string>* myHeightmapId;
 public:
+  DataReaderListenerImpl(IRepositoryBase<WaferHeightMap> *passedRepo, std::promise<std::string>* heightmapId)
+  {
+    myRepo = passedRepo;
+    myHeightmapId = heightmapId;
+  }
   // DDS calls on_data_available on the listener for each
   // received WaferHeightMap sample.
   virtual void on_data_available(DDS::DataReader_ptr reader);

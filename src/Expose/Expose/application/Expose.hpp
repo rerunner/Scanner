@@ -17,18 +17,27 @@
 
 #include <dds/DCPS/WaitSet.h>
 
+#include "infrastructure/base/RepositoryFactory.h"
+#include "infrastructure/IWaferHeightMapRepository.hpp"
+
 namespace Expose { namespace Application
 {
   class Expose
   {
     private:
+    // Repository
+    IRepositoryFactory<WaferHeightMap> *repositoryFactory;
+    IRepositoryBase<WaferHeightMap> *myRepo;
+
     DDS::DomainId_t WAFER_DOMAIN_ID;
     // Objects to block a thread until chocolate lot state update arrives
 	  DDS::WaitSet_ptr _waitSet;
 	  DDS::StatusCondition_ptr _condition;
+    DDS::DataReader_var *waferheightmap_dr;
 
     void Subscribe();
     void UnSubscribe();
+    std::string StartHeightMapListener();
 
     public:
     Expose();

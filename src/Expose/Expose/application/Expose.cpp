@@ -26,6 +26,11 @@ namespace Expose { namespace Application
     Expose::Expose(): WAFER_DOMAIN_ID(0)
     {
         std::cout << "Expose object created" << std::endl;
+        //Create Factory for the WaferHeightMap repository
+        repositoryFactory = new RepositoryFactory<WaferHeightMap>;
+        //Use factory to create specialized repository to store on Heap Memory or ORM
+        //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
+        myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
         this->Subscribe();
     }
     Expose::~Expose()
@@ -85,40 +90,19 @@ namespace Expose { namespace Application
                                                                             0,
                                                                             ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
-        // Create DataReaderListeners 
-        DataReaderListenerImpl* listener_impl = new DataReaderListenerImpl;
-        DDS::DataReaderListener_var waferheightmap_listener(listener_impl);
 
         // Create the WaferHeightMap DataReader
         DDS::DataReaderQos dr_default_qos;
         sub->get_default_datareader_qos (dr_default_qos);
 
-        DDS::DataReader_var waferheightmap_dr = sub->create_datareader(  waferheightmap_topic,
+        waferheightmap_dr = new DDS::DataReader_var(sub->create_datareader(  waferheightmap_topic,
                                                                 DATAREADER_QOS_DEFAULT,
-                                                                waferheightmap_listener,
-                                                                OpenDDS::DCPS::DEFAULT_STATUS_MASK);
-
-        // This WaitSet object will be used to block a thread until one or more 
-        // conditions become true.  In this case, there is a single condition that
-        // will wake up the WaitSet when the reader receives data
-        _waitSet = new DDS::WaitSet();
-        if (_waitSet == NULL) 
+                                                                NULL, // will be set to waferheightmap_listener 
+                                                                OpenDDS::DCPS::NO_STATUS_MASK)); 
+        if (!waferheightmap_dr)
         {
             std::stringstream errss;
-            errss << "Expose::Subscribe(): failure to create WaitSet.";
-            throw errss.str();
-        }
-
-        // Creating the infrastructure that allows an application thread to block
-        // until some condition becomes true, such as data availability.
-        _condition = waferheightmap_dr->get_statuscondition();
-
-        // Wake up the thread when data is available
-        _condition->set_enabled_statuses(DDS::DATA_AVAILABLE_STATUS); 
-        if (_condition == NULL) 
-        {
-            std::stringstream errss;
-            errss << "Expose::Subscribe(): failure to initialize condition.";
+            std::cerr << "waferheightmap_dr failed." << std::endl;
             throw errss.str();
         }
     }
@@ -131,20 +115,30 @@ namespace Expose { namespace Application
         }
     }
 
+    std::string Expose::StartHeightMapListener()
+    {
+        std::cout << "Expose::GetHeightMap(): --> Setting data_reader waitcondition" << std::endl;
+        // Creating the infrastructure that allows an application thread to block
+        // until some condition becomes true, such as data availability.
+        // Create a Status Condition for the reader
+        // Create DataReaderListeners 
+        std::promise<std::string> theHeightMapId;
+        std::future<std::string> f = theHeightMapId.get_future();
+        DataReaderListenerImpl* listener_impl = new DataReaderListenerImpl(myRepo, &theHeightMapId); // will need to be deleted
+        DDS::DataReaderListener_var waferheightmap_listener(listener_impl);
+        waferheightmap_dr->ptr()->set_listener(waferheightmap_listener, DDS::DATA_AVAILABLE_STATUS | DDS::LIVELINESS_CHANGED_STATUS);
+        std::string ret = f.get(); // Wait for the future ;-)
+        std::cout << "returned heightmap Id: " << ret << std::endl;
+        return ret;
+    }
+
     void Expose::exposeWafer(std::string waferID)
     {
         // expose the whole wafer die by die with the provided image
         // Uses the wafer heightmap for lens correction.
         // Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
-#if 0
-        // Attaching the condition to the WaitSet
-        _waitSet->attach_condition(_condition);
-        // Block thread for chocolate lot state updates to arrive
-        DDS::ConditionSeq activeConditions;
-	    // How long to block for data at a time
-	    DDS::Duration_t timeout = { 60,0 }; // 1 minute
-	    DDS::ReturnCode_t retcode = _waitSet->wait(activeConditions, timeout);
-#endif
-
+        std::string foundHeightMapId = StartHeightMapListener();
+        WaferHeightMap whm_clone = myRepo->Get(foundHeightMapId);
+        whm_clone.LogHeightMap(); // Prove that we got the heightmap in the expose repository
     }
 }}

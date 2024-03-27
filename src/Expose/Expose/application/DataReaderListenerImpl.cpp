@@ -15,16 +15,16 @@
 #include <iostream>
 
 #include "domain/Measurement.hpp"
-#include "domain/WaferHeightMap.hpp"
 
 void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 {
   std::cout << "DATA FOUND!!!!" << std::endl;
+  
   try
   {
-    scanner::generated::WaferHeightMapDataReader_var quote_dr = scanner::generated::WaferHeightMapDataReader::_narrow(reader);
+    scanner::generated::WaferHeightMapDataReader_var heightmap_dr = scanner::generated::WaferHeightMapDataReader::_narrow(reader);
 
-    if (CORBA::is_nil (quote_dr.in ()))
+    if (!heightmap_dr)
     {
       std::cerr << "DataReaderListenerImpl:: " << "on_data_available:" << " _narrow failed." << std::endl;
       ACE_OS::exit(1);
@@ -32,14 +32,13 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
     scanner::generated::WaferHeightMap whm;
     DDS::SampleInfo si;
 
-    DDS::ReturnCode_t status = quote_dr->take_next_sample(whm, si) ;
+    DDS::ReturnCode_t status = heightmap_dr->take_next_sample(whm, si) ;
 
     if (status == DDS::RETCODE_OK) 
     {
       std::cout << "Expose: received WaferID = " << whm.waferID << std::endl;
       std::cout << "SampleInfo.sample_rank = " << si.sample_rank << std::endl;
       // Translate from received DTO to local representation
-      WaferHeightMap myHeightMap;
       for (int i = 0; i < 10000 ; i++)
       {
         Position myPosition(whm.measurements[i].xyPosition.xPos, whm.measurements[i].xyPosition.yPos);
@@ -47,7 +46,8 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
         Measurement myMeas(myPosition, myZpos);
         myHeightMap.AddMeasurement(myMeas);
       }
-      myHeightMap.LogHeightMap(); // Debug Print what we have for now
+      myRepo->Store(myHeightMap);
+      myHeightmapId->set_value(myHeightMap.GetId()); // signal the future ;-)
     }
     else if (status == DDS::RETCODE_NO_DATA)
     {
