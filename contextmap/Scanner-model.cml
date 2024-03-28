@@ -32,7 +32,9 @@ ContextMap ScannerWaferStageContextMap {
 	MachineControlContext [SK]<->[SK] ExposeManagement
 	MachineControlContext [SK]<->[SK] ExposeContext
 	LevelingContext [U,S]->[D,C] ExposeContext
+	LevelingContext [U,S]->[D,C] MachineControlContext
 	ExposeContext [SK]<->[SK] ReticleAlignContext
+	ExposeContext [U,S]->[D,C] MachineControlContext
 }
 
 Domain ScannerDomain {
