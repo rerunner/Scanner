@@ -1,6 +1,6 @@
 #pragma once
 
-#include "application/Constants.hpp"
+#include "Expose/application/Constants.hpp"
 
 // OATPP
 #include "oatpp/web/server/api/ApiController.hpp"
@@ -8,8 +8,8 @@
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/macro/component.hpp"
 
-#include "application/Expose.hpp"
-#include "application/ExposeCommand.hpp"
+#include "Expose/application/Expose.hpp"
+#include "Expose/application/ExposeCommand.hpp"
 
 namespace Expose { namespace Application { namespace controller {
 

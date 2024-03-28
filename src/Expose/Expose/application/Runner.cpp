@@ -1,7 +1,7 @@
 
-#include "application/Runner.hpp"
-#include "application/AppComponent.hpp"
-#include "application/ExposeController.hpp"
+#include "Expose/application/Runner.hpp"
+#include "Expose/application/AppComponent.hpp"
+#include "Expose/application/ExposeController.hpp"
 
 #include "oatpp-swagger/Controller.hpp"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"

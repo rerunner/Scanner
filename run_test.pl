@@ -57,8 +57,10 @@ $test->setup_discovery("-ORBDebugLevel 1 -ORBLogFile DCPSInfoRepo.log") unless $
 
 $test->process("Scanner", "Scanner", $pub_opts);
 $test->process("Expose", "Expose", $sub_opts);
+$test->process("Leveling", "Leveling", $sub_opts);
 
 $test->start_process("Scanner");
 $test->start_process("Expose");
+$test->start_process("Leveling");
 
 exit $test->finish(120);

@@ -12,7 +12,7 @@
 #include "infrastructure/base/RepositoryFactory.h"
 #include "infrastructure/IWaferHeightMapRepository.hpp"
 
-namespace Leveling
+namespace Leveling  { namespace Application
 {
   class Leveling
   {
@@ -41,6 +41,6 @@ namespace Leveling
 
     std::string measureWafer(std::string waferId); // returns the measured waferheightmap ID of the wafer
   };
-}
+}}
 
 #endif

@@ -29,7 +29,7 @@
 #include <dds/DCPS/transport/tcp/TcpInst.h>
 #include "ScannerC.h"
 
-namespace Leveling
+namespace Leveling  { namespace Application
 {
     Leveling::Leveling(): WAFER_DOMAIN_ID(0)
     {
@@ -178,4 +178,4 @@ namespace Leveling
       std::cout << "measureWafer done" << std::endl;
       return waferHeightMap.GetId();
     }
-}
+}}

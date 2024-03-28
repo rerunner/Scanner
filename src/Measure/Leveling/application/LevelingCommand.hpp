@@ -28,7 +28,7 @@ namespace LevelingCommands
   class CommandExecutor
   {
     public:
-    CommandExecutor(Leveling::Leveling& leveling) : leveling_(leveling){};
+    CommandExecutor(Leveling::Application::Leveling& leveling) : leveling_(leveling){};
 
     void operator()(const MeasureWafer& cmd)
     {
@@ -41,7 +41,7 @@ namespace LevelingCommands
     }
 
   private:
-    Leveling::Leveling& leveling_;
+    Leveling::Application::Leveling& leveling_;
   };
 }
 

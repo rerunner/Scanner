@@ -4,7 +4,7 @@
 #include <thread>         // std::thread
 #include <variant>        // std::variant
 
-#include "application/Expose.hpp"
+#include "Expose/application/Expose.hpp"
 
 namespace Expose { namespace Application { namespace ExposeCommands {
   struct DummyMethod 

@@ -1,4 +1,4 @@
-// main.cpp : This file contains the 'main' function of the expose service
+// main.cpp : This file contains the 'main' function of the leveling service
 //
 
 #include "oatpp/web/server/api/ApiController.hpp"
@@ -18,21 +18,21 @@
 #include <variant>        // std::visit
 
 
-#include "Expose/application/AppComponent.hpp"
-#include "Expose/application/Runner.hpp"
-#include "Expose/application/Expose.hpp"
+#include "Leveling/application/AppComponent.hpp"
+#include "Leveling/application/Runner.hpp"
+#include "Leveling/application/Leveling.hpp"
 
 void run() {
   /* Register Components in scope of run() method */
-  Expose::Application::AppComponent components(
-    {"localhost", 8002},      // Expose Service
-    {"expose-service.virtualhost", 0}   // Expose Service Virtual Host
+  Leveling::Application::AppComponent components(
+    {"localhost", 8003},      // Leveling Service
+    {"leveling-service.virtualhost", 0}   // Leveling Service Virtual Host
   );
 
   /* run */
   std::list<std::thread> acceptingThreads;
 
-  Expose::Application::Runner runner;
+  Leveling::Application::Runner runner;
   runner.run(acceptingThreads);
 
   for(auto& thread : acceptingThreads) {

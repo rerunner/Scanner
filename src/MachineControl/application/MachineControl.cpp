@@ -1,7 +1,7 @@
 
 #include "MachineControl.hpp"
-#include "Measure/Leveling/application/LevelingCommand.hpp"
-#include "Expose/Expose/application/Expose.hpp"
+//#include "Measure/Leveling/application/LevelingCommand.hpp"
+//#include "Expose/Expose/application/Expose.hpp"
 #include "domain/Wafer.hpp"
 
 #include <curlpp/cURLpp.hpp>
@@ -24,6 +24,7 @@ namespace MachineControl
         Wafer newWafer; // load new wafer
         newWafer.PreAligned(); // Move wafer to prealigned state (will be event later)
 
+#if 0
         Leveling::Leveling leveling; // Create leveling object
         LevelingCommands::CommandExecutor executor(leveling); // Give commands to leveling object
 
@@ -31,16 +32,31 @@ namespace MachineControl
         LevelingCommands::Command command; 
         command = LevelingCommands::MeasureWafer{newWafer.GetId()}; // Command: Measure Wafer with uuid
         std::visit(executor, command); // execute the command
+#endif
+        // Leveling part
+        {
+            std::cout << "starting leveling measure heightmap command with curl" << std::endl;
+            curlpp::Cleanup myCleanup; // RAII cleanup
+            curlpp::Easy levelingRequest;
+            std::ostringstream urlCommand;
+            urlCommand << "http://127.0.0.1:8003//measure/leveling/" << newWafer.GetId();
+            levelingRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
+            levelingRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
+            levelingRequest.perform();
+            std::cout << "finished leveling measure heightmap command with curl" << std::endl;
+        }
 
         // Expose part
-        std::cout << "starting expose command with curl" << std::endl;
-        curlpp::Cleanup myCleanup; // RAII cleanup
-        curlpp::Easy exposeRequest;
-        std::ostringstream urlCommand;
-        urlCommand << "http://127.0.0.1:8002/expose/" << newWafer.GetId();
-        exposeRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
-        exposeRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
-		exposeRequest.perform();
-        std::cout << "finished expose command with curl" << std::endl;
+        {
+            std::cout << "starting expose command with curl" << std::endl;
+            curlpp::Cleanup myCleanup; // RAII cleanup
+            curlpp::Easy exposeRequest;
+            std::ostringstream urlCommand;
+            urlCommand << "http://127.0.0.1:8002/expose/" << newWafer.GetId();
+            exposeRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
+            exposeRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
+            exposeRequest.perform();
+            std::cout << "finished expose command with curl" << std::endl;
+        }
     }
 }

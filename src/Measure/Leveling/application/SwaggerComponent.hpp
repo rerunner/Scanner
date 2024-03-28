@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Expose/application/Constants.hpp"
+#include "Leveling/application/Constants.hpp"
 
 #include "oatpp-swagger/Model.hpp"
 #include "oatpp-swagger/Resources.hpp"
 #include "oatpp/core/macro/component.hpp"
 
-namespace Expose { namespace Application {
+namespace Leveling { namespace Application {
 
 class SwaggerComponent {
 public:
@@ -14,13 +14,13 @@ public:
   /**
    *  General API docs info
    */
-  OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::swagger::DocumentInfo>, swaggerDocumentInfo)(Qualifiers::SERVICE_EXPOSE, [] {
+  OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::swagger::DocumentInfo>, swaggerDocumentInfo)(Qualifiers::SERVICE_LEVELING, [] {
 
     oatpp::swagger::DocumentInfo::Builder builder;
 
     builder
-      .setTitle("Expose Service")
-      .setDescription("Monolithization Expose MS for Scanner")
+      .setTitle("Leveling Service")
+      .setDescription("Monolithization Leveling MS for Scanner")
       .setVersion("1.0")
       .setContactName("Oat++ Framework")
       .setContactUrl("https://oatpp.io/")
@@ -28,7 +28,7 @@ public:
       .setLicenseName("The Unlicense")
       .setLicenseUrl("http://unlicense.org")
 
-      .addServer("http://localhost:8002", "server on localhost");
+      .addServer("http://localhost:8003", "server on localhost");
 
     return builder.build();
 
@@ -38,7 +38,7 @@ public:
   /**
    *  Swagger-Ui Resources (<oatpp-examples>/lib/oatpp-swagger/res)
    */
-  OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::swagger::Resources>, swaggerResources)(Qualifiers::SERVICE_EXPOSE, [] {
+  OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::swagger::Resources>, swaggerResources)(Qualifiers::SERVICE_LEVELING, [] {
     // Correct full path to oatpp-swagger/res folder specified in cmake !!!
     return oatpp::swagger::Resources::streamResources(OATPP_SWAGGER_RES_PATH);
   }());

@@ -45,10 +45,17 @@ endforeach()
 add_executable(Scanner
 	${src}/src/main.cpp
 	${src}/src/MachineControl/application/MachineControl.cpp
+)
+
+# Scanner target
+add_executable(Leveling
+	${src}/src/Measure/Leveling/application/main.cpp
 	${src}/src/Measure/Leveling/domain/Position.cpp
 	${src}/src/Measure/Leveling/domain/Measurement.cpp
 	${src}/src/Measure/Leveling/domain/WaferHeightMap.cpp
 	${src}/src/Measure/Leveling/application/Leveling.cpp
+	${src}/src/Measure/Leveling/application/Runner.cpp
+	${src}/src/Measure/Leveling/application/LevelingCommand.hpp
 )
 
 add_executable(Expose 
@@ -70,8 +77,15 @@ OPENDDS_TARGET_SOURCES(Expose
 	${dst}/Scanner.idl
   )
 
+OPENDDS_TARGET_SOURCES(Leveling
+  ${dst}/Scanner.idl
+)
+
 target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include")
 target_link_libraries(Scanner OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES} ${CURLPP_LDFLAGS})
 
-target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include")
+target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Expose" "${src}/src/Expose/Expose" "${src}/src/MachineControl" "${src}/src/Measure/Leveling" "${src}/include")
 target_link_libraries(Expose OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE})
+
+target_include_directories(Leveling PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include")
+target_link_libraries(Leveling OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE})
