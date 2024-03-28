@@ -63,6 +63,13 @@ namespace Expose { namespace Application
                                                 0,  // No listener required
                                                 ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
+        if (!participant)
+        {
+            std::stringstream errss;
+            std::cerr << "participant failed. Perhaps DCPS repo not running?" << std::endl;
+            throw errss.str();
+        }
+
         // Create a subscriber for the topic
         DDS::Subscriber_var sub = participant->create_subscriber(   SUBSCRIBER_QOS_DEFAULT,
                                                                     0,
