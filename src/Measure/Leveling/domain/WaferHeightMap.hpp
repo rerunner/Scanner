@@ -11,6 +11,7 @@ class WaferHeightMap : public AggregateRootBase
 {
 private:
   std::list<Measurement> measurements_;
+  std::string waferId_;
   
   //Boilerplate start
   friend class hiberlite::access;
@@ -19,14 +20,17 @@ private:
   {
     ar & HIBERLITE_NVP(id_); // From Base class
     ar & HIBERLITE_NVP(measurements_);
+    ar & HIBERLITE_NVP(waferId_);
   }
   //Boilerplate end
 public:
-  WaferHeightMap();
-  WaferHeightMap(Measurement m);
+  WaferHeightMap() : AggregateRootBase(){waferId_ = "0";}
+  WaferHeightMap(std::string wId);
+  WaferHeightMap(std::string wId, Measurement m);
 
   std::list<Measurement> GetHeightMap(void);
   void AddMeasurement(Measurement m);
+  std::string GetWaferId();
   void LogHeightMap();
 };
 

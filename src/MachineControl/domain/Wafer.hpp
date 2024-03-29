@@ -165,16 +165,32 @@ private:
   void hibernate(Archive & ar)
   {
     ar & HIBERLITE_NVP(id_); // From Base class
+    ar & HIBERLITE_NVP(waferStateMachine);
   }
   //Boilerplate end
 public:
   Wafer() : AggregateRootBase(){};
 
   void PreAligned()
-    {
-        waferStateMachine.on_state_transition(waferState::transition_to_Prealigned{});
-    }
-
+  {
+    waferStateMachine.on_state_transition(waferState::transition_to_Prealigned{});
+  }
+  void Measured()
+  {
+    waferStateMachine.on_state_transition(waferState::transition_to_Measured{});
+  }
+  void ApprovedForExpose()
+  {
+    waferStateMachine.on_state_transition(waferState::transition_to_ApprovedForExpose{});
+  }
+  void Exposed()
+  {
+    waferStateMachine.on_state_transition(waferState::transition_to_Exposed{});
+  }
+  void Unloaded()
+  {
+    waferStateMachine.on_state_transition(waferState::transition_to_Unloaded{});
+  }
 };
 
 // Boilerplate

@@ -36,7 +36,7 @@ class LevelingController : public oatpp::web::server::api::ApiController
     // params specific
     info->pathParams["waferId"].description = "Wafer Identifier";
   }
-  ENDPOINT("PUT", "/measure/leveling/{waferId}", measureWafer,
+  ENDPOINT("PUT", "/measure/leveling/measure/{waferId}", measureWafer,
            PATH(String, waferId)) {
     std::cout << "Give commands to leveling object" << std::endl;
     LevelingCommands::CommandExecutor executor(myLeveling); 
@@ -47,7 +47,7 @@ class LevelingController : public oatpp::web::server::api::ApiController
     command = LevelingCommands::MeasureWafer{waferId}; 
     std::cout << "execute the command" << std::endl;
     std::visit(executor, command);  
-    return createResponse(Status::CODE_200, "Heightmap measurement started!");
+    return createResponse(Status::CODE_200, "Heightmap measurement completed!");
   }
 };
 

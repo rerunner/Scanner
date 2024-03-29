@@ -25,7 +25,7 @@ class DataReaderListenerImpl : public virtual OpenDDS::DCPS::LocalObject<DDS::Da
 {
 private:
   CORBA::Boolean is_exchange_closed_received_;
-  WaferHeightMap myHeightMap;
+  //WaferHeightMap myHeightMap;
   // Repository
   IRepositoryFactory<WaferHeightMap> *repositoryFactory;
   IRepositoryBase<WaferHeightMap> *myRepo;

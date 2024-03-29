@@ -36,7 +36,7 @@ class ExposeController : public oatpp::web::server::api::ApiController
     // params specific
     info->pathParams["waferId"].description = "Wafer Identifier";
   }
-  ENDPOINT("PUT", "/expose/{waferId}", exposeWafer,
+  ENDPOINT("PUT", "/expose/expose/{waferId}", exposeWafer,
            PATH(String, waferId)) {
     std::cout << "Give commands to expose object" << std::endl;
     ExposeCommands::CommandExecutor executor(myExpose); 
@@ -47,7 +47,7 @@ class ExposeController : public oatpp::web::server::api::ApiController
     command = ExposeCommands::ExposeWafer{waferId}; 
     std::cout << "execute the command" << std::endl;
     std::visit(executor, command);  
-    return createResponse(Status::CODE_200, "Exposure started!");
+    return createResponse(Status::CODE_200, "Exposure completed");
   }
 };
 

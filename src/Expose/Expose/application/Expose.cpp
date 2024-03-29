@@ -146,6 +146,10 @@ namespace Expose { namespace Application
         // Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
         std::string foundHeightMapId = StartHeightMapListener();
         WaferHeightMap whm_clone = myRepo->Get(foundHeightMapId);
+        if (waferID == whm_clone.GetWaferId())
+        {
+            std::cout << "SUCCESS: WAFER IDs MATCH BETWEEN EXPOSE AND LEVELING" << std::endl;
+        }
         whm_clone.LogHeightMap(); // Prove that we got the heightmap in the expose repository
     }
 }}

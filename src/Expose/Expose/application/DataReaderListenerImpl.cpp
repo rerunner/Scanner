@@ -39,6 +39,9 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
       std::cout << "Expose: received WaferID = " << whm.waferID << std::endl;
       std::cout << "SampleInfo.sample_rank = " << si.sample_rank << std::endl;
       // Translate from received DTO to local representation
+      std::ostringstream oss;
+      oss << whm.waferID; // Is there a better way from TAO managed string to std::string?
+      WaferHeightMap myHeightMap(oss.str());
       for (int i = 0; i < 10000 ; i++)
       {
         Position myPosition(whm.measurements[i].xyPosition.xPos, whm.measurements[i].xyPosition.yPos);

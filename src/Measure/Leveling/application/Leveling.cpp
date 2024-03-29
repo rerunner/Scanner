@@ -123,7 +123,8 @@ namespace Leveling  { namespace Application
 
         // DTO assembler start
         scanner::generated::WaferHeightMap newWaferHeightMapDTO;
-        newWaferHeightMapDTO.waferID = whm_clone.GetId().c_str();
+        newWaferHeightMapDTO.heightMapID = whm_clone.GetId().c_str();
+        newWaferHeightMapDTO.waferID = whm_clone.GetWaferId().c_str();
         newWaferHeightMapDTO.measurements.length(10000); // Looping through all of the elements:
         for (int i = 0; Measurement myMeas : myHeightMap) //C++20 syntax
         {
@@ -145,8 +146,8 @@ namespace Leveling  { namespace Application
       std::cout << "measureWafer starts with wafer Id = " << waferId << std::endl;
 
       // Create empty wafer heightmap
-      WaferHeightMap waferHeightMap;
-      std::cout << "WaferHeightMap created with ID = " << waferHeightMap.GetId() << "\n";
+      WaferHeightMap waferHeightMap(waferId);
+      std::cout << "WaferHeightMap created with heightmap ID = " << waferHeightMap.GetId() << "\n";
       
       // Raft streaming start
       Measurement generatedMeasurement;

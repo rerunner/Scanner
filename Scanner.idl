@@ -20,8 +20,9 @@ typedef sequence<Measurement,MAX_MEASUREMENT_STEPS> measurementsType;
 @topic 
 struct WaferHeightMap 
 {
-	// ID of the lot whose status is being updated
-	@key string waferID;  
+	// ID of the heightmap whose measurements is being updated
+	@key string heightMapID;  
+	string waferID;  
 	measurementsType measurements;
 };
 

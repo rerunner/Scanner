@@ -265,6 +265,8 @@ BoundedContext LevelingContext implements MeasureDomain {
 			def void WaferHeightMap(@WaferId waferId, @Measurement firstMeasurement); // Constructor with initial measurement
 
 			def @WaferHeightMap GetWaferHeightMap(); // Return the whole heightmap for the wafer
+
+			def @WaferId GetWaferId(); // Return the wafer Id of the heightmap
 			
 			def private void AddMeasurement(@Measurement measurement); // Add one measurement to measurementsList that make the heightmap
 			// Note: The wafer heightmap is a list of measurements at different points, It does not control the actual sensors.			

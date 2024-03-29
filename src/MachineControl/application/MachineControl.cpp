@@ -30,12 +30,15 @@ namespace MachineControl
             curlpp::Cleanup myCleanup; // RAII cleanup
             curlpp::Easy levelingRequest;
             std::ostringstream urlCommand;
-            urlCommand << "http://127.0.0.1:8003//measure/leveling/" << newWafer.GetId();
+            urlCommand << "http://127.0.0.1:8003//measure/leveling/measure/" << newWafer.GetId();
             levelingRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
             levelingRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
             levelingRequest.perform();
-            std::cout << "finished leveling measure heightmap command with curl" << std::endl;
+            std::cout << std::endl << "MachineControl::Execute() -> finished leveling measure heightmap command." << std::endl;
+            newWafer.Measured();
         }
+
+        newWafer.ApprovedForExpose();
 
         // Expose part
         {
@@ -43,11 +46,15 @@ namespace MachineControl
             curlpp::Cleanup myCleanup; // RAII cleanup
             curlpp::Easy exposeRequest;
             std::ostringstream urlCommand;
-            urlCommand << "http://127.0.0.1:8002/expose/" << newWafer.GetId();
+            urlCommand << "http://127.0.0.1:8002/expose/expose/" << newWafer.GetId();
             exposeRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
             exposeRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
             exposeRequest.perform();
-            std::cout << "finished expose command with curl" << std::endl;
+            std::cout << std::endl << "MachineControl::Execute() -> finished expose command." << std::endl;
+            newWafer.Exposed();
         }
+
+        newWafer.Unloaded();
+        machineControlStateMachine.on_state_transition(transition_to_Idle{});
     }
 }
