@@ -27,6 +27,7 @@ public:
   WaferHeightMap() : AggregateRootBase(){waferId_ = "0";}
   WaferHeightMap(std::string wId);
   WaferHeightMap(std::string wId, Measurement m);
+  virtual ~WaferHeightMap(){};
 
   std::list<Measurement> GetHeightMap(void);
   void AddMeasurement(Measurement m);

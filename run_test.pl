@@ -55,12 +55,12 @@ my $sub_opts = "$common_opts";
 
 $test->setup_discovery("-ORBDebugLevel 1 -ORBLogFile DCPSInfoRepo.log") unless $rtps;
 
-$test->process("Scanner", "Scanner", $pub_opts);
 $test->process("Expose", "Expose", $sub_opts);
 $test->process("Leveling", "Leveling", $sub_opts);
+$test->process("Scanner", "Scanner", $pub_opts);
 
-$test->start_process("Scanner");
 $test->start_process("Expose");
 $test->start_process("Leveling");
+$test->start_process("Scanner");
 
 exit $test->finish(120);

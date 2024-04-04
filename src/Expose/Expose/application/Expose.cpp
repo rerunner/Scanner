@@ -86,24 +86,26 @@ namespace Expose { namespace Application
         }
 
         // Get QoS to use for the topic, could also use TOPIC_QOS_DEFAULT instead
-        DDS::TopicQos default_topic_qos;
-        participant->get_default_topic_qos(default_topic_qos);
+        DDS::TopicQos expose_topic_qos;
+        participant->get_default_topic_qos(expose_topic_qos);
+        expose_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::PERSISTENT_DURABILITY_QOS;
 
         // Create a topic for the WaferHeightMap type...
         CORBA::String_var type_name = waferheightmap_ts->get_type_name();
         DDS::Topic_var waferheightmap_topic = participant->create_topic ( scanner::generated::WAFER_HEIGHTMAP_TOPIC,
                                                                             type_name,
-                                                                            TOPIC_QOS_DEFAULT,
+                                                                            expose_topic_qos, //TOPIC_QOS_DEFAULT,
                                                                             0,
                                                                             ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
 
         // Create the WaferHeightMap DataReader
-        DDS::DataReaderQos dr_default_qos;
-        sub->get_default_datareader_qos (dr_default_qos);
+        DDS::DataReaderQos expose_dr_qos;
+        sub->get_default_datareader_qos (expose_dr_qos);
+        expose_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::PERSISTENT_DURABILITY_QOS;
 
         waferheightmap_dr = new DDS::DataReader_var(sub->create_datareader(  waferheightmap_topic,
-                                                                DATAREADER_QOS_DEFAULT,
+                                                                expose_dr_qos, //DATAREADER_QOS_DEFAULT,
                                                                 NULL, // will be set to waferheightmap_listener 
                                                                 OpenDDS::DCPS::NO_STATUS_MASK)); 
         if (!waferheightmap_dr)
@@ -112,6 +114,7 @@ namespace Expose { namespace Application
             std::cerr << "waferheightmap_dr failed." << std::endl;
             throw errss.str();
         }
+        
     }
 
     void Expose::UnSubscribe()

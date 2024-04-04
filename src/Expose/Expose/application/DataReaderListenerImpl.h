@@ -35,6 +35,7 @@ public:
   {
     myRepo = passedRepo;
     myHeightmapId = heightmapId;
+    std::cout << "DataReaderListenerImpl listening for dds data to get the heightmap" << std::endl;
   }
   // DDS calls on_data_available on the listener for each
   // received WaferHeightMap sample.

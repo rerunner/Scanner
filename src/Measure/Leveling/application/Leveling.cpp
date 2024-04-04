@@ -33,10 +33,11 @@ namespace Leveling  { namespace Application
 {
     Leveling::Leveling(): WAFER_DOMAIN_ID(0)
     {
+      std::cout << "!!!!!!!!!!!!!!! somebody started leveling!!!!!!!!!!" << std::endl;
       std::cout << "WAFER_DOMAIN_ID " << WAFER_DOMAIN_ID << std::endl;
 
       //Create Factory for the WaferHeightMap repository
-      repositoryFactory = new RepositoryFactory<WaferHeightMap>;
+      repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
       
       //Use factory to create specialized repository to store on Heap Memory or ORM
       //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
@@ -55,15 +56,15 @@ namespace Leveling  { namespace Application
                         const_cast<char *>("-ORBLogFile"),
                         const_cast<char *>("LevelingPublisher.log")
                         };
-        DDS::DomainParticipantFactory_var dpf = DDS::DomainParticipantFactory::_nil();
-        DDS::DomainParticipant_var participant = DDS::DomainParticipant::_nil();
+        //dpf = std::make_unique<DDS::DomainParticipantFactory_var>(DDS::DomainParticipantFactory::_nil());
+        //participant = std::make_unique<DDS::DomainParticipant_var>(DDS::DomainParticipant::_nil());
 
-        dpf = TheParticipantFactoryWithArgs(argc, argv);
+        dpf = std::make_unique<DDS::DomainParticipantFactory_var>(TheParticipantFactoryWithArgs(argc, argv));
         
-        participant = dpf->create_participant(  WAFER_DOMAIN_ID,
-                                                PARTICIPANT_QOS_DEFAULT,
-                                                0,  // No listener required
-                                                ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+        participant = std::make_unique<DDS::DomainParticipant_var>(dpf.get()->ptr()->create_participant(  WAFER_DOMAIN_ID,
+                                                                    PARTICIPANT_QOS_DEFAULT,
+                                                                    0,  // No listener required
+                                                                    ::OpenDDS::DCPS::DEFAULT_STATUS_MASK));
         if (!participant) 
 	      {
           std::stringstream errss;
@@ -73,7 +74,7 @@ namespace Leveling  { namespace Application
 
         // Register the WaferHeightMap type
         scanner::generated::WaferHeightMapTypeSupport_var waferheightmap_servant = new scanner::generated::WaferHeightMapTypeSupportImpl();
-        if (DDS::RETCODE_OK != waferheightmap_servant->register_type(participant, "")) 
+        if (DDS::RETCODE_OK != waferheightmap_servant->register_type(participant.get()->ptr(), "")) 
         {
           std::stringstream errss;
           std::cerr << "register_type failed." << std::endl;
@@ -81,26 +82,30 @@ namespace Leveling  { namespace Application
         }
 
         // Get QoS to use for the topic, could also use TOPIC_QOS_DEFAULT instead
-        DDS::TopicQos default_topic_qos;
-        participant->get_default_topic_qos(default_topic_qos);
+        DDS::TopicQos leveling_topic_qos;
+        participant.get()->ptr()->get_default_topic_qos(leveling_topic_qos);
+        leveling_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::PERSISTENT_DURABILITY_QOS;
 
         // Create a topic for the WaferHeightMap type...
-        DDS::Topic_var waferheightmap_topic = participant->create_topic ( scanner::generated::WAFER_HEIGHTMAP_TOPIC,
+        DDS::Topic_var waferheightmap_topic = participant.get()->ptr()->create_topic ( scanner::generated::WAFER_HEIGHTMAP_TOPIC,
                                                                           waferheightmap_servant->get_type_name (),
-                                                                          TOPIC_QOS_DEFAULT,
+                                                                          leveling_topic_qos, //TOPIC_QOS_DEFAULT,
                                                                           0,
                                                                           ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
         // Create a publisher for the topic
-        pub = participant->create_publisher(PUBLISHER_QOS_DEFAULT,
+        pub = participant.get()->ptr()->create_publisher(PUBLISHER_QOS_DEFAULT,
                                             0,
                                             ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
         //DDS::TopicDescription_ptr const topic_description = participant->lookup_topicdescription(scanner::generated::WAFER_HEIGHTMAP_TOPIC);
 
+        DDS::DataWriterQos leveling_dr_qos;
+        pub->get_default_datawriter_qos (leveling_dr_qos);
+        leveling_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::PERSISTENT_DURABILITY_QOS;
         // Create a DataWriter for the WaferHeightMap topic
         waferHeightMap_base_dw = pub->create_datawriter(  waferheightmap_topic,
-                                                          DATAWRITER_QOS_DEFAULT,
+                                                          leveling_dr_qos, //DATAWRITER_QOS_DEFAULT,
                                                           0,
                                                           ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
@@ -170,6 +175,7 @@ namespace Leveling  { namespace Application
       m += positionSetUnit >> measureUnit >> sinkLambda;
       m.exe();
       //Raft streaming End
+      std::this_thread::sleep_for (std::chrono::seconds(5)); // Imagine the measurement takes 5 seconds to complete.
       
       myRepo->Store(waferHeightMap); //Use case "measure height map" ended
       std::cout << "WaferHeightMap with ID = " << waferHeightMap.GetId() << " persisted.\n";

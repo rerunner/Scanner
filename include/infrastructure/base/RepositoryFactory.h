@@ -23,4 +23,5 @@ public:
 			break;
 		}
 	}
+	virtual ~RepositoryFactory<T>(){};
 };

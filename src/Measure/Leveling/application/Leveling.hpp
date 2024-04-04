@@ -18,10 +18,12 @@ namespace Leveling  { namespace Application
   {
     private:
     // Repository
-    IRepositoryFactory<WaferHeightMap> *repositoryFactory;
+    std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory;
     IRepositoryBase<WaferHeightMap> *myRepo;
 
     // constants & declarations for DDS WaferHeightMap domain Id, types, and topic
+    std::unique_ptr<DDS::DomainParticipantFactory_var> dpf;
+    std::unique_ptr<DDS::DomainParticipant_var> participant;
     DDS::DomainId_t WAFER_DOMAIN_ID;
     DDS::Topic_var waferheightmap_topic;
     //scanner::generated::WaferHeightMapTypeSupport_var waferheightmap_servant;
@@ -31,11 +33,13 @@ namespace Leveling  { namespace Application
     DDS::DataWriter_var waferHeightMap_base_dw;
     scanner::generated::WaferHeightMapDataWriter_var waferHeightMap_dw;
 
+    // Methods
     void SetupDataWriter(); 
     void Publish(std::string waferHeightMapId); 
 
     public:
     Leveling();
+    virtual ~Leveling(){std::cout << "!!!!!!!!!!!!!!! somebody killed leveling!!!!!!!!!!" << std::endl;}
 
     void dummyMethod(std::string waferId){}
 

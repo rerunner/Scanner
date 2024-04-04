@@ -5,6 +5,9 @@
 #include <source_location>
 #include "FiniteStateMachine.hpp"
 
+//#include <boost/optional/optional_io.hpp>
+#include <cppkafka/cppkafka.h>
+
 namespace MachineControl
 {
     // specific state transition types we support
@@ -88,7 +91,13 @@ namespace MachineControl
     {
     private:
         machinecontrol_state_machine machineControlStateMachine;
-
+        // Kafka part
+        std::unique_ptr<cppkafka::Configuration> kafkaConfig;
+        std::unique_ptr<cppkafka::Consumer> kafkaConsumer;
+        std::thread eventListenerThread;
+        void eventListenerThreadHandler();
+        bool quit_;
+        bool messageReceived;
     public:
         void Initialize();
         void Execute();
