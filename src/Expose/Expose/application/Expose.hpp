@@ -20,6 +20,8 @@
 #include "infrastructure/base/RepositoryFactory.h"
 #include "infrastructure/IWaferHeightMapRepository.hpp"
 
+#include "DataReaderListenerImpl.h"
+
 namespace Expose { namespace Application
 {
   class Expose
@@ -34,6 +36,7 @@ namespace Expose { namespace Application
 	  DDS::WaitSet_ptr _waitSet;
 	  DDS::StatusCondition_ptr _condition;
     DDS::DataReader_var *waferheightmap_dr;
+    std::unique_ptr<DataReaderListenerImpl> listener_impl;
 
     void Subscribe();
     void UnSubscribe();

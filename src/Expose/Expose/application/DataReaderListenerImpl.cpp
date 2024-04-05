@@ -16,6 +16,29 @@
 
 #include "domain/Measurement.hpp"
 
+
+DataReaderListenerImpl::DataReaderListenerImpl()
+{
+  myRepo = NULL;
+}
+
+DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &other)
+{
+  myRepo = other.myRepo;
+  myHeightmapId = other.myHeightmapId;
+}
+
+DataReaderListenerImpl::DataReaderListenerImpl(IRepositoryBase<WaferHeightMap> *passedRepo, std::promise<std::string>* heightmapId)
+{
+  myRepo = passedRepo;
+  myHeightmapId = heightmapId;
+  std::cout << "DataReaderListenerImpl listening for dds data to get the heightmap" << std::endl;
+}
+
+DataReaderListenerImpl::~DataReaderListenerImpl()
+{
+}
+
 void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 {
   std::cout << "DATA FOUND!!!!" << std::endl;

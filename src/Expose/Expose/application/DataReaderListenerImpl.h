@@ -31,12 +31,11 @@ private:
   IRepositoryBase<WaferHeightMap> *myRepo;
   std::promise<std::string>* myHeightmapId;
 public:
-  DataReaderListenerImpl(IRepositoryBase<WaferHeightMap> *passedRepo, std::promise<std::string>* heightmapId)
-  {
-    myRepo = passedRepo;
-    myHeightmapId = heightmapId;
-    std::cout << "DataReaderListenerImpl listening for dds data to get the heightmap" << std::endl;
-  }
+  DataReaderListenerImpl();
+  DataReaderListenerImpl(const DataReaderListenerImpl &); // Avoid Corba object base class implicit delete copy constructor error
+
+  DataReaderListenerImpl(IRepositoryBase<WaferHeightMap> *passedRepo, std::promise<std::string>* heightmapId);
+  virtual ~DataReaderListenerImpl();
   // DDS calls on_data_available on the listener for each
   // received WaferHeightMap sample.
   virtual void on_data_available(DDS::DataReader_ptr reader);

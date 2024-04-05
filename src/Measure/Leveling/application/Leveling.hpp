@@ -35,7 +35,7 @@ namespace Leveling  { namespace Application
 
     // Methods
     void SetupDataWriter(); 
-    void Publish(std::string waferHeightMapId); 
+    DDS::ReturnCode_t Publish(std::string waferHeightMapId); 
 
     public:
     Leveling();

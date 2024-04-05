@@ -1,5 +1,4 @@
 #include "Expose/application/Expose.hpp"
-#include "DataReaderListenerImpl.h"
 
 #include "dds/DCPS/RTPS/RtpsDiscovery.h"
 #include "dds/DCPS/transport/framework/TransportRegistry.h"
@@ -28,10 +27,8 @@ namespace Expose { namespace Application
         std::cout << "Expose object created" << std::endl;
         //Create Factory for the WaferHeightMap repository
         repositoryFactory = new RepositoryFactory<WaferHeightMap>;
-        //Use factory to create specialized repository to store on Heap Memory or ORM
-        //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
-        myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
-        this->Subscribe();
+        //Use factory to create specialized repository
+        myRepo = repositoryFactory->GetRepository(RepositoryType::ORM); // or e.g. RepositoryType::HeapRepository
     }
     Expose::~Expose()
     {
@@ -88,13 +85,13 @@ namespace Expose { namespace Application
         // Get QoS to use for the topic, could also use TOPIC_QOS_DEFAULT instead
         DDS::TopicQos expose_topic_qos;
         participant->get_default_topic_qos(expose_topic_qos);
-        expose_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::PERSISTENT_DURABILITY_QOS;
+        expose_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
 
         // Create a topic for the WaferHeightMap type...
         CORBA::String_var type_name = waferheightmap_ts->get_type_name();
         DDS::Topic_var waferheightmap_topic = participant->create_topic ( scanner::generated::WAFER_HEIGHTMAP_TOPIC,
                                                                             type_name,
-                                                                            expose_topic_qos, //TOPIC_QOS_DEFAULT,
+                                                                            expose_topic_qos,
                                                                             0,
                                                                             ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
@@ -102,11 +99,11 @@ namespace Expose { namespace Application
         // Create the WaferHeightMap DataReader
         DDS::DataReaderQos expose_dr_qos;
         sub->get_default_datareader_qos (expose_dr_qos);
-        expose_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::PERSISTENT_DURABILITY_QOS;
+        expose_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
 
         waferheightmap_dr = new DDS::DataReader_var(sub->create_datareader(  waferheightmap_topic,
-                                                                expose_dr_qos, //DATAREADER_QOS_DEFAULT,
-                                                                NULL, // will be set to waferheightmap_listener 
+                                                                expose_dr_qos, 
+                                                                NULL, // will be set to waferheightmap_listener in StartHeightMapListener()
                                                                 OpenDDS::DCPS::NO_STATUS_MASK)); 
         if (!waferheightmap_dr)
         {
@@ -134,8 +131,9 @@ namespace Expose { namespace Application
         // Create DataReaderListeners 
         std::promise<std::string> theHeightMapId;
         std::future<std::string> f = theHeightMapId.get_future();
-        DataReaderListenerImpl* listener_impl = new DataReaderListenerImpl(myRepo, &theHeightMapId); // will need to be deleted
-        DDS::DataReaderListener_var waferheightmap_listener(listener_impl);
+        //DataReaderListenerImpl* listener_impl = new DataReaderListenerImpl(myRepo, &theHeightMapId); // will need to be deleted
+        listener_impl = std::make_unique<DataReaderListenerImpl>(DataReaderListenerImpl(myRepo, &theHeightMapId));
+        DDS::DataReaderListener_var waferheightmap_listener(listener_impl.get());
         waferheightmap_dr->ptr()->set_listener(waferheightmap_listener, DDS::DATA_AVAILABLE_STATUS | DDS::LIVELINESS_CHANGED_STATUS);
         std::string ret = f.get(); // Wait for the future ;-)
         std::cout << "returned heightmap Id: " << ret << std::endl;
@@ -147,6 +145,7 @@ namespace Expose { namespace Application
         // expose the whole wafer die by die with the provided image
         // Uses the wafer heightmap for lens correction.
         // Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
+        this->Subscribe();
         std::string foundHeightMapId = StartHeightMapListener();
         WaferHeightMap whm_clone = myRepo->Get(foundHeightMapId);
         if (waferID == whm_clone.GetWaferId())
