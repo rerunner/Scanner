@@ -2,16 +2,17 @@
 Todo: the decription
 
 # Dependencies
-- hiberlite
-- RaftLib
-- OpenDDS
+- cmake
+- cppkafka
 - curlpp
+- hiberlite
 - oatpp 
 - oatpp-swagger
-- cmake
+- OpenDDS
+- RaftLib
 
 # Nice to have
 - context-mapper
 - PlantUML
 - Visual Studio Code
-
+- Ninja
