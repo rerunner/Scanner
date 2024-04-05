@@ -40,7 +40,6 @@ namespace Leveling  { namespace Application
       repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
       
       //Use factory to create specialized repository to store on Heap Memory or ORM
-      //auto *myRepo = repositoryFactory->GetRepository(RepositoryType::HeapRepository);
       myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
     }
 
@@ -56,9 +55,7 @@ namespace Leveling  { namespace Application
                         const_cast<char *>("-ORBLogFile"),
                         const_cast<char *>("LevelingPublisher.log")
                         };
-        //dpf = std::make_unique<DDS::DomainParticipantFactory_var>(DDS::DomainParticipantFactory::_nil());
-        //participant = std::make_unique<DDS::DomainParticipant_var>(DDS::DomainParticipant::_nil());
-
+        
         dpf = std::make_unique<DDS::DomainParticipantFactory_var>(TheParticipantFactoryWithArgs(argc, argv));
         
         participant = std::make_unique<DDS::DomainParticipant_var>(dpf.get()->ptr()->create_participant(  WAFER_DOMAIN_ID,
@@ -175,7 +172,6 @@ namespace Leveling  { namespace Application
       m += positionSetUnit >> measureUnit >> sinkLambda;
       m.exe();
       //Raft streaming End
-      std::this_thread::sleep_for (std::chrono::seconds(5)); // Imagine the measurement takes 5 seconds to complete.
       
       myRepo->Store(waferHeightMap); //Use case "measure height map" ended
       std::cout << "WaferHeightMap with ID = " << waferHeightMap.GetId() << " persisted.\n";
