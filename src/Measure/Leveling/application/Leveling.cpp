@@ -28,13 +28,13 @@
 
 #include <dds/DCPS/transport/tcp/TcpInst.h>
 #include "ScannerC.h"
+#include "GenLogger.hpp"
 
 namespace Leveling  { namespace Application
 {
     Leveling::Leveling(): WAFER_DOMAIN_ID(0)
     {
-      std::cout << "!!!!!!!!!!!!!!! somebody started leveling!!!!!!!!!!" << std::endl;
-      std::cout << "WAFER_DOMAIN_ID " << WAFER_DOMAIN_ID << std::endl;
+      GSL::Dprintf(GSL::INFO, "Leveling constructed with DDS WAFER_DOMAIN_ID ", WAFER_DOMAIN_ID);
 
       //Create Factory for the WaferHeightMap repository
       repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
@@ -66,6 +66,7 @@ namespace Leveling  { namespace Application
 	      {
           std::stringstream errss;
           errss << "Failed to create DomainParticipant object";
+          GSL::Dprintf(GSL::FATAL, errss.str());
           throw errss.str();
 	      }
 
@@ -75,6 +76,7 @@ namespace Leveling  { namespace Application
         {
           std::stringstream errss;
           std::cerr << "register_type failed." << std::endl;
+          GSL::Dprintf(GSL::FATAL, errss.str());
           throw errss.str();
         }
 
@@ -110,7 +112,7 @@ namespace Leveling  { namespace Application
         //waferHeightMap_dw = scanner::generated::WaferHeightMapDataWriter::_narrow(waferHeightMap_base_dw.in());
         waferHeightMap_dw = scanner::generated::WaferHeightMapDataWriter::_narrow(waferHeightMap_base_dw);
 
-        std::cout << "Leveling datawriter created, subscribed to topic " << waferheightmap_topic->get_name() << std::endl;
+        GSL::Dprintf(GSL::INFO, "Leveling datawriter created, subscribed to topic ", waferheightmap_topic->get_name());
 
         // Register the WaferHeightMap
         whm_handle = waferHeightMap_dw->register_instance(whm_evt);
@@ -120,7 +122,7 @@ namespace Leveling  { namespace Application
     {
         // Get the heightmap to publish
         WaferHeightMap whm_clone = myRepo->Get(waferHeightMapId);
-        std::cout << "WaferHeightMap clone created with ID = " << whm_clone.GetId() << "\n";
+        GSL::Dprintf(GSL::INFO, "WaferHeightMap clone created with ID = ", whm_clone.GetId());
         std::list<Measurement> myHeightMap = whm_clone.GetHeightMap();
 
         // DTO assembler start
@@ -139,17 +141,17 @@ namespace Leveling  { namespace Application
         // DTO assembler end
 
         // call the write method of the WaferHeightMap datawriter
-        std::cout << "Publishing HeightMap of WAFER ID = " << newWaferHeightMapDTO.waferID << " using DDS datawriter." << std::endl;
+        GSL::Dprintf(GSL::INFO, "Publishing HeightMap of WAFER ID = ", newWaferHeightMapDTO.waferID, " using DDS datawriter.");
         return waferHeightMap_dw->write(newWaferHeightMapDTO, whm_handle);
     }
 
     std::string Leveling::measureWafer(std::string waferId)
     {
-      std::cout << "measureWafer starts with wafer Id = " << waferId << std::endl;
+      GSL::Dprintf(GSL::INFO, "measureWafer starts with wafer Id = ", waferId);
 
       // Create empty wafer heightmap
       WaferHeightMap waferHeightMap(waferId);
-      std::cout << "WaferHeightMap created with heightmap ID = " << waferHeightMap.GetId() << "\n";
+      GSL::Dprintf(GSL::INFO, "WaferHeightMap created with heightmap ID = ", waferHeightMap.GetId());
       
       // Raft streaming start
       Measurement generatedMeasurement;
@@ -174,11 +176,11 @@ namespace Leveling  { namespace Application
       //Raft streaming End
       
       myRepo->Store(waferHeightMap); //Use case "measure height map" ended
-      std::cout << "WaferHeightMap with ID = " << waferHeightMap.GetId() << " persisted.\n";
+      GSL::Dprintf(GSL::INFO, "WaferHeightMap with ID = ", waferHeightMap.GetId(), " persisted");
 
       this->SetupDataWriter();
       this->Publish(waferHeightMap.GetId());
-      std::cout << "measureWafer done" << std::endl;
+      GSL::Dprintf(GSL::INFO, "measureWafer done");
       return waferHeightMap.GetId();
     }
 }}

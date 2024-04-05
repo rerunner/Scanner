@@ -16,6 +16,8 @@
 
 #include "domain/Measurement.hpp"
 
+#include "GenLogger.hpp"
+
 
 DataReaderListenerImpl::DataReaderListenerImpl()
 {
@@ -32,7 +34,7 @@ DataReaderListenerImpl::DataReaderListenerImpl(IRepositoryBase<WaferHeightMap> *
 {
   myRepo = passedRepo;
   myHeightmapId = heightmapId;
-  std::cout << "DataReaderListenerImpl listening for dds data to get the heightmap" << std::endl;
+  GSL::Dprintf(GSL::INFO, "DataReaderListenerImpl listening for dds data to get the heightmap");
 }
 
 DataReaderListenerImpl::~DataReaderListenerImpl()
@@ -41,7 +43,7 @@ DataReaderListenerImpl::~DataReaderListenerImpl()
 
 void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 {
-  std::cout << "DATA FOUND!!!!" << std::endl;
+  GSL::Dprintf(GSL::INFO, "DATA FOUND!");
   
   try
   {
@@ -49,7 +51,7 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 
     if (!heightmap_dr)
     {
-      std::cerr << "DataReaderListenerImpl:: " << "on_data_available:" << " _narrow failed." << std::endl;
+      GSL::Dprintf(GSL::ERROR, "_narrow failed.");
       ACE_OS::exit(1);
     }
     scanner::generated::WaferHeightMap whm;
@@ -59,8 +61,8 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 
     if (status == DDS::RETCODE_OK) 
     {
-      std::cout << "Expose: received WaferID = " << whm.waferID << std::endl;
-      std::cout << "SampleInfo.sample_rank = " << si.sample_rank << std::endl;
+      GSL::Dprintf(GSL::INFO, "Expose: received WaferID = ", whm.waferID );
+      GSL::Dprintf(GSL::INFO, "SampleInfo.sample_rank = ", si.sample_rank);
       // Translate from received DTO to local representation
       std::ostringstream oss;
       oss << whm.waferID; // Is there a better way from TAO managed string to std::string?
@@ -77,15 +79,15 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
     }
     else if (status == DDS::RETCODE_NO_DATA)
     {
-      std::cerr << "ERROR: reader received DDS::RETCODE_NO_DATA!" << std::endl;
+      GSL::Dprintf(GSL::ERROR, "reader received DDS::RETCODE_NO_DATA!");
     }
     else
     {
-      std::cerr << "ERROR: read Quote: Error: " <<  status << std::endl;
+      GSL::Dprintf(GSL::ERROR, "read Quote: Error: ", status);
     }
   } catch (CORBA::Exception& e) 
   {
-    std::cerr << "Exception caught in read:" << std::endl << e << std::endl;
+    GSL::Dprintf(GSL::ERROR, "Exception caught in read: ", e);
     ACE_OS::exit(1);
   }
 }

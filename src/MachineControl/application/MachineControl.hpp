@@ -8,6 +8,8 @@
 //#include <boost/optional/optional_io.hpp>
 #include <cppkafka/cppkafka.h>
 
+#include "GenLogger.hpp"
+
 namespace MachineControl
 {
     // specific state transition types we support
@@ -25,17 +27,17 @@ namespace MachineControl
         struct Error 
         { 
             void on_update() const {
-            std::cout << "we are running! \n";
+            GSL::Dprintf(GSL::INFO, "MC is running!");
             }
 
             state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                std::cout << "Leaving Error state with transition to Idle state\n";
+                GSL::Dprintf(GSL::INFO, "Leaving Error state with transition to Idle state");
                 return {};
             }
 
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Error state! \n";
+                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Error state!");
                 return {};
             }
         };
@@ -43,37 +45,37 @@ namespace MachineControl
         { 
             // regular on update call 
             void on_update() const {
-                std::cout << "still waiting \n";
+                GSL::Dprintf(GSL::INFO, "still waiting");
             }
 
             // specific transition to run, where we return the concrete state transition to Executing
             // to distinguish different state transitions, we use an empty function argument here
             state_transition_to<Executing> on_state_transition(const transition_to_Executing&) const{
-                std::cout << "Leaving Idle state with transition to Executing state\n";
+                GSL::Dprintf(GSL::INFO, "Leaving Idle state with transition to Executing state");
                 return {};
             }
 
             // a template function to indicate all non supported state transitions.
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Idle state! \n";
+                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Idle state!");
                 return {};
             }
         };
         struct Executing 
         { 
             void on_update() const {
-            std::cout << "Machine Control is running! \n";
+            GSL::Dprintf(GSL::INFO, "Machine Control is running!");
             }
 
             state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                std::cout << "Leaving Executing state with transition to Idle state\n";
+                GSL::Dprintf(GSL::INFO, "Leaving Executing state with transition to Idle state");
                 return {};
             }
 
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Executing state! \n";
+                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Executing state!");
                 return {};
             }
         };

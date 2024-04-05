@@ -39,7 +39,7 @@ namespace Leveling  { namespace Application
 
     public:
     Leveling();
-    virtual ~Leveling(){std::cout << "!!!!!!!!!!!!!!! somebody killed leveling!!!!!!!!!!" << std::endl;}
+    virtual ~Leveling(){}
 
     void dummyMethod(std::string waferId){}
 

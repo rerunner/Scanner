@@ -6,6 +6,8 @@
 #include "domain/base/AggregateRootBase.hpp"
 #include "FiniteStateMachine.hpp"
 
+#include "GenLogger.hpp"
+
 // Life of a Wafer: Loaded -> Prealigned -> Measured -> Approved for expose side -> exposed -> Unloaded
 namespace waferState {
   struct Loaded;
@@ -28,119 +30,119 @@ namespace waferState {
   struct Loaded 
   {
     void on_update() const {
-    std::cout << "we are running! \n";
+    GSL::Dprintf(GSL::INFO, "we are running!");
     }
 
     state_transition_to<Prealigned> on_state_transition(const transition_to_Prealigned&) const {
-        std::cout << "Leaving Loaded state with transition to Prealigned state\n";
+        GSL::Dprintf(GSL::INFO, "Leaving Loaded state with transition to Prealigned state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Loaded state! \n";
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Loaded state!");
         return {};
     }
   };
   struct Prealigned
   {
     void on_update() const {
-    std::cout << "we are running! \n";
+    GSL::Dprintf(GSL::INFO, "we are running!");
     }
 
     state_transition_to<Measured> on_state_transition(const transition_to_Measured&) const {
-        std::cout << "Leaving Prealigned state with transition to Measured state\n";
+        GSL::Dprintf(GSL::INFO, "Leaving Prealigned state with transition to Measured state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Prealigned state! \n";
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Prealigned state!");
         return {};
     }
   };
   struct Measured
   {
     void on_update() const {
-    std::cout << "we are running! \n";
+    GSL::Dprintf(GSL::INFO, "we are running!");
     }
 
     state_transition_to<ApprovedForExpose> on_state_transition(const transition_to_ApprovedForExpose&) const {
-        std::cout << "Leaving Measured state with transition to ApprovedForExpose state\n";
+        GSL::Dprintf(GSL::INFO, "Leaving Measured state with transition to ApprovedForExpose state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Measured state! \n";
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Measured state!");
         return {};
     }
   };
   struct ApprovedForExpose
   {
     void on_update() const {
-    std::cout << "we are running! \n";
+    GSL::Dprintf(GSL::INFO, "we are running!");
     }
 
     state_transition_to<Exposed> on_state_transition(const transition_to_Exposed&) const {
-        std::cout << "Leaving ApprovedForExpose state with transition to Exposed state\n";
+        GSL::Dprintf(GSL::INFO, "Leaving ApprovedForExpose state with transition to Exposed state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in ApprovedForExpose state! \n";
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in ApprovedForExpose state!");
         return {};
     }
   };
   struct Exposed
   {
     void on_update() const {
-    std::cout << "we are running! \n";
+    GSL::Dprintf(GSL::INFO, "we are running!");
     }
 
     state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
-        std::cout << "Leaving Exposed state with transition to Unloaded state\n";
+        GSL::Dprintf(GSL::INFO, "Leaving Exposed state with transition to Unloaded state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Exposed state! \n";
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Exposed state!");
         return {};
     }
   };
   struct Unloaded
   {
     void on_update() const {
-    std::cout << "we are running! \n";
+    GSL::Dprintf(GSL::INFO, "we are running!");
     }
 
     state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
-        std::cout << "Leaving Exposed state with transition to Unloaded state\n";
+        GSL::Dprintf(GSL::INFO, "Leaving Unloaded state with transition to Loaded state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Unloaded state! \n";
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Unloaded state!");
         return {};
     }
   };
   struct Rejected
   { // Dummy for now
     void on_update() const {
-    std::cout << "we are running! \n";
+    GSL::Dprintf(GSL::INFO, "we are running!");
     }
 
-    state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
-        std::cout << "Leaving Exposed state with transition to Unloaded state\n";
+    state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
+        GSL::Dprintf(GSL::INFO, "Leaving Rejected state with transition to Unloaded state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        std::cout << "State transition: " <<  typeid(Transition).name() << " is not supported in Rejected state! \n";
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Rejected state!");
         return {};
     }
   };

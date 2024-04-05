@@ -15,7 +15,7 @@ namespace MachineControl
     void MachineControl::eventListenerThreadHandler()
     {
         // Create the Kafka config
-        std::cout << "Create the Kafka config" << std::endl;
+        GSL::Dprintf(GSL::INFO, "Creating the Kafka config");
         std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
         cppkafka::ConfigurationOption machinecontrolConfigOption{"metadata.broker.list", "localhost:9092"};
         kafkaConfigOptions.push_back(machinecontrolConfigOption);
@@ -23,15 +23,15 @@ namespace MachineControl
         kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
         
         // Create a consumer instance
-        std::cout << "Create a consumer instance" << std::endl;
+        GSL::Dprintf(GSL::INFO, "Creating a consumer instance");
         kafkaConsumer = std::make_unique<cppkafka::Consumer>(*kafkaConfig);
 
         // Subscribe to topics
         std::vector<std::string> machineControlTopics;
         machineControlTopics.push_back("levelingTopic");
-        std::cout << "Subscribe to topics" << std::endl;
+        GSL::Dprintf(GSL::INFO, "Subscribing to topics");
         kafkaConsumer->subscribe(machineControlTopics);
-        std::cout << "MachineControl now polling for messages from Kafka brokers" << std::endl;    
+        GSL::Dprintf(GSL::INFO, "MachineControl now polling for messages from Kafka brokers");    
         do
         {
             // Poll messages from Kafka brokers
@@ -41,8 +41,8 @@ namespace MachineControl
                 messageReceived = true;
                 if (!record.get_error())
                 {
-                    std::cout << "Got a new message..." << std::endl;
-                    std::cout << "    Payload [" << record.get_payload() << "]" << std::endl;
+                    GSL::Dprintf(GSL::INFO, "Got a new message...");
+                    GSL::Dprintf(GSL::INFO, "----> Payload [", record.get_payload(), "]");
                 }
                 else if (!record.is_eof()) {
                     // Is it an error notification, handle it.
@@ -72,7 +72,7 @@ namespace MachineControl
         // Leveling part
         {
             // Do the command to leveling
-            std::cout << "starting leveling measure heightmap command with curl" << std::endl;
+            GSL::Dprintf(GSL::INFO, "starting leveling measure heightmap command with curl");
             curlpp::Cleanup myCleanup; // RAII cleanup
             curlpp::Easy levelingRequest;
             std::ostringstream urlCommand;
@@ -86,7 +86,8 @@ namespace MachineControl
                     std::this_thread::sleep_for (std::chrono::seconds(1));
                 }
 
-            std::cout << std::endl << "MachineControl::Execute() -> finished leveling measure heightmap command." << std::endl;
+            std::cout << std::endl;
+            GSL::Dprintf(GSL::INFO, "Finished leveling measure heightmap command.");
             newWafer.Measured();
         }
 
@@ -94,7 +95,7 @@ namespace MachineControl
 
         // Expose part
         {
-            std::cout << "starting expose command with curl" << std::endl;
+            GSL::Dprintf(GSL::INFO, "starting expose command with curl");
             curlpp::Cleanup myCleanup; // RAII cleanup
             curlpp::Easy exposeRequest;
             std::ostringstream urlCommand;
@@ -102,7 +103,8 @@ namespace MachineControl
             exposeRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
             exposeRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
             exposeRequest.perform();
-            std::cout << std::endl << "MachineControl::Execute() -> finished expose command." << std::endl;
+            std::cout << std::endl;
+            GSL::Dprintf(GSL::INFO, "MachineControl::Execute() -> finished expose command.");
             newWafer.Exposed();
         }
 

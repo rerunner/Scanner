@@ -16,8 +16,8 @@
 
 #include <cppkafka/cppkafka.h>
 
+#include "GenLogger.hpp"
 #include "Leveling.hpp"
-
 #include "domain/WaferHeightMap.hpp"
 
 namespace LevelingCommands
@@ -46,10 +46,7 @@ namespace LevelingCommands
     std::queue<fp_t> q_;
     std::condition_variable cv_;
     bool quit_ = false;
-    //void dispatch_thread_handler(void);
-    //void dispatch(const fp_t& op); // dispatch and copy
-    //void dispatch(fp_t&& op); // dispatch and move
-
+    
     // Kafka part
     std::unique_ptr<cppkafka::Configuration> kafkaConfig;
     std::unique_ptr<cppkafka::Producer> kafkaProducer;
@@ -64,13 +61,12 @@ namespace LevelingCommands
       std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
       cppkafka::ConfigurationOption levelingConfigOption{"metadata.broker.list", "localhost:9092"};
       kafkaConfigOptions.push_back(levelingConfigOption);
-      //kafkaConfigOptions.push_back({ "group.id", "foo" }); <-- Consumer property
       kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
       // Create the producer
       kafkaProducer = std::make_unique<cppkafka::Producer>(*kafkaConfig);
 
-      std::cout << "Creating dispatch queue: " << name_.c_str() << std::endl;
-      std::cout << "Dispatch threads: " << thread_cnt << std::endl;
+      GSL::Dprintf(GSL::INFO, "Creating dispatch queue: ", name_.c_str());
+      GSL::Dprintf(GSL::INFO, "Dispatch threads: ", thread_cnt);
 
       for(size_t i = 0; i < threads_.size(); i++)
       {
@@ -93,7 +89,7 @@ namespace LevelingCommands
       {
         if(threads_[i].joinable())
         {
-          printf("Destructor: Joining thread %zu until completion\n", i);
+          GSL::Dprintf(GSL::INFO, "Destructor: Joining thread", i, "until completion");
           threads_[i].join();
         }
       }
@@ -116,13 +112,13 @@ namespace LevelingCommands
     void operator()(const MeasureWafer& cmd)
     {
       dispatch([&] {
-        std::cout << "!!!!> Leveling command execution start for waferId = " << cmd.waferId<< std::endl;
+        GSL::Dprintf(GSL::INFO, "Leveling command execution start for waferId = ", cmd.waferId);
 		    leveling_.measureWafer(cmd.waferId);
       
-        std::cout << "---> Leveling command executed in async mode, sending Kafka message to indicate completion" << std::endl;
+        GSL::Dprintf(GSL::INFO, "Leveling command executed in async mode, sending Kafka message to indicate completion");
         // Produce a Kafka message!
         std::stringstream smessage;
-        smessage << "Command MeasureWafer Completed for waferId = " << cmd.waferId;
+        smessage << "MeasureWaferCompleted:" << cmd.waferId;
         std::string message = smessage.str();
         kafkaProducer->produce(cppkafka::MessageBuilder("levelingTopic").partition(0).payload(message));
         kafkaProducer->flush();
