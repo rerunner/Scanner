@@ -65,7 +65,7 @@ class LevelingController : public oatpp::web::server::api::ApiController
       command = std::make_shared<LevelingCommands::Command>(LevelingCommands::MeasureWafer{requestedWaferId});
       GSL::Dprintf(GSL::INFO, "execute the command");
       std::visit(*executor, *command);  
-      return _return(controller->createResponse(Status::CODE_200, "Heightmap measurement completed!"));
+      return _return(controller->createResponse(Status::CODE_200, "Measure heightmap completed\n"));
     }
   };
 

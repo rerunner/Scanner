@@ -11,6 +11,8 @@
 #include "Expose/application/Expose.hpp"
 #include "Expose/application/ExposeCommand.hpp"
 
+#include "GenLogger.hpp"
+
 namespace Expose { namespace Application { namespace controller {
 
 #include OATPP_CODEGEN_BEGIN(ApiController) ///< Begin codegen section
@@ -38,14 +40,14 @@ class ExposeController : public oatpp::web::server::api::ApiController
   }
   ENDPOINT("PUT", "/expose/expose/{waferId}", exposeWafer,
            PATH(String, waferId)) {
-    std::cout << "Give commands to expose object" << std::endl;
+    GSL::Dprintf(GSL::INFO, "Give commands to expose object");
     ExposeCommands::CommandExecutor executor(myExpose); 
     // actual execution, can be moved to queue command processor
     ExposeCommands::Command command; 
     std::string mywId = waferId;
-    std::cout << "Command: Expose Wafer with uuid = " << mywId << std::endl;
+    GSL::Dprintf(GSL::INFO, "Command: Expose Wafer with uuid = ", mywId);
     command = ExposeCommands::ExposeWafer{waferId}; 
-    std::cout << "execute the command" << std::endl;
+    GSL::Dprintf(GSL::INFO, "execute the command");
     std::visit(executor, command);  
     return createResponse(Status::CODE_200, "Exposure completed");
   }

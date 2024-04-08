@@ -19,12 +19,13 @@
 #include <dds/DCPS/Definitions.h>
 
 #include "ScannerC.h"
+#include "GenLogger.hpp"
 
 namespace Expose { namespace Application 
 {
     Expose::Expose(): WAFER_DOMAIN_ID(0)
     {
-        std::cout << "Expose object created" << std::endl;
+        GSL::Dprintf(GSL::INFO, "Expose object created");
         //Create Factory for the WaferHeightMap repository
         repositoryFactory = new RepositoryFactory<WaferHeightMap>;
         //Use factory to create specialized repository
@@ -64,6 +65,7 @@ namespace Expose { namespace Application
         {
             std::stringstream errss;
             std::cerr << "participant failed. Perhaps DCPS repo not running?" << std::endl;
+            GSL::Dprintf(GSL::FATAL, errss.str()); 
             throw errss.str();
         }
 
@@ -79,6 +81,7 @@ namespace Expose { namespace Application
         {
             std::stringstream errss;
             std::cerr << "register_type failed." << std::endl;
+            GSL::Dprintf(GSL::FATAL, errss.str()); 
             throw errss.str();
         }
 
@@ -109,6 +112,7 @@ namespace Expose { namespace Application
         {
             std::stringstream errss;
             std::cerr << "waferheightmap_dr failed." << std::endl;
+            GSL::Dprintf(GSL::FATAL, errss.str()); 
             throw errss.str();
         }
         
@@ -124,7 +128,7 @@ namespace Expose { namespace Application
 
     std::string Expose::StartHeightMapListener()
     {
-        std::cout << "Expose::GetHeightMap(): --> Setting data_reader waitcondition" << std::endl;
+        GSL::Dprintf(GSL::INFO, "Expose::GetHeightMap(): --> Setting data_reader waitcondition");
         // Creating the infrastructure that allows an application thread to block
         // until some condition becomes true, such as data availability.
         // Create a Status Condition for the reader
@@ -136,7 +140,7 @@ namespace Expose { namespace Application
         DDS::DataReaderListener_var waferheightmap_listener(listener_impl.get());
         waferheightmap_dr->ptr()->set_listener(waferheightmap_listener, DDS::DATA_AVAILABLE_STATUS | DDS::LIVELINESS_CHANGED_STATUS);
         std::string ret = f.get(); // Wait for the future ;-)
-        std::cout << "returned heightmap Id: " << ret << std::endl;
+        GSL::Dprintf(GSL::INFO, "returned heightmap Id: ", ret);
         return ret;
     }
 
@@ -150,7 +154,7 @@ namespace Expose { namespace Application
         WaferHeightMap whm_clone = myRepo->Get(foundHeightMapId);
         if (waferID == whm_clone.GetWaferId())
         {
-            std::cout << "SUCCESS: WAFER IDs MATCH BETWEEN EXPOSE AND LEVELING" << std::endl;
+            GSL::Dprintf(GSL::INFO, "Wafer ID match found between expose and leveling");
         }
         whm_clone.LogHeightMap(); // Prove that we got the heightmap in the expose repository
     }

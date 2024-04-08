@@ -14,10 +14,10 @@ namespace GSL {
         FATAL
     };
 
-    #define Dprintf(Severity, ...) GenTraceLoc(Severity, __FILE_NAME__, std::experimental::source_location::current(), __VA_ARGS__)
+    #define Dprintf(Severity, ...) GenTraceLoc(Severity, ::getpid(), std::this_thread::get_id(), __FILE_NAME__, std::experimental::source_location::current(), __VA_ARGS__)
 
     template <typename ...Args>
-    void GenTraceLoc(short int Severity, const char* theFileName, const std::experimental::source_location& location, Args&& ...args)
+    void GenTraceLoc(short int Severity, pid_t thePid, std::thread::id theTid, const char* theFileName, const std::experimental::source_location& location, Args&& ...args)
     {
         std::ostringstream stream;
         switch (Severity)
@@ -38,7 +38,10 @@ namespace GSL {
             stream << "\033[0;7m[UNKNWN] ";
             break;
         }
-        stream << std::setw(25) << theFileName << "|"  << std::setw(30) << location.function_name() << "|"  << std::setw(6) << location.line() << "| ";
+        stream << std::setw(30) << std::left << theFileName << " |Pid:"  << std::setw(7) << std::left << thePid 
+               << " |ThreadId:" << std::setw(16) << std::left << theTid << " |@" 
+               << std::setw(30) << std::left << location.function_name() << " |line#"  << std::setw(6) << std::left << location.line() << "| ";
+
         (stream << ... << std::forward<Args>(args)) << "\033[0m" << std::endl;
 
         std::cout << stream.str();
