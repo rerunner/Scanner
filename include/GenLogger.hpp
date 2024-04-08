@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <iomanip>
 #include <string_view>
 #include <experimental/source_location>
 
@@ -22,10 +23,10 @@ namespace GSL {
         switch (Severity)
         {
             case GSL::INFO:
-            stream << "\033[0;32m[INFO] ";
+            stream << "\033[0;32m [INFO] ";
             break;
             case GSL::WARNING:
-            stream << "\033[0;33m[WARNING] ";
+            stream << "\033[0;33m [WARN] ";
             break;
             case GSL::ERROR:
             stream << "\033[0;31m[ERROR] ";
@@ -34,10 +35,10 @@ namespace GSL {
             stream << "\033[0;36m[FATAL] ";
             break;
             default:
-            stream << "\033[0;7m[UNKNOWN] ";
+            stream << "\033[0;7m[UNKNWN] ";
             break;
         }
-        stream << theFileName << "|" << location.function_name() << "|" << location.line() << "| ";
+        stream << std::setw(25) << theFileName << "|"  << std::setw(30) << location.function_name() << "|"  << std::setw(6) << location.line() << "| ";
         (stream << ... << std::forward<Args>(args)) << "\033[0m" << std::endl;
 
         std::cout << stream.str();
