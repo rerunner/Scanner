@@ -10,11 +10,14 @@ if(NOT CMAKE_BUILD_TYPE)
 	FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+option(BUILD_DOC "Build documentation" ON)
+
 find_package(OpenDDS)
 find_package(oatpp)
 find_package(oatpp-swagger)
 find_package(CURL) 
 find_package(CppKafka REQUIRED)
+find_package(Doxygen)
 
 ## define path to swagger-ui res folder
 add_definitions(-DOATPP_SWAGGER_RES_PATH="${OATPP_BASE_DIR}/bin/oatpp-swagger/res")
@@ -47,6 +50,26 @@ set(all_targets Scanner)
 foreach(file Scanner.idl rtps.ini run_test.pl)
 	configure_file(${src}/${file} ${dst}/${file} COPYONLY)
 endforeach()
+
+if (DOXYGEN_FOUND)
+    # set input and output files
+    set(DOXYGEN_IN ${src}/docs/Doxyfile.in)
+    set(DOXYGEN_OUT ${dst}/Doxyfile)
+
+    # request to configure the file
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    message("Doxygen build started")
+
+    # note the option ALL which allows to build the docs together with the application
+    add_custom_target( doc_doxygen ALL
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM )
+else (DOXYGEN_FOUND)
+  message("Doxygen need to be installed to generate the doxygen documentation")
+endif (DOXYGEN_FOUND)
+
 
 # Scanner target
 add_executable(Scanner
