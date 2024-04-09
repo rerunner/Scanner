@@ -1,5 +1,15 @@
 #include "Expose/application/Expose.hpp"
 
+// Streaming graph
+#include <raft>
+#include <raftio>
+// Streaming Kernel definitions
+#include "infrastructure/kernels/PredictUnit.hpp"
+#include "infrastructure/kernels/FeedForwardCalcUnit.hpp"
+#include "infrastructure/kernels/RADependentCalcUnit.hpp"
+#include "infrastructure/kernels/LotOpDependentCalcUnit.hpp"
+#include "infrastructure/kernels/PostLotOpDepCalcUnit.hpp"
+
 #include "dds/DCPS/RTPS/RtpsDiscovery.h"
 #include "dds/DCPS/transport/framework/TransportRegistry.h"
 #include "dds/DCPS/transport/framework/TransportConfig_rch.h"
@@ -146,6 +156,7 @@ namespace Expose { namespace Application
 
     void Expose::exposeWafer(std::string waferID)
     {
+        GSL::Dprintf(GSL::INFO, "exposeWafer starts with wafer Id = ", waferID);
         // expose the whole wafer die by die with the provided image
         // Uses the wafer heightmap for lens correction.
         // Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
@@ -154,8 +165,37 @@ namespace Expose { namespace Application
         WaferHeightMap whm_clone = myRepo->Get(foundHeightMapId);
         if (waferID == whm_clone.GetWaferId())
         {
-            GSL::Dprintf(GSL::INFO, "Wafer ID match found between expose and leveling");
+            GSL::Dprintf(GSL::INFO, "Wafer ID match found, heighmap retrieved");
         }
         whm_clone.LogHeightMap(); // Prove that we got the heightmap in the expose repository
+  
+        // Start Expose loop
+        {
+            // Raft streaming start
+            Exposure generatedExposure;
+            PredictUnit predictUnit;
+            FeedForwardCalcUnit feedForwardCalcUnit;
+            RADependentCalcUnit raDependentCalcUnit;
+            LotOpDependentCalcUnit lotOpDependentCalcUnit;
+            PostLotOpDepCalcUnit postLotOpDepCalcUnit;
+
+            using SinkLambdaExposeResult = raft::lambdak<Exposure>;
+            SinkLambdaExposeResult sinkLambdaExposeResult(1,/* input port */
+                        0, /* output port */
+                [&](Port &input,
+                    Port &output)
+                {
+                    UNUSED( output );
+                    input[ "0" ].pop( generatedExposure ); // Take the measurement from the input
+                    GSL::Dprintf(GSL::INFO, "Expose Loop finished, Exposure ID = ", generatedExposure.GetId());
+                    return( raft::proceed ); // The source will push the stop tag.
+                });
+
+            raft::map m;
+            m += predictUnit >> feedForwardCalcUnit >> raDependentCalcUnit >> lotOpDependentCalcUnit >> postLotOpDepCalcUnit >> sinkLambdaExposeResult;
+            m.exe();
+            //Raft streaming End
+        }
+        // End Expose Loop
     }
 }}

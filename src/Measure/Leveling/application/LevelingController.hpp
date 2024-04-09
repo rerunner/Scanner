@@ -54,7 +54,7 @@ class LevelingController : public oatpp::web::server::api::ApiController
       GSL::Dprintf(GSL::INFO, "Leveling Command Received: Measure Heightmap of Wafer with uuid = ", printableWaferId);
 
       return request->readBodyToStringAsync().callbackTo(&measureWafer::returnResponse);
-      }
+    }
 
     Action returnResponse(const oatpp::String& body){
       /* return Action to return created OutgoingResponse */
