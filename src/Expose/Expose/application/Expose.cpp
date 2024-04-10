@@ -36,9 +36,9 @@ namespace Expose { namespace Application
     Expose::Expose(): WAFER_DOMAIN_ID(0)
     {
         GSL::Dprintf(GSL::INFO, "Expose object created");
-        //Create Factory for the WaferHeightMap repository
+        // Create Factory for the WaferHeightMap repository
         repositoryFactory = new RepositoryFactory<WaferHeightMap>;
-        //Use factory to create specialized repository
+        // Use factory to create specialized repository
         myRepo = repositoryFactory->GetRepository(RepositoryType::ORM); // or e.g. RepositoryType::HeapRepository
     }
     Expose::~Expose()
@@ -48,7 +48,7 @@ namespace Expose { namespace Application
 
     void Expose::Subscribe()
     {
-        // Initialize DomainParticipantFactory
+        //! Initialize DomainParticipantFactory
         int argc = 9; 
         char* argv[] = {const_cast<char *>("./Expose"), 
                         const_cast<char *>("-ORBDebugLevel"), 
@@ -65,7 +65,7 @@ namespace Expose { namespace Application
 
         dpf = TheParticipantFactoryWithArgs(argc, argv);
         
-        // Create DomainParticipant
+        //! Create DomainParticipant
         participant = dpf->create_participant(  WAFER_DOMAIN_ID,
                                                 PARTICIPANT_QOS_DEFAULT,
                                                 0,  // No listener required
@@ -79,12 +79,12 @@ namespace Expose { namespace Application
             throw errss.str();
         }
 
-        // Create a subscriber for the topic
+        //! Create a subscriber for the topic
         DDS::Subscriber_var sub = participant->create_subscriber(   SUBSCRIBER_QOS_DEFAULT,
                                                                     0,
                                                                     ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
-        // Register the WaferHeightMap type
+        //! Register the WaferHeightMap type
         scanner::generated::WaferHeightMapTypeSupport_var waferheightmap_ts = new scanner::generated::WaferHeightMapTypeSupportImpl();
         
         if (DDS::RETCODE_OK != waferheightmap_ts->register_type(participant.in (), waferheightmap_ts->get_type_name()))
@@ -95,12 +95,12 @@ namespace Expose { namespace Application
             throw errss.str();
         }
 
-        // Get QoS to use for the topic, could also use TOPIC_QOS_DEFAULT instead
+        //! Get QoS to use for the topic, could also use TOPIC_QOS_DEFAULT instead
         DDS::TopicQos expose_topic_qos;
         participant->get_default_topic_qos(expose_topic_qos);
         expose_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
 
-        // Create a topic for the WaferHeightMap type...
+        //! Create a topic for the WaferHeightMap type...
         CORBA::String_var type_name = waferheightmap_ts->get_type_name();
         DDS::Topic_var waferheightmap_topic = participant->create_topic ( scanner::generated::WAFER_HEIGHTMAP_TOPIC,
                                                                             type_name,
@@ -109,7 +109,7 @@ namespace Expose { namespace Application
                                                                             ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
 
-        // Create the WaferHeightMap DataReader
+        //! Create the WaferHeightMap DataReader
         DDS::DataReaderQos expose_dr_qos;
         sub->get_default_datareader_qos (expose_dr_qos);
         expose_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
@@ -139,17 +139,16 @@ namespace Expose { namespace Application
     std::string Expose::StartHeightMapListener()
     {
         GSL::Dprintf(GSL::INFO, "Expose::GetHeightMap(): --> Setting data_reader waitcondition");
-        // Creating the infrastructure that allows an application thread to block
-        // until some condition becomes true, such as data availability.
-        // Create a Status Condition for the reader
-        // Create DataReaderListeners 
+        //! Creating the infrastructure that allows an application thread to block
+        //! until some condition becomes true, such as data availability.
+        //! Create a Status Condition for the reader
+        //! Create DataReaderListeners 
         std::promise<std::string> theHeightMapId;
         std::future<std::string> f = theHeightMapId.get_future();
-        //DataReaderListenerImpl* listener_impl = new DataReaderListenerImpl(myRepo, &theHeightMapId); // will need to be deleted
         listener_impl = std::make_unique<DataReaderListenerImpl>(DataReaderListenerImpl(myRepo, &theHeightMapId));
         DDS::DataReaderListener_var waferheightmap_listener(listener_impl.get());
         waferheightmap_dr->ptr()->set_listener(waferheightmap_listener, DDS::DATA_AVAILABLE_STATUS | DDS::LIVELINESS_CHANGED_STATUS);
-        std::string ret = f.get(); // Wait for the future ;-)
+        std::string ret = f.get(); //! Wait for the future ;-)
         GSL::Dprintf(GSL::INFO, "returned heightmap Id: ", ret);
         return ret;
     }
@@ -157,9 +156,9 @@ namespace Expose { namespace Application
     void Expose::exposeWafer(std::string waferID)
     {
         GSL::Dprintf(GSL::INFO, "exposeWafer starts with wafer Id = ", waferID);
-        // expose the whole wafer die by die with the provided image
-        // Uses the wafer heightmap for lens correction.
-        // Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
+        //! expose the whole wafer die by die with the provided image
+        //! Uses the wafer heightmap for lens correction.
+        //! Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
         this->Subscribe();
         std::string foundHeightMapId = StartHeightMapListener();
         WaferHeightMap whm_clone = myRepo->Get(foundHeightMapId);
@@ -167,11 +166,11 @@ namespace Expose { namespace Application
         {
             GSL::Dprintf(GSL::INFO, "Wafer ID match found, heighmap retrieved");
         }
-        whm_clone.LogHeightMap(); // Prove that we got the heightmap in the expose repository
+        whm_clone.LogHeightMap(); //! Prove that we got the heightmap in the expose repository
   
-        // Start Expose loop
+        //! Start Expose loop
         {
-            // Raft streaming start
+            //! Raft streaming start
             Exposure generatedExposure;
             PredictUnit predictUnit;
             FeedForwardCalcUnit feedForwardCalcUnit;
@@ -180,22 +179,22 @@ namespace Expose { namespace Application
             PostLotOpDepCalcUnit postLotOpDepCalcUnit;
 
             using SinkLambdaExposeResult = raft::lambdak<Exposure>;
-            SinkLambdaExposeResult sinkLambdaExposeResult(1,/* input port */
-                        0, /* output port */
+            SinkLambdaExposeResult sinkLambdaExposeResult(1,/** input port */
+                        0, /** output port */
                 [&](Port &input,
                     Port &output)
                 {
                     UNUSED( output );
-                    input[ "0" ].pop( generatedExposure ); // Take the measurement from the input
+                    input[ "0" ].pop( generatedExposure ); //! Take the measurement from the input
                     GSL::Dprintf(GSL::INFO, "Expose Loop finished, Exposure ID = ", generatedExposure.GetId());
-                    return( raft::proceed ); // The source will push the stop tag.
+                    return( raft::proceed ); //! The source will push the stop tag.
                 });
 
             raft::map m;
             m += predictUnit >> feedForwardCalcUnit >> raDependentCalcUnit >> lotOpDependentCalcUnit >> postLotOpDepCalcUnit >> sinkLambdaExposeResult;
             m.exe();
-            //Raft streaming End
+            //! Raft streaming End
         }
-        // End Expose Loop
+        //! End Expose Loop
     }
 }}

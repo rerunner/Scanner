@@ -5,7 +5,7 @@
 
 #include "domain/Exposure.hpp"
 
-//Prediction data calculations for x-n exposure
+//! Prediction data calculations for x-n exposure
 class PredictUnit : public raft::kernel
 {
 public:
@@ -19,9 +19,9 @@ public:
   virtual raft::kstatus run()
   {
     float p = 0.0;
-    for (int i = 0; i < 15; i++) // 15 exposures for one wafer (demo value)
+    for (int i = 0; i < 15; i++) //! max 15 exposures for one image (demo value)
     {
-      std::this_thread::sleep_for (std::chrono::microseconds(1)); // Imagine one calc to take a 1 microsecond.
+      std::this_thread::sleep_for (std::chrono::microseconds(1)); //! Imagine one calc to take a 1 microsecond.
       const Exposure out{p};
       output[ "outputPrediction" ].push( out );
     }

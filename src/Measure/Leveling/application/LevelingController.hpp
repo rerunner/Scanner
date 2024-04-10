@@ -17,13 +17,24 @@ namespace Leveling { namespace Application { namespace controller {
 
 static Leveling myLeveling; 
 static LevelingCommands::CommandExecutor *executor;
-static std::shared_ptr<LevelingCommands::Command> command; 
+static std::shared_ptr<LevelingCommands::Command> command;
 
 class LevelingController : public oatpp::web::server::api::ApiController 
 {
   public:
   LevelingController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper, Qualifiers::SERVICE_LEVELING) /* Inject object mapper */)
-      : oatpp::web::server::api::ApiController(objectMapper) {}
+      : oatpp::web::server::api::ApiController(objectMapper) 
+      {
+        executor = new LevelingCommands::CommandExecutor{myLeveling};
+      }
+  ~LevelingController()
+  {
+    if (executor)
+    {
+      delete executor;
+      executor = NULL;
+    }
+  }
 
   public:
   static std::shared_ptr<LevelingController> createShared(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
@@ -61,11 +72,10 @@ class LevelingController : public oatpp::web::server::api::ApiController
       GSL::Dprintf(GSL::INFO, "Give commands to leveling object");
       auto mywId = request->getPathVariable("waferId");
       std::string requestedWaferId = mywId;
-      executor = new LevelingCommands::CommandExecutor{myLeveling}; GSL::Dprintf(GSL::WARNING, "TODO -> Fix the memoryleak in the CommandExecutor");
       command = std::make_shared<LevelingCommands::Command>(LevelingCommands::MeasureWafer{requestedWaferId});
       GSL::Dprintf(GSL::INFO, "execute the command");
       std::visit(*executor, *command);  
-      return _return(controller->createResponse(Status::CODE_200, "Measure heightmap completed\n"));
+      return _return(controller->createResponse(Status::CODE_200, "Measure heightmap requested\n"));
     }
   };
 

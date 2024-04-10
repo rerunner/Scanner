@@ -21,14 +21,20 @@ static std::shared_ptr<ExposeCommands::Command> command;
 
 class ExposeController : public oatpp::web::server::api::ApiController 
 {
-  private:
-  // Inject Expose component
-  //OATPP_COMPONENT(std::shared_ptr<Application::Expose>, m_expose, Qualifiers::SERVICE_EXPOSE);
-  
-
   public:
   ExposeController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper, Qualifiers::SERVICE_EXPOSE) /* Inject object mapper */)
-      : oatpp::web::server::api::ApiController(objectMapper) {}
+      : oatpp::web::server::api::ApiController(objectMapper) 
+      {
+        executor = new ExposeCommands::CommandExecutor{myExpose};
+      }
+  ~ExposeController()
+  {
+    if (executor)
+    {
+      delete executor;
+      executor = NULL;
+    }
+  }
 
   public:
   static std::shared_ptr<ExposeController> createShared(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
@@ -66,7 +72,6 @@ class ExposeController : public oatpp::web::server::api::ApiController
       GSL::Dprintf(GSL::INFO, "Give commands to expose object");
       auto mywId = request->getPathVariable("waferId");
       std::string requestedWaferId = mywId;
-      executor = new ExposeCommands::CommandExecutor{myExpose}; GSL::Dprintf(GSL::WARNING, "TODO -> Fix the memoryleak in the CommandExecutor");
       command = std::make_shared<ExposeCommands::Command>(ExposeCommands::ExposeWafer{requestedWaferId});
       GSL::Dprintf(GSL::INFO, "execute the command");
       std::visit(*executor, *command);  

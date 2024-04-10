@@ -57,26 +57,20 @@ namespace LevelingCommands
                                                                  thread_cnt(4), // Depth
                                                                  threads_(thread_cnt)
     {
-      // Create the Kafka config
-      std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
-      cppkafka::ConfigurationOption levelingConfigOption{"metadata.broker.list", "localhost:9092"};
-      kafkaConfigOptions.push_back(levelingConfigOption);
-      kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
-      // Create the producer
-      kafkaProducer = std::make_unique<cppkafka::Producer>(*kafkaConfig);
-
       GSL::Dprintf(GSL::INFO, "Creating dispatch queue: ", name_.c_str());
       GSL::Dprintf(GSL::INFO, "Dispatch threads: ", thread_cnt);
 
       for(size_t i = 0; i < threads_.size(); i++)
       {
         threads_[i] = std::thread(&CommandExecutor::dispatch_thread_handler, this);
+        threads_[i].detach();
       }
     };
 
     ~CommandExecutor()
     {
-      std::cout << "Destructor: Destroying dispatch threads..." << std::endl;
+      GSL::Dprintf(GSL::INFO, "CommandExecutor destructor");
+      GSL::Dprintf(GSL::INFO, "Destroying dispatch threads...");
 
       // Signal to dispatch threads that it's time to wrap up
       std::unique_lock<std::mutex> lock(lock_);
@@ -113,10 +107,19 @@ namespace LevelingCommands
     {
       dispatch([&] {
         GSL::Dprintf(GSL::INFO, "Leveling command execution start for waferId = ", cmd.waferId);
+      
+        //! Create the Kafka config
+        std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
+        cppkafka::ConfigurationOption levelingConfigOption{"metadata.broker.list", "localhost:9092"};
+        kafkaConfigOptions.push_back(levelingConfigOption);
+        kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
+        //! Create the Kafka producer
+        kafkaProducer = std::make_unique<cppkafka::Producer>(*kafkaConfig);
+
 		    leveling_.measureWafer(cmd.waferId);
       
         GSL::Dprintf(GSL::INFO, "Leveling command executed in async mode, sending Kafka message to indicate completion");
-        // Produce a Kafka message!
+        //! Produce a Kafka event message for command completion
         std::stringstream smessage;
         smessage << "MeasureWaferCompleted:" << cmd.waferId;
         std::string message = smessage.str();
