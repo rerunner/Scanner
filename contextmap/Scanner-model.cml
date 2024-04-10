@@ -237,10 +237,6 @@ BoundedContext MeasureManagementContext implements MeasureDomain {
 		}
 
 		//CQRS events
-		Event MeasureWaferRequested	{
-			- WaferId waferIdToMeasure
-      		Date timestamp
-		}
 		Event MeasureWaferCompleted {
 			- WaferId waferIdToMeasure
       		Date timestamp
@@ -319,10 +315,6 @@ BoundedContext ExposeManagement implements ExposeDomain {
 		}
 
 		//CQRS events
-		Event ExposeWaferRequested	{
-			- WaferId waferIdToExpose
-      		Date timestamp
-		}
 		Event ExposeWaferCompleted {
 			- WaferId waferIdToExpose
       		Date timestamp
