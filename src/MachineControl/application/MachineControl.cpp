@@ -29,9 +29,10 @@ namespace MachineControl
         // Subscribe to topics
         std::vector<std::string> machineControlTopics;
         machineControlTopics.push_back("levelingTopic");
-        GSL::Dprintf(GSL::INFO, "Subscribing to topics");
+        machineControlTopics.push_back("exposeTopic");
+        GSL::Dprintf(GSL::INFO, "Subscribing to Leveling and Expose topics");
         kafkaConsumer->subscribe(machineControlTopics);
-        GSL::Dprintf(GSL::INFO, "MachineControl now polling for messages from Kafka brokers");    
+        GSL::Dprintf(GSL::INFO, "MachineControl now polling for Leveling and Expose messages from Kafka brokers");    
         do
         {
             // Poll messages from Kafka brokers
@@ -85,6 +86,7 @@ namespace MachineControl
             while (!messageReceived) {
                     std::this_thread::sleep_for (std::chrono::seconds(1));
                 }
+            messageReceived = false;
 
             std::cout << std::endl;
             GSL::Dprintf(GSL::INFO, "Finished leveling measure heightmap command.");
@@ -103,6 +105,13 @@ namespace MachineControl
             exposeRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
             exposeRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
             exposeRequest.perform();
+
+            // Wait for a kafka message notifying command completion.
+            while (!messageReceived) {
+                    std::this_thread::sleep_for (std::chrono::seconds(1));
+                }
+            messageReceived = false;
+
             std::cout << std::endl;
             GSL::Dprintf(GSL::INFO, "MachineControl::Execute() -> finished expose command.");
             newWafer.Exposed();

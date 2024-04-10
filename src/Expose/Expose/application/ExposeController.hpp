@@ -75,7 +75,7 @@ class ExposeController : public oatpp::web::server::api::ApiController
       command = std::make_shared<ExposeCommands::Command>(ExposeCommands::ExposeWafer{requestedWaferId});
       GSL::Dprintf(GSL::INFO, "execute the command");
       std::visit(*executor, *command);  
-      return _return(controller->createResponse(Status::CODE_200, "Expose wafer completed\n"));
+      return _return(controller->createResponse(Status::CODE_200, "Expose wafer requested\n"));
     }
   };
 

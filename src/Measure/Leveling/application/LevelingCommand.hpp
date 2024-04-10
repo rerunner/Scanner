@@ -65,8 +65,8 @@ namespace LevelingCommands
         threads_[i] = std::thread(&CommandExecutor::dispatch_thread_handler, this);
         threads_[i].detach();
       }
-    };
-
+    }
+    /// @brief 
     ~CommandExecutor()
     {
       GSL::Dprintf(GSL::INFO, "CommandExecutor destructor");
