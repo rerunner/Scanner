@@ -16,3 +16,4 @@ Todo: the decription
 - PlantUML
 - Visual Studio Code
 - Ninja
+- Doxygen
