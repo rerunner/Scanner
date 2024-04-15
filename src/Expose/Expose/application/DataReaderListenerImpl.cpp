@@ -15,24 +15,23 @@
 #include <iostream>
 
 #include "domain/Measurement.hpp"
-
 #include "GenLogger.hpp"
 
 
 DataReaderListenerImpl::DataReaderListenerImpl()
 {
-  myRepo = NULL;
+  whmContext = NULL;
 }
 
 DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &other)
 {
-  myRepo = other.myRepo;
+  whmContext = other.whmContext;
   myHeightmapId = other.myHeightmapId;
 }
 
-DataReaderListenerImpl::DataReaderListenerImpl(IRepositoryBase<WaferHeightMap> *passedRepo, std::promise<std::string>* heightmapId)
+DataReaderListenerImpl::DataReaderListenerImpl(UnitOfWork<WaferHeightMap> *passedWhmContext, std::promise<std::string>* heightmapId)
 {
-  myRepo = passedRepo;
+  whmContext = passedWhmContext;
   myHeightmapId = heightmapId;
   GSL::Dprintf(GSL::INFO, "DataReaderListenerImpl listening for dds data to get the heightmap");
 }
@@ -74,7 +73,7 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
         Measurement myMeas(myPosition, myZpos);
         myHeightMap.AddMeasurement(myMeas);
       }
-      myRepo->Store(myHeightMap);
+      whmContext->RegisterNew(myHeightMap);
       myHeightmapId->set_value(myHeightMap.GetId().Get()); // signal the future ;-)
     }
     else if (status == DDS::RETCODE_NO_DATA)
@@ -94,6 +93,5 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 
 CORBA::Boolean DataReaderListenerImpl::is_exchange_closed_received()
 {
-  //ACE_Guard<ACE_Mutex> guard(this->lock_);
   return this->is_exchange_closed_received_;
 }

@@ -30,16 +30,13 @@
 
 #include "ScannerC.h"
 #include "GenLogger.hpp"
+#include "infrastructure/base/UnitOfWork.hpp"
 
 namespace Expose { namespace Application 
 {
     Expose::Expose(): WAFER_DOMAIN_ID(0)
     {
         GSL::Dprintf(GSL::INFO, "Expose object created");
-        // Create Factory for the WaferHeightMap repository
-        repositoryFactory = new RepositoryFactory<WaferHeightMap>;
-        // Use factory to create specialized repository
-        myRepo = repositoryFactory->GetRepository(RepositoryType::ORM); // or e.g. RepositoryType::HeapRepository
     }
     Expose::~Expose()
     {
@@ -139,16 +136,21 @@ namespace Expose { namespace Application
     std::string Expose::StartHeightMapListener()
     {
         GSL::Dprintf(GSL::INFO, "Expose::GetHeightMap(): --> Setting data_reader waitcondition");
+
+        UnitOfWork<WaferHeightMap> context_;
         //! Creating the infrastructure that allows an application thread to block
         //! until some condition becomes true, such as data availability.
         //! Create a Status Condition for the reader
         //! Create DataReaderListeners 
         std::promise<std::string> theHeightMapId;
         std::future<std::string> f = theHeightMapId.get_future();
-        listener_impl = std::make_unique<DataReaderListenerImpl>(DataReaderListenerImpl(myRepo, &theHeightMapId));
+        
+        listener_impl = std::make_unique<DataReaderListenerImpl>(DataReaderListenerImpl(&context_, &theHeightMapId));
         DDS::DataReaderListener_var waferheightmap_listener(listener_impl.get());
         waferheightmap_dr->ptr()->set_listener(waferheightmap_listener, DDS::DATA_AVAILABLE_STATUS | DDS::LIVELINESS_CHANGED_STATUS);
+        
         std::string ret = f.get(); //! Wait for the future ;-)
+        context_.Commit(); // Write changes to repository
         GSL::Dprintf(GSL::INFO, "returned heightmap Id: ", ret);
         return ret;
     }
@@ -156,12 +158,13 @@ namespace Expose { namespace Application
     void Expose::exposeWafer(Uuid waferID)
     {
         GSL::Dprintf(GSL::INFO, "exposeWafer starts with wafer Id = ", waferID.Get());
+        UnitOfWork<WaferHeightMap> context_;
         //! expose the whole wafer die by die with the provided image
         //! Uses the wafer heightmap for lens correction.
         //! Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
         this->Subscribe();
         std::string foundHeightMapId = StartHeightMapListener();
-        WaferHeightMap whm_clone = myRepo->Get(foundHeightMapId);
+        WaferHeightMap whm_clone = context_.GetRepository<WaferHeightMap>()->Get(foundHeightMapId);
         if (waferID.Get() == whm_clone.GetWaferId().Get())
         {
             GSL::Dprintf(GSL::INFO, "Wafer ID match found, heighmap retrieved");

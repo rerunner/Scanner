@@ -19,22 +19,20 @@
 #include "domain/WaferHeightMap.hpp"
 #include "infrastructure/base/RepositoryFactory.h"
 #include "infrastructure/IWaferHeightMapRepository.hpp"
+#include "infrastructure/base/UnitOfWork.hpp"
 
 
 class DataReaderListenerImpl : public virtual OpenDDS::DCPS::LocalObject<DDS::DataReaderListener>
 {
 private:
   CORBA::Boolean is_exchange_closed_received_;
-  //WaferHeightMap myHeightMap;
-  // Repository
-  IRepositoryFactory<WaferHeightMap> *repositoryFactory;
-  IRepositoryBase<WaferHeightMap> *myRepo;
+  UnitOfWork<WaferHeightMap> *whmContext;
   std::promise<std::string>* myHeightmapId;
 public:
   DataReaderListenerImpl();
   DataReaderListenerImpl(const DataReaderListenerImpl &); // Avoid Corba object base class implicit delete copy constructor error
 
-  DataReaderListenerImpl(IRepositoryBase<WaferHeightMap> *passedRepo, std::promise<std::string>* heightmapId);
+  DataReaderListenerImpl(UnitOfWork<WaferHeightMap> *passedContext, std::promise<std::string>* heightmapId);
   virtual ~DataReaderListenerImpl();
   // DDS calls on_data_available on the listener for each
   // received WaferHeightMap sample.
