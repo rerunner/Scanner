@@ -35,12 +35,6 @@ namespace Leveling  { namespace Application
     Leveling::Leveling(): WAFER_DOMAIN_ID(0)
     {
       GSL::Dprintf(GSL::INFO, "Leveling constructed with DDS WAFER_DOMAIN_ID ", WAFER_DOMAIN_ID);
-
-      //Create Factory for the WaferHeightMap repository
-      repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
-      
-      //Use factory to create specialized repository to store on Heap Memory or ORM
-      myRepo = repositoryFactory->GetRepository(RepositoryType::ORM);
     }
 
     void Leveling::SetupDataWriter()
@@ -118,35 +112,37 @@ namespace Leveling  { namespace Application
         whm_handle = waferHeightMap_dw->register_instance(whm_evt);
     }
     
-    DDS::ReturnCode_t Leveling::Publish(Uuid waferHeightMapId)
+    DDS::ReturnCode_t Leveling::Publish(UnitOfWork<WaferHeightMap> *passedWhmContext, WaferHeightMap *waferHeightMap)
     {
-        // Get the heightmap to publish
-        WaferHeightMap whm_clone = myRepo->Get(waferHeightMapId.Get());
-        GSL::Dprintf(GSL::INFO, "WaferHeightMap clone created with ID = ", whm_clone.GetId().Get());
-        std::list<Measurement> myHeightMap = whm_clone.GetHeightMap();
+      // Get the heightmap to publish
+      //WaferHeightMap whm_clone = passedWhmContext->GetRepository<WaferHeightMap>()->Get(waferHeightMapId.Get());
+      //GSL::Dprintf(GSL::INFO, "WaferHeightMap clone created with ID = ", whm_clone.GetId().Get());
+      std::list<Measurement> myHeightMap = waferHeightMap->GetHeightMap();
 
-        // DTO assembler start
-        scanner::generated::WaferHeightMap newWaferHeightMapDTO;
-        newWaferHeightMapDTO.heightMapID = whm_clone.GetId().Get().c_str();
-        newWaferHeightMapDTO.waferID = whm_clone.GetWaferId().Get().c_str();
-        newWaferHeightMapDTO.measurements.length(10000); // Looping through all of the elements:
-        for (int i = 0; Measurement myMeas : myHeightMap) //C++20 syntax
-        {
-          Position myPosition = myMeas.GetPosition();
-          newWaferHeightMapDTO.measurements[i].xyPosition.xPos = myPosition.GetX(); 
-          newWaferHeightMapDTO.measurements[i].xyPosition.yPos = myPosition.GetY(); 
-          newWaferHeightMapDTO.measurements[i].zPos = myMeas.GetZ();
-          i++;
-        }
-        // DTO assembler end
+      // DTO assembler start
+      scanner::generated::WaferHeightMap newWaferHeightMapDTO;
+      newWaferHeightMapDTO.heightMapID = waferHeightMap->GetId().Get().c_str();
+      newWaferHeightMapDTO.waferID = waferHeightMap->GetWaferId().Get().c_str();
+      newWaferHeightMapDTO.measurements.length(10000); // Looping through all of the elements:
+      for (int i = 0; Measurement myMeas : myHeightMap) //C++20 syntax
+      {
+        Position myPosition = myMeas.GetPosition();
+        newWaferHeightMapDTO.measurements[i].xyPosition.xPos = myPosition.GetX(); 
+        newWaferHeightMapDTO.measurements[i].xyPosition.yPos = myPosition.GetY(); 
+        newWaferHeightMapDTO.measurements[i].zPos = myMeas.GetZ();
+        i++;
+      }
+      // DTO assembler end
 
-        // call the write method of the WaferHeightMap datawriter
-        GSL::Dprintf(GSL::INFO, "Publishing HeightMap of WAFER ID = ", newWaferHeightMapDTO.waferID, " using DDS datawriter.");
-        return waferHeightMap_dw->write(newWaferHeightMapDTO, whm_handle);
+      // call the write method of the WaferHeightMap datawriter
+      GSL::Dprintf(GSL::INFO, "Publishing HeightMap of WAFER ID = ", newWaferHeightMapDTO.waferID, " using DDS datawriter.");
+      return waferHeightMap_dw->write(newWaferHeightMapDTO, whm_handle);
     }
 
     Uuid Leveling::measureWafer(Uuid waferId)
     {
+      UnitOfWork<WaferHeightMap> context_;
+
       GSL::Dprintf(GSL::INFO, "measureWafer starts with wafer Id = ", waferId.Get());
 
       // Create empty wafer heightmap
@@ -175,12 +171,15 @@ namespace Leveling  { namespace Application
       m.exe();
       //Raft streaming End
       
-      myRepo->Store(waferHeightMap); //Use case "measure height map" ended
+      context_.RegisterNew(waferHeightMap);
+      
       GSL::Dprintf(GSL::INFO, "WaferHeightMap with ID = ", waferHeightMap.GetId().Get(), " persisted");
 
       this->SetupDataWriter();
-      this->Publish(waferHeightMap.GetId().Get());
+      //this->Publish(&context_, waferHeightMap.GetId().Get());
+      this->Publish(&context_, &waferHeightMap);
       GSL::Dprintf(GSL::INFO, "measureWafer done");
+      context_.Commit(); //Use case "measure height map" ended
       return waferHeightMap.GetId();
     }
 }}

@@ -11,16 +11,13 @@
 #include "domain/WaferHeightMap.hpp"
 #include "infrastructure/base/RepositoryFactory.h"
 #include "infrastructure/IWaferHeightMapRepository.hpp"
+#include "infrastructure/base/UnitOfWork.hpp"
 
 namespace Leveling  { namespace Application
 {
   class Leveling
   {
     private:
-    // Repository
-    std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory;
-    IRepositoryBase<WaferHeightMap> *myRepo;
-
     // constants & declarations for DDS WaferHeightMap domain Id, types, and topic
     std::unique_ptr<DDS::DomainParticipantFactory_var> dpf;
     std::unique_ptr<DDS::DomainParticipant_var> participant;
@@ -35,7 +32,8 @@ namespace Leveling  { namespace Application
 
     // Methods
     void SetupDataWriter(); 
-    DDS::ReturnCode_t Publish(Uuid waferHeightMapId); 
+    //DDS::ReturnCode_t Publish(UnitOfWork<WaferHeightMap> *passedWhmContext, Uuid waferHeightMapId); 
+    DDS::ReturnCode_t Publish(UnitOfWork<WaferHeightMap> *passedWhmContext, WaferHeightMap *waferHeightMap);
 
     public:
     Leveling();
