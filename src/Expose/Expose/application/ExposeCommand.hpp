@@ -21,12 +21,12 @@
 namespace Expose { namespace Application { namespace ExposeCommands {
   struct DummyMethod 
   {
-    std::string waferId;
+    Uuid waferId;
   };
 
   struct ExposeWafer 
   {
-    std::string waferId;
+    Uuid waferId;
   };
 
   using Command = std::variant<DummyMethod, ExposeWafer>;
@@ -104,7 +104,7 @@ namespace Expose { namespace Application { namespace ExposeCommands {
     void operator()(const ExposeWafer& cmd)
     {
        dispatch([&] {
-        GSL::Dprintf(GSL::INFO, "Expose command execution start for waferId = ", cmd.waferId);
+        GSL::Dprintf(GSL::INFO, "Expose command execution start for waferId = ", cmd.waferId.Get());
       
         //! Create the Kafka config
         std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
@@ -119,7 +119,7 @@ namespace Expose { namespace Application { namespace ExposeCommands {
         GSL::Dprintf(GSL::INFO, "Expose command executed in async mode, sending Kafka message to indicate completion");
         //! Produce a Kafka event message for command completion
         std::stringstream smessage;
-        smessage << "ExposeWaferCompleted:" << cmd.waferId;
+        smessage << "ExposeWaferCompleted:" << cmd.waferId.Get();
         std::string message = smessage.str();
         kafkaProducer->produce(cppkafka::MessageBuilder("exposeTopic").partition(0).payload(message));
         kafkaProducer->flush();

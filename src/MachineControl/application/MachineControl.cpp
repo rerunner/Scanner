@@ -77,7 +77,7 @@ namespace MachineControl
             curlpp::Cleanup myCleanup; // RAII cleanup
             curlpp::Easy levelingRequest;
             std::ostringstream urlCommand;
-            urlCommand << "http://127.0.0.1:8003//measure/leveling/measure/" << newWafer.GetId();
+            urlCommand << "http://127.0.0.1:8003//measure/leveling/measure/" << newWafer.GetId().Get();
             levelingRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
             levelingRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
             levelingRequest.perform();
@@ -101,7 +101,7 @@ namespace MachineControl
             curlpp::Cleanup myCleanup; // RAII cleanup
             curlpp::Easy exposeRequest;
             std::ostringstream urlCommand;
-            urlCommand << "http://127.0.0.1:8002/expose/expose/" << newWafer.GetId();
+            urlCommand << "http://127.0.0.1:8002/expose/expose/" << newWafer.GetId().Get();
             exposeRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
             exposeRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
             exposeRequest.perform();

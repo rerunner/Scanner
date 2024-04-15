@@ -1,12 +1,12 @@
 #include "WaferHeightMap.hpp"
 
 
-WaferHeightMap::WaferHeightMap(std::string wId) : AggregateRootBase()
+WaferHeightMap::WaferHeightMap(Uuid wId) : AggregateRootBase()
 {
     waferId_ = wId;
 };
 
-WaferHeightMap::WaferHeightMap(std::string wId, Measurement m) : AggregateRootBase()
+WaferHeightMap::WaferHeightMap(Uuid wId, Measurement m) : AggregateRootBase()
 {
     waferId_ = wId;
     measurements_.push_back(m); //First entry
@@ -22,7 +22,7 @@ void WaferHeightMap::AddMeasurement(Measurement m)
     measurements_.push_back(m); 
 }
 
-std::string WaferHeightMap::GetWaferId()
+Uuid WaferHeightMap::GetWaferId()
 {
     return waferId_;
 }

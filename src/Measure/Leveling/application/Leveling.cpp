@@ -118,17 +118,17 @@ namespace Leveling  { namespace Application
         whm_handle = waferHeightMap_dw->register_instance(whm_evt);
     }
     
-    DDS::ReturnCode_t Leveling::Publish(std::string waferHeightMapId)
+    DDS::ReturnCode_t Leveling::Publish(Uuid waferHeightMapId)
     {
         // Get the heightmap to publish
-        WaferHeightMap whm_clone = myRepo->Get(waferHeightMapId);
-        GSL::Dprintf(GSL::INFO, "WaferHeightMap clone created with ID = ", whm_clone.GetId());
+        WaferHeightMap whm_clone = myRepo->Get(waferHeightMapId.Get());
+        GSL::Dprintf(GSL::INFO, "WaferHeightMap clone created with ID = ", whm_clone.GetId().Get());
         std::list<Measurement> myHeightMap = whm_clone.GetHeightMap();
 
         // DTO assembler start
         scanner::generated::WaferHeightMap newWaferHeightMapDTO;
-        newWaferHeightMapDTO.heightMapID = whm_clone.GetId().c_str();
-        newWaferHeightMapDTO.waferID = whm_clone.GetWaferId().c_str();
+        newWaferHeightMapDTO.heightMapID = whm_clone.GetId().Get().c_str();
+        newWaferHeightMapDTO.waferID = whm_clone.GetWaferId().Get().c_str();
         newWaferHeightMapDTO.measurements.length(10000); // Looping through all of the elements:
         for (int i = 0; Measurement myMeas : myHeightMap) //C++20 syntax
         {
@@ -145,13 +145,13 @@ namespace Leveling  { namespace Application
         return waferHeightMap_dw->write(newWaferHeightMapDTO, whm_handle);
     }
 
-    std::string Leveling::measureWafer(std::string waferId)
+    Uuid Leveling::measureWafer(Uuid waferId)
     {
-      GSL::Dprintf(GSL::INFO, "measureWafer starts with wafer Id = ", waferId);
+      GSL::Dprintf(GSL::INFO, "measureWafer starts with wafer Id = ", waferId.Get());
 
       // Create empty wafer heightmap
       WaferHeightMap waferHeightMap(waferId);
-      GSL::Dprintf(GSL::INFO, "WaferHeightMap created with heightmap ID = ", waferHeightMap.GetId());
+      GSL::Dprintf(GSL::INFO, "WaferHeightMap created with heightmap ID = ", waferHeightMap.GetId().Get());
       
       // Raft streaming start
       Measurement generatedMeasurement;
@@ -176,10 +176,10 @@ namespace Leveling  { namespace Application
       //Raft streaming End
       
       myRepo->Store(waferHeightMap); //Use case "measure height map" ended
-      GSL::Dprintf(GSL::INFO, "WaferHeightMap with ID = ", waferHeightMap.GetId(), " persisted");
+      GSL::Dprintf(GSL::INFO, "WaferHeightMap with ID = ", waferHeightMap.GetId().Get(), " persisted");
 
       this->SetupDataWriter();
-      this->Publish(waferHeightMap.GetId());
+      this->Publish(waferHeightMap.GetId().Get());
       GSL::Dprintf(GSL::INFO, "measureWafer done");
       return waferHeightMap.GetId();
     }

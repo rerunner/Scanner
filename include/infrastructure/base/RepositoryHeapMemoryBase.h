@@ -13,7 +13,7 @@ private:
 public:
   void Store(RepositoryBaseType entity)
   {
-    entityVector.push_back(entity); // std::cout << "Entity " << entity.GetId() << " stored in repository!\n";
+    entityVector.push_back(entity); 
   };
 	
   void Delete(RepositoryBaseType entity)
@@ -21,29 +21,24 @@ public:
     for (auto i = entityVector.begin(); i != entityVector.end(); ++i)
     {
       RepositoryBaseType dummy = *i;
-      if (dummy.GetId() == entity.GetId())
+      if (dummy.GetId().Get() == entity.GetId().Get())
       {
-        //std::cout << "Entity Id " << entity.GetId() << " erased from repository!\n";
         entityVector.erase(i);
         return;
       }
     }
-    //std::cout << "Entity Id " << entity.GetId() << " not found in repository!\n";
     return;
   };
 	
-  RepositoryBaseType Get(std::string id)
+  RepositoryBaseType Get(Uuid id)
   {
-    //for (const auto &iter:entityVector)
     for (auto &iter:entityVector)
     {
-      if (iter.GetId() == id)
+      if (iter.GetId().Get() == id.Get())
       {
-        //std::cout << "Entity " << iter.GetId() << " retrieved from repository!\n";
         return iter;
       }
     }
-    //std::cout << "Entity Id " << id << " not found in repository!\n";
     throw std::runtime_error(std::string("Entity not found in repository\n"));
   };
 };

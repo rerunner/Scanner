@@ -32,31 +32,31 @@ public:
     std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db->getAllBeans<RepositoryBaseType>();
 
     //Iterate over vector to find the wanted Id
-    std::string id = entity.GetId();
+    std::string id = entity.GetId().Get();
     int teller = 0;
     for (auto &iter:v)
     {
       teller = iter.get_id();
       hiberlite::bean_ptr<RepositoryBaseType> xptr = db->loadBean<RepositoryBaseType>(teller);
-      if (id.compare((*xptr).GetId()) == 0)
+      if (id.compare((*xptr).GetId().Get()) == 0)
       {
-	xptr.destroy();
-	break;
+	      xptr.destroy();
+	      break;
       }
     }
     return;
   };
 	
-  RepositoryBaseType Get(std::string id)
+  RepositoryBaseType Get(Uuid id)
   {
     std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db->getAllBeans<RepositoryBaseType>();
 
     for (auto &iter:v)
     {
       hiberlite::bean_ptr<RepositoryBaseType> xptr = db->loadBean<RepositoryBaseType>(iter.get_id());
-      if (id.compare((*xptr).GetId()) == 0)
+      if (id.Get().compare((*xptr).GetId().Get()) == 0)
       {
-	return (*xptr);
+	      return (*xptr);
       }
     }
     throw std::runtime_error(std::string("Object not found in repository\n"));

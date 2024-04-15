@@ -35,15 +35,15 @@ namespace Leveling  { namespace Application
 
     // Methods
     void SetupDataWriter(); 
-    DDS::ReturnCode_t Publish(std::string waferHeightMapId); 
+    DDS::ReturnCode_t Publish(Uuid waferHeightMapId); 
 
     public:
     Leveling();
     virtual ~Leveling(){}
 
-    void dummyMethod(std::string waferId){}
+    void dummyMethod(Uuid waferId){}
 
-    std::string measureWafer(std::string waferId); // returns the measured waferheightmap ID of the wafer
+    Uuid measureWafer(Uuid waferId); // returns the measured waferheightmap ID of the wafer
   };
 }}
 

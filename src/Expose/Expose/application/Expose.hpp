@@ -17,9 +17,9 @@
 
 #include <dds/DCPS/WaitSet.h>
 
+#include "Uuid.hpp"
 #include "infrastructure/base/RepositoryFactory.h"
 #include "infrastructure/IWaferHeightMapRepository.hpp"
-
 #include "DataReaderListenerImpl.h"
 
 namespace Expose { namespace Application
@@ -45,8 +45,8 @@ namespace Expose { namespace Application
     public:
     Expose();
     ~Expose();
-    void dummyMethod(std::string waferId){}
-    void exposeWafer(std::string waferId); // expose the measured wafer identified with waferID
+    void dummyMethod(Uuid waferId){}
+    void exposeWafer(Uuid waferId); // expose the measured wafer identified with waferID
   };
 }}
 

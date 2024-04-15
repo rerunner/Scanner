@@ -3,24 +3,21 @@
 
 #include <iostream>
 #include "boost/lexical_cast.hpp"
-#include "UuidGenerator.hpp"
+#include "Uuid.hpp"
 
 class EntityBase
 {
 protected:
-  std::string id_;
+  Uuid id_;
   
 public:
-  EntityBase()
-  {
-    id_ = boost::lexical_cast<std::string>(UuidGenerator::generateUuid());
-  }
+  EntityBase(){}
   
-  std::string GetId() const { return id_; }
+  Uuid GetId() const { return id_; }
 
   bool operator==(const EntityBase& other) const
   {
-    return (id_ == other.GetId());
+    return (id_.Get() == other.GetId().Get());
   }
 
   bool operator!=(const EntityBase& other) const

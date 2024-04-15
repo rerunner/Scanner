@@ -16,6 +16,7 @@
 
 #include <cppkafka/cppkafka.h>
 
+#include "Uuid.hpp"
 #include "GenLogger.hpp"
 #include "Leveling.hpp"
 #include "domain/WaferHeightMap.hpp"
@@ -24,12 +25,12 @@ namespace LevelingCommands
 {
   struct DummyMethod 
   {
-    std::string waferId;
+    Uuid waferId;
   };
 
   struct MeasureWafer 
   {
-    std::string waferId;
+    Uuid waferId;
   };
 
   using Command = std::variant<DummyMethod, MeasureWafer>;
@@ -106,7 +107,7 @@ namespace LevelingCommands
     void operator()(const MeasureWafer& cmd)
     {
       dispatch([&] {
-        GSL::Dprintf(GSL::INFO, "Leveling command execution start for waferId = ", cmd.waferId);
+        GSL::Dprintf(GSL::INFO, "Leveling command execution start for waferId = ", cmd.waferId.Get());
       
         //! Create the Kafka config
         std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
@@ -121,7 +122,7 @@ namespace LevelingCommands
         GSL::Dprintf(GSL::INFO, "Leveling command executed in async mode, sending Kafka message to indicate completion");
         //! Produce a Kafka event message for command completion
         std::stringstream smessage;
-        smessage << "MeasureWaferCompleted:" << cmd.waferId;
+        smessage << "MeasureWaferCompleted:" << cmd.waferId.Get();
         std::string message = smessage.str();
         kafkaProducer->produce(cppkafka::MessageBuilder("levelingTopic").partition(0).payload(message));
         kafkaProducer->flush();

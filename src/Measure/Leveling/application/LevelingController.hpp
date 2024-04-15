@@ -15,12 +15,14 @@
 
 namespace Leveling { namespace Application { namespace controller {
 
-static Leveling myLeveling; 
+//static Leveling myLeveling; 
 static LevelingCommands::CommandExecutor *executor;
 static std::shared_ptr<LevelingCommands::Command> command;
 
 class LevelingController : public oatpp::web::server::api::ApiController 
 {
+  private:
+  Leveling myLeveling;
   public:
   LevelingController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper, Qualifiers::SERVICE_LEVELING) /* Inject object mapper */)
       : oatpp::web::server::api::ApiController(objectMapper) 
@@ -71,7 +73,8 @@ class LevelingController : public oatpp::web::server::api::ApiController
       /* return Action to return created OutgoingResponse */
       GSL::Dprintf(GSL::INFO, "Give commands to leveling object");
       auto mywId = request->getPathVariable("waferId");
-      std::string requestedWaferId = mywId;
+      std::string requestedWaferIdStr = mywId;
+      Uuid requestedWaferId(requestedWaferIdStr);
       command = std::make_shared<LevelingCommands::Command>(LevelingCommands::MeasureWafer{requestedWaferId});
       GSL::Dprintf(GSL::INFO, "execute the command");
       std::visit(*executor, *command);  

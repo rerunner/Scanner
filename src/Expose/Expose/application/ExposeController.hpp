@@ -15,12 +15,14 @@
 
 namespace Expose { namespace Application { namespace controller {
 
-static Application::Expose myExpose; 
+//static Application::Expose myExpose; 
 static ExposeCommands::CommandExecutor *executor;
 static std::shared_ptr<ExposeCommands::Command> command; 
 
 class ExposeController : public oatpp::web::server::api::ApiController 
 {
+  private:
+  Application::Expose myExpose; 
   public:
   ExposeController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper, Qualifiers::SERVICE_EXPOSE) /* Inject object mapper */)
       : oatpp::web::server::api::ApiController(objectMapper) 
@@ -71,7 +73,8 @@ class ExposeController : public oatpp::web::server::api::ApiController
       /* return Action to return created OutgoingResponse */
       GSL::Dprintf(GSL::INFO, "Give commands to expose object");
       auto mywId = request->getPathVariable("waferId");
-      std::string requestedWaferId = mywId;
+      std::string requestedWaferIdStr = mywId;
+      Uuid requestedWaferId(requestedWaferIdStr);
       command = std::make_shared<ExposeCommands::Command>(ExposeCommands::ExposeWafer{requestedWaferId});
       GSL::Dprintf(GSL::INFO, "execute the command");
       std::visit(*executor, *command);  

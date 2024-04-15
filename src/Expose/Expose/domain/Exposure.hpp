@@ -14,8 +14,8 @@ private:
   template<class Archive>
   void hibernate(Archive & ar)
   {
-    ar & HIBERLITE_NVP(id_); // From Base class
-    ar & HIBERLITE_NVP(myPrediction); // From Base class
+    ar & HIBERLITE_NVP(id_); // From Entity Base class
+    ar & HIBERLITE_NVP(myPrediction);
   }
   //Boilerplate end
 public:

@@ -73,12 +73,14 @@ endif (DOXYGEN_FOUND)
 
 # Scanner target
 add_executable(Scanner
+	${src}/include/Uuid.cpp
 	${src}/src/main.cpp
 	${src}/src/MachineControl/application/MachineControl.cpp
 )
 
 # Scanner target
 add_executable(Leveling
+	${src}/include/Uuid.cpp
 	${src}/src/Measure/Leveling/application/main.cpp
 	${src}/src/Measure/Leveling/domain/Position.cpp
 	${src}/src/Measure/Leveling/domain/Measurement.cpp
@@ -89,6 +91,7 @@ add_executable(Leveling
 )
 
 add_executable(Expose 
+	${src}/include/Uuid.cpp
 	${src}/src/Expose/Expose/application/main.cpp
 	${src}/src/Measure/Leveling/domain/Position.cpp
 	${src}/src/Measure/Leveling/domain/Measurement.cpp

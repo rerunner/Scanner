@@ -75,7 +75,7 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
         myHeightMap.AddMeasurement(myMeas);
       }
       myRepo->Store(myHeightMap);
-      myHeightmapId->set_value(myHeightMap.GetId()); // signal the future ;-)
+      myHeightmapId->set_value(myHeightMap.GetId().Get()); // signal the future ;-)
     }
     else if (status == DDS::RETCODE_NO_DATA)
     {

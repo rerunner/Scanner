@@ -153,16 +153,16 @@ namespace Expose { namespace Application
         return ret;
     }
 
-    void Expose::exposeWafer(std::string waferID)
+    void Expose::exposeWafer(Uuid waferID)
     {
-        GSL::Dprintf(GSL::INFO, "exposeWafer starts with wafer Id = ", waferID);
+        GSL::Dprintf(GSL::INFO, "exposeWafer starts with wafer Id = ", waferID.Get());
         //! expose the whole wafer die by die with the provided image
         //! Uses the wafer heightmap for lens correction.
         //! Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
         this->Subscribe();
         std::string foundHeightMapId = StartHeightMapListener();
         WaferHeightMap whm_clone = myRepo->Get(foundHeightMapId);
-        if (waferID == whm_clone.GetWaferId())
+        if (waferID.Get() == whm_clone.GetWaferId().Get())
         {
             GSL::Dprintf(GSL::INFO, "Wafer ID match found, heighmap retrieved");
         }
@@ -186,7 +186,7 @@ namespace Expose { namespace Application
                 {
                     UNUSED( output );
                     input[ "0" ].pop( generatedExposure ); //! Take the measurement from the input
-                    GSL::Dprintf(GSL::INFO, "Expose Loop finished, Exposure ID = ", generatedExposure.GetId());
+                    GSL::Dprintf(GSL::INFO, "Expose Loop finished, Exposure ID = ", generatedExposure.GetId().Get());
                     return( raft::proceed ); //! The source will push the stop tag.
                 });
 
