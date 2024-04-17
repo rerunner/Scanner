@@ -32,6 +32,8 @@
 #include "GenLogger.hpp"
 #include "infrastructure/base/UnitOfWork.hpp"
 
+using namespace unitofwork;
+
 namespace Expose { namespace Application 
 {
     Expose::Expose(): WAFER_DOMAIN_ID(0)

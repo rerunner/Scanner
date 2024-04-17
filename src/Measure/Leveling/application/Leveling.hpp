@@ -13,6 +13,8 @@
 #include "infrastructure/IWaferHeightMapRepository.hpp"
 #include "infrastructure/base/UnitOfWork.hpp"
 
+using namespace unitofwork;
+
 namespace Leveling  { namespace Application
 {
   class Leveling

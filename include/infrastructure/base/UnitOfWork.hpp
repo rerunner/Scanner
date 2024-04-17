@@ -19,6 +19,8 @@
 #include "GenLogger.hpp"
 #include "domain/WaferHeightMap.hpp"
 
+namespace unitofwork {
+
 typedef std::map<std::string, void*> Dict; // Dictionary for repositories
 
 enum RegistryTypeEnum
@@ -157,3 +159,5 @@ public:
     template <typename entityType>
     std::list<entityType> GetAll(){/*todo*/}
 };
+
+} // namespace UnitOfWork
