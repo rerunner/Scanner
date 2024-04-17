@@ -21,22 +21,46 @@
 
 typedef std::map<std::string, void*> Dict; // Dictionary for repositories
 
+enum RegistryTypeEnum
+{
+    RegisterNew,
+    RegisterDirty,
+    RegisterClean,
+    RegisterDeleted
+};
 
 template < typename EntityType> 
 class EntityRegister
 {
     std::shared_ptr<EntityType> entityInstance;
+    RegistryTypeEnum registryType;
 
     void Commit()
     {
-        GSL::Dprintf(GSL::INFO, "Commiter start");
+        GSL::Dprintf(GSL::INFO, "Commit registry changes");
         std::unique_ptr<IRepositoryFactory<EntityType>> repositoryFactory = std::make_unique<RepositoryFactory<EntityType>>();
         auto repository = repositoryFactory->GetRepository(RepositoryType::ORM);
-        repository->Store(*entityInstance);
-        GSL::Dprintf(GSL::INFO, "Commiter end");
+        switch (registryType)
+        {
+            case RegistryTypeEnum::RegisterNew:
+            case RegistryTypeEnum::RegisterDirty:
+            case RegistryTypeEnum::RegisterClean:
+                repository->Store(*entityInstance);
+                break;
+            case RegistryTypeEnum::RegisterDeleted:
+                repository->Delete(*entityInstance);
+                break;
+            default:
+                GSL::Dprintf(GSL::ERROR, "Commiter has no known RegistryType");
+                break;
+        }
     }
 public:
-    EntityRegister(std::shared_ptr<EntityType> newEnt){entityInstance = newEnt;}
+    EntityRegister(std::shared_ptr<EntityType> newEnt, RegistryTypeEnum newRegistryType)
+    {
+        entityInstance = newEnt;
+        registryType = newRegistryType;
+    }
     
     ~EntityRegister()
     {
@@ -66,7 +90,7 @@ public:
         GSL::Dprintf(GSL::INFO, "ENTER");
 
         std::shared_ptr<EntityType> entPtr = std::make_shared<EntityType>(entity); //shared pointer copy of entity
-        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr));
+        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr), RegistryTypeEnum::RegisterNew);
         
         _newEntities.push_back(std::move(myNewEntityPtr)); //Register
         
@@ -79,7 +103,7 @@ public:
         GSL::Dprintf(GSL::INFO, "ENTER");
 
         std::shared_ptr<EntityType> entPtr = std::make_shared<EntityType>(entity); //shared pointer copy of entity
-        EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr));
+        EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr), RegistryTypeEnum::RegisterDirty);
         
         _updatedEntities.push_back(std::move(myUpdatedEntityPtr)); //Register
         
@@ -92,7 +116,7 @@ public:
         GSL::Dprintf(GSL::INFO, "ENTER");
 
         std::shared_ptr<EntityType> entPtr = std::make_shared<EntityType>(entity); //shared pointer copy of entity
-        EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr));
+        EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr), RegistryTypeEnum::RegisterDeleted);
         
         _updatedEntities.push_back(std::move(myDeletedEntityPtr)); //Register
         
