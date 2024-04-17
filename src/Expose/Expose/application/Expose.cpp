@@ -137,7 +137,7 @@ namespace Expose { namespace Application
     {
         GSL::Dprintf(GSL::INFO, "Expose::GetHeightMap(): --> Setting data_reader waitcondition");
 
-        UnitOfWork<WaferHeightMap> context_;
+        UnitOfWork context_;
         //! Creating the infrastructure that allows an application thread to block
         //! until some condition becomes true, such as data availability.
         //! Create a Status Condition for the reader
@@ -158,7 +158,7 @@ namespace Expose { namespace Application
     void Expose::exposeWafer(Uuid waferID)
     {
         GSL::Dprintf(GSL::INFO, "exposeWafer starts with wafer Id = ", waferID.Get());
-        UnitOfWork<WaferHeightMap> context_;
+        UnitOfWork context_;
         //! expose the whole wafer die by die with the provided image
         //! Uses the wafer heightmap for lens correction.
         //! Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)

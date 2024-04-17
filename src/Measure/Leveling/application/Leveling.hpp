@@ -32,8 +32,7 @@ namespace Leveling  { namespace Application
 
     // Methods
     void SetupDataWriter(); 
-    //DDS::ReturnCode_t Publish(UnitOfWork<WaferHeightMap> *passedWhmContext, Uuid waferHeightMapId); 
-    DDS::ReturnCode_t Publish(UnitOfWork<WaferHeightMap> *passedWhmContext, WaferHeightMap *waferHeightMap);
+    DDS::ReturnCode_t Publish(UnitOfWork *passedWhmContext, WaferHeightMap *waferHeightMap);
 
     public:
     Leveling();

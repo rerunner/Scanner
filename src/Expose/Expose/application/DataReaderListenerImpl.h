@@ -26,13 +26,13 @@ class DataReaderListenerImpl : public virtual OpenDDS::DCPS::LocalObject<DDS::Da
 {
 private:
   CORBA::Boolean is_exchange_closed_received_;
-  UnitOfWork<WaferHeightMap> *whmContext;
+  UnitOfWork *whmContext;
   std::promise<std::string>* myHeightmapId;
 public:
   DataReaderListenerImpl();
   DataReaderListenerImpl(const DataReaderListenerImpl &); // Avoid Corba object base class implicit delete copy constructor error
 
-  DataReaderListenerImpl(UnitOfWork<WaferHeightMap> *passedContext, std::promise<std::string>* heightmapId);
+  DataReaderListenerImpl(UnitOfWork *passedContext, std::promise<std::string>* heightmapId);
   virtual ~DataReaderListenerImpl();
   // DDS calls on_data_available on the listener for each
   // received WaferHeightMap sample.

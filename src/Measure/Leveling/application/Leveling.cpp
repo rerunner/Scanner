@@ -112,11 +112,9 @@ namespace Leveling  { namespace Application
         whm_handle = waferHeightMap_dw->register_instance(whm_evt);
     }
     
-    DDS::ReturnCode_t Leveling::Publish(UnitOfWork<WaferHeightMap> *passedWhmContext, WaferHeightMap *waferHeightMap)
+    DDS::ReturnCode_t Leveling::Publish(UnitOfWork *passedWhmContext, WaferHeightMap *waferHeightMap)
     {
       // Get the heightmap to publish
-      //WaferHeightMap whm_clone = passedWhmContext->GetRepository<WaferHeightMap>()->Get(waferHeightMapId.Get());
-      //GSL::Dprintf(GSL::INFO, "WaferHeightMap clone created with ID = ", whm_clone.GetId().Get());
       std::list<Measurement> myHeightMap = waferHeightMap->GetHeightMap();
 
       // DTO assembler start
@@ -141,7 +139,7 @@ namespace Leveling  { namespace Application
 
     Uuid Leveling::measureWafer(Uuid waferId)
     {
-      UnitOfWork<WaferHeightMap> context_;
+      UnitOfWork context_;
 
       GSL::Dprintf(GSL::INFO, "measureWafer starts with wafer Id = ", waferId.Get());
 
@@ -171,12 +169,11 @@ namespace Leveling  { namespace Application
       m.exe();
       //Raft streaming End
       
-      context_.RegisterNew(waferHeightMap);
+      context_.RegisterNew<WaferHeightMap>(waferHeightMap);
       
       GSL::Dprintf(GSL::INFO, "WaferHeightMap with ID = ", waferHeightMap.GetId().Get(), " persisted");
 
       this->SetupDataWriter();
-      //this->Publish(&context_, waferHeightMap.GetId().Get());
       this->Publish(&context_, &waferHeightMap);
       GSL::Dprintf(GSL::INFO, "measureWafer done");
       context_.Commit(); //Use case "measure height map" ended

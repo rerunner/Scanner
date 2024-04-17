@@ -29,7 +29,7 @@ DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &ot
   myHeightmapId = other.myHeightmapId;
 }
 
-DataReaderListenerImpl::DataReaderListenerImpl(UnitOfWork<WaferHeightMap> *passedWhmContext, std::promise<std::string>* heightmapId)
+DataReaderListenerImpl::DataReaderListenerImpl(UnitOfWork *passedWhmContext, std::promise<std::string>* heightmapId)
 {
   whmContext = passedWhmContext;
   myHeightmapId = heightmapId;
@@ -73,7 +73,7 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
         Measurement myMeas(myPosition, myZpos);
         myHeightMap.AddMeasurement(myMeas);
       }
-      whmContext->RegisterNew(myHeightMap);
+      whmContext->RegisterNew<WaferHeightMap>(myHeightMap);
       myHeightmapId->set_value(myHeightMap.GetId().Get()); // signal the future ;-)
     }
     else if (status == DDS::RETCODE_NO_DATA)
