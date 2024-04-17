@@ -65,16 +65,16 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
       // Translate from received DTO to local representation
       std::ostringstream oss;
       oss << whm.waferID; // Is there a better way from TAO managed string to std::string?
-      WaferHeightMap myHeightMap(oss.str());
+      std::shared_ptr<WaferHeightMap> myHeightMap = std::make_shared<WaferHeightMap>(oss.str());
       for (int i = 0; i < 10000 ; i++)
       {
         Position myPosition(whm.measurements[i].xyPosition.xPos, whm.measurements[i].xyPosition.yPos);
         double myZpos = whm.measurements[i].zPos;
         Measurement myMeas(myPosition, myZpos);
-        myHeightMap.AddMeasurement(myMeas);
+        myHeightMap->AddMeasurement(myMeas);
       }
       whmContext->RegisterNew<WaferHeightMap>(myHeightMap);
-      myHeightmapId->set_value(myHeightMap.GetId().Get()); // signal the future ;-)
+      myHeightmapId->set_value(myHeightMap->GetId().Get()); // signal the future ;-)
     }
     else if (status == DDS::RETCODE_NO_DATA)
     {

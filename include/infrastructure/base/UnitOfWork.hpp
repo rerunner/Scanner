@@ -85,44 +85,31 @@ public:
     virtual ~UnitOfWork(){GSL::Dprintf(GSL::INFO, "UnitOfWork destroyed. UoW ID = ", _context.Get());}
 
     template <typename EntityType>
-    void RegisterNew(EntityType entity)
+    void RegisterNew(std::shared_ptr<EntityType> entPtr)
     {
         GSL::Dprintf(GSL::INFO, "ENTER");
-
-        std::shared_ptr<EntityType> entPtr = std::make_shared<EntityType>(entity); //shared pointer copy of entity
-        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr), RegistryTypeEnum::RegisterNew);
-        
+        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr), RegistryTypeEnum::RegisterNew);        
         _newEntities.push_back(std::move(myNewEntityPtr)); //Register
-        
         GSL::Dprintf(GSL::INFO, "EXIT");
     }
 
     template <typename EntityType>
-    void RegisterDirty(EntityType entity)
+    void RegisterDirty(std::shared_ptr<EntityType> entPtr)
     { 
         GSL::Dprintf(GSL::INFO, "ENTER");
-
-        std::shared_ptr<EntityType> entPtr = std::make_shared<EntityType>(entity); //shared pointer copy of entity
         EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr), RegistryTypeEnum::RegisterDirty);
-        
         _updatedEntities.push_back(std::move(myUpdatedEntityPtr)); //Register
-        
         GSL::Dprintf(GSL::INFO, "EXIT");
     }
 
     template <typename EntityType>
-    void RegisterDeleted(EntityType entity)
+    void RegisterDeleted(std::shared_ptr<EntityType> entPtr)
     { 
         GSL::Dprintf(GSL::INFO, "ENTER");
-
-        std::shared_ptr<EntityType> entPtr = std::make_shared<EntityType>(entity); //shared pointer copy of entity
         EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr), RegistryTypeEnum::RegisterDeleted);
-        
         _updatedEntities.push_back(std::move(myDeletedEntityPtr)); //Register
-        
         GSL::Dprintf(GSL::INFO, "EXIT");
     }
-
     
     void Commit()
     {
@@ -134,7 +121,7 @@ public:
 
     void Rollback()
     {
-        //Todo, remove after clearing
+        //Todo, remove without commit
     }
     
     template <typename entityType>

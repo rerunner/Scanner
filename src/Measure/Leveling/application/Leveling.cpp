@@ -112,7 +112,7 @@ namespace Leveling  { namespace Application
         whm_handle = waferHeightMap_dw->register_instance(whm_evt);
     }
     
-    DDS::ReturnCode_t Leveling::Publish(UnitOfWork *passedWhmContext, WaferHeightMap *waferHeightMap)
+    DDS::ReturnCode_t Leveling::Publish(UnitOfWork *passedWhmContext, std::shared_ptr<WaferHeightMap> waferHeightMap)
     {
       // Get the heightmap to publish
       std::list<Measurement> myHeightMap = waferHeightMap->GetHeightMap();
@@ -144,8 +144,8 @@ namespace Leveling  { namespace Application
       GSL::Dprintf(GSL::INFO, "measureWafer starts with wafer Id = ", waferId.Get());
 
       // Create empty wafer heightmap
-      WaferHeightMap waferHeightMap(waferId);
-      GSL::Dprintf(GSL::INFO, "WaferHeightMap created with heightmap ID = ", waferHeightMap.GetId().Get());
+      std::shared_ptr<WaferHeightMap> waferHeightMap = std::make_shared<WaferHeightMap>(waferId);
+      GSL::Dprintf(GSL::INFO, "WaferHeightMap created with heightmap ID = ", waferHeightMap->GetId().Get());
       
       // Raft streaming start
       Measurement generatedMeasurement;
@@ -160,7 +160,7 @@ namespace Leveling  { namespace Application
           {
             UNUSED( output );
             input[ "0" ].pop( generatedMeasurement ); // Take the measurement from the input
-            waferHeightMap.AddMeasurement(generatedMeasurement); // And add it to the heightmap
+            waferHeightMap->AddMeasurement(generatedMeasurement); // And add it to the heightmap
             return( raft::proceed ); // Wait for the next measurement or stream end tag.
           });
 
@@ -171,12 +171,12 @@ namespace Leveling  { namespace Application
       
       context_.RegisterNew<WaferHeightMap>(waferHeightMap);
       
-      GSL::Dprintf(GSL::INFO, "WaferHeightMap with ID = ", waferHeightMap.GetId().Get(), " persisted");
+      GSL::Dprintf(GSL::INFO, "WaferHeightMap with ID = ", waferHeightMap->GetId().Get(), " persisted");
 
       this->SetupDataWriter();
-      this->Publish(&context_, &waferHeightMap);
+      this->Publish(&context_, waferHeightMap);
       GSL::Dprintf(GSL::INFO, "measureWafer done");
       context_.Commit(); //Use case "measure height map" ended
-      return waferHeightMap.GetId();
+      return waferHeightMap->GetId();
     }
 }}

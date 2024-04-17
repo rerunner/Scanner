@@ -32,7 +32,7 @@ namespace Leveling  { namespace Application
 
     // Methods
     void SetupDataWriter(); 
-    DDS::ReturnCode_t Publish(UnitOfWork *passedWhmContext, WaferHeightMap *waferHeightMap);
+    DDS::ReturnCode_t Publish(UnitOfWork *passedWhmContext, std::shared_ptr<WaferHeightMap> waferHeightMap);
 
     public:
     Leveling();
