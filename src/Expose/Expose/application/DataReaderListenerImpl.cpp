@@ -18,20 +18,13 @@
 #include "GenLogger.hpp"
 
 
-DataReaderListenerImpl::DataReaderListenerImpl()
+DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &other) : whmContext(other.whmContext)
 {
-  whmContext = NULL;
-}
-
-DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &other)
-{
-  whmContext = other.whmContext;
   myHeightmapId = other.myHeightmapId;
 }
 
-DataReaderListenerImpl::DataReaderListenerImpl(UnitOfWork *passedWhmContext, std::promise<std::string>* heightmapId)
+DataReaderListenerImpl::DataReaderListenerImpl(std::unique_ptr<UnitOfWork> & passedWhmContext, std::promise<std::string>* heightmapId) : whmContext(passedWhmContext)
 {
-  whmContext = passedWhmContext;
   myHeightmapId = heightmapId;
   GSL::Dprintf(GSL::INFO, "DataReaderListenerImpl listening for dds data to get the heightmap");
 }
@@ -42,7 +35,7 @@ DataReaderListenerImpl::~DataReaderListenerImpl()
 
 void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 {
-  GSL::Dprintf(GSL::INFO, "DATA FOUND!");
+  GSL::Dprintf(GSL::INFO, "ENTER");
   
   try
   {
@@ -61,7 +54,7 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
     if (status == DDS::RETCODE_OK) 
     {
       GSL::Dprintf(GSL::INFO, "Expose: received WaferID = ", whm.waferID );
-      GSL::Dprintf(GSL::INFO, "SampleInfo.sample_rank = ", si.sample_rank);
+      //GSL::Dprintf(GSL::INFO, "SampleInfo.sample_rank = ", si.sample_rank);
       // Translate from received DTO to local representation
       std::ostringstream oss;
       oss << whm.waferID; // Is there a better way from TAO managed string to std::string?

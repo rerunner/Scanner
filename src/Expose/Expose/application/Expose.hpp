@@ -21,6 +21,9 @@
 #include "infrastructure/base/RepositoryFactory.h"
 #include "infrastructure/IWaferHeightMapRepository.hpp"
 #include "DataReaderListenerImpl.h"
+#include "infrastructure/base/UnitOfWork.hpp"
+
+using namespace unitofwork;
 
 namespace Expose { namespace Application
 {
@@ -36,7 +39,7 @@ namespace Expose { namespace Application
 
     void Subscribe();
     void UnSubscribe();
-    std::string StartHeightMapListener();
+    std::string StartHeightMapListener(std::unique_ptr<UnitOfWork> & context_);
 
     public:
     Expose();
