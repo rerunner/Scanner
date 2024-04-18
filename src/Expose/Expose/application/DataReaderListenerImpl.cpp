@@ -21,6 +21,7 @@
 DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &other) : whmContext(other.whmContext)
 {
   myHeightmapId = other.myHeightmapId;
+  GSL::Dprintf(GSL::INFO, "DataReaderListenerImpl constructed from other");
 }
 
 DataReaderListenerImpl::DataReaderListenerImpl(std::unique_ptr<UnitOfWork> & passedWhmContext, std::promise<std::string>* heightmapId) : whmContext(passedWhmContext)
@@ -31,6 +32,7 @@ DataReaderListenerImpl::DataReaderListenerImpl(std::unique_ptr<UnitOfWork> & pas
 
 DataReaderListenerImpl::~DataReaderListenerImpl()
 {
+  GSL::Dprintf(GSL::INFO, "DataReaderListenerImpl DELETED");
 }
 
 void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
@@ -51,7 +53,7 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 
     DDS::ReturnCode_t status = heightmap_dr->take_next_sample(whm, si) ;
 
-    if (status == DDS::RETCODE_OK) 
+    if ((status == DDS::RETCODE_OK) && (whmContext))
     {
       GSL::Dprintf(GSL::INFO, "Expose: received WaferID = ", whm.waferID );
       //GSL::Dprintf(GSL::INFO, "SampleInfo.sample_rank = ", si.sample_rank);

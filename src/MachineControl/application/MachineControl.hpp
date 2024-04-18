@@ -99,8 +99,11 @@ namespace MachineControl
         std::thread eventListenerThread;
         void eventListenerThreadHandler();
         bool quit_;
-        bool messageReceived;
+        bool exposeMessageReceived;
+        bool measureMessageReceived;
     public:
+        MachineControl();
+        ~MachineControl();
         void Initialize();
         void Execute();
     };

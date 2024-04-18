@@ -134,7 +134,7 @@ namespace Expose { namespace Application
 
     std::string Expose::StartHeightMapListener(std::unique_ptr<UnitOfWork> & context_)
     {
-        GSL::Dprintf(GSL::INFO, "Expose::GetHeightMap(): --> Setting data_reader waitcondition");
+        GSL::Dprintf(GSL::INFO, "Create and activate the DDS data listener for reading incoming heightmaps and wait for a match");
 
         //! Creating the infrastructure that allows an application thread to block
         //! until some condition becomes true, such as data availability.
@@ -143,11 +143,10 @@ namespace Expose { namespace Application
         std::promise<std::string> theHeightMapId;
         std::future<std::string> f = theHeightMapId.get_future();
         
-        listener_impl = std::make_unique<DataReaderListenerImpl>(DataReaderListenerImpl(context_, &theHeightMapId));
-        DDS::DataReaderListener_var waferheightmap_listener(listener_impl.get());
+        DDS::DataReaderListener_var waferheightmap_listener(new DataReaderListenerImpl(context_, &theHeightMapId));
         waferheightmap_dr->ptr()->set_listener(waferheightmap_listener, DDS::DATA_AVAILABLE_STATUS | DDS::LIVELINESS_CHANGED_STATUS);
-        
         std::string ret = f.get(); //! Wait for the future ;-)
+        waferheightmap_dr->ptr()->set_listener(0, OpenDDS::DCPS::NO_STATUS_MASK);
         context_->Commit(); // Write changes to repository
         GSL::Dprintf(GSL::INFO, "returned heightmap Id: ", ret);
         return ret;
