@@ -101,8 +101,6 @@ namespace MachineControl
         std::list<Wafer> lotWafers;
         void eventListenerThreadHandler();
         bool quit_;
-        bool exposeMessageReceived;
-        bool measureMessageReceived;
     public:
         MachineControl();
         ~MachineControl();

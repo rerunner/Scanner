@@ -1,6 +1,6 @@
 #include "Wafer.hpp"
 
-void Wafer::stateChangePublisher(std::string state)
+void Wafer::stateChangePublisher()
 {
     //! Create the Kafka config
     std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
@@ -12,7 +12,8 @@ void Wafer::stateChangePublisher(std::string state)
 
     //! Produce a Kafka event message for command completion
     std::stringstream smessage;
-    smessage << "NewWaferState: " << state << " for " << id_.Get();
+    //smessage << "NewWaferState: " << state << " for " << id_.Get();
+    smessage << "NewWaferState: " << id_.Get() << " " << state;
     std::string message = smessage.str();
     kafkaProducer->produce(cppkafka::MessageBuilder("waferStateTopic").partition(0).payload(message));
     

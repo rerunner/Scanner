@@ -162,6 +162,7 @@ class Wafer : public AggregateRootBase
 private:
   wafer_state_machine waferStateMachine;
   std::unique_ptr<Uuid> parentLot_;
+  std::string state;
 
   //Boilerplate start
   friend class hiberlite::access;
@@ -176,38 +177,44 @@ private:
   // Kafka part
   std::unique_ptr<cppkafka::Configuration> kafkaConfig;
   std::unique_ptr<cppkafka::Producer> kafkaProducer;
-  void stateChangePublisher(std::string state);
+  void stateChangePublisher();
 public:
   Wafer() : AggregateRootBase(){parentLot_ = nullptr;};
   Wafer(Uuid lotId) : AggregateRootBase(){parentLot_ = std::make_unique<Uuid>(lotId);};
   virtual ~Wafer(){}
 
   Uuid GetLotId() const {return *parentLot_;}
+  std::string GetCurrentState() const {return state;}
 
   void PreAligned()
   {
     waferStateMachine.on_state_transition(waferState::transition_to_Prealigned{});
-    stateChangePublisher("PreAligned");
+    state = "PreAligned";
+    stateChangePublisher();
   }
   void Measured()
   {
     waferStateMachine.on_state_transition(waferState::transition_to_Measured{});
-    stateChangePublisher("Measured");
+    state = "Measured";
+    stateChangePublisher();
   }
   void ApprovedForExpose()
   {
     waferStateMachine.on_state_transition(waferState::transition_to_ApprovedForExpose{});
-    stateChangePublisher("ApprovedForExpose");
+    state = "ApprovedForExpose";
+    stateChangePublisher();
   }
   void Exposed()
   {
     waferStateMachine.on_state_transition(waferState::transition_to_Exposed{});
-    stateChangePublisher("Exposed");
+    state = "Exposed";
+    stateChangePublisher();
   }
   void Unloaded()
   {
     waferStateMachine.on_state_transition(waferState::transition_to_Unloaded{});
-    stateChangePublisher("Unloaded");
+    state = "Unloaded";
+    stateChangePublisher();
   }
 };
 
