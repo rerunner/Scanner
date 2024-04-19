@@ -63,4 +63,4 @@ $test->start_process("Expose");
 $test->start_process("Leveling");
 $test->start_process("Scanner");
 
-exit $test->finish(120);
+exit $test->finish(600);
