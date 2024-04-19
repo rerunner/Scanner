@@ -2,9 +2,6 @@
 #include <string_view> // C++17
 
 #include "MachineControl.hpp"
-#include "domain/Lot.hpp"
-#include "domain/Wafer.hpp"
-
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
@@ -42,6 +39,7 @@ namespace MachineControl
         std::vector<std::string> machineControlTopics;
         machineControlTopics.push_back("levelingTopic");
         machineControlTopics.push_back("exposeTopic");
+        machineControlTopics.push_back("waferStateTopic");
         GSL::Dprintf(GSL::INFO, "Subscribing to Leveling and Expose topics");
         kafkaConsumer->subscribe(machineControlTopics);
         GSL::Dprintf(GSL::INFO, "MachineControl now polling for Leveling and Expose messages from Kafka brokers");    
@@ -60,12 +58,30 @@ namespace MachineControl
                     GSL::Dprintf(GSL::INFO, "----> Payload [", newMessage, "]");
                     if (std::string_view(newMessage.data(), 20) == "ExposeWaferCompleted")
                     {
-                        exposeMessageReceived = true;
+                        auto checkMessageLambda = [&](const Wafer& wafer) 
+                        { 
+                            if (std::string_view(newMessage.data()+21, 36) == wafer.GetId().Get())
+                            {
+                                GSL::Dprintf(GSL::INFO, "processing ExposeWaferCompleted message with Id = ", std::string_view(newMessage.data()+21, 36));
+                                exposeMessageReceived = true;
+                            }
+                        };
+                        std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
+                        if (!exposeMessageReceived) {GSL::Dprintf(GSL::ERROR, "UNKNOWN ExposeWaferCompleted message with Id = ", std::string_view(newMessage.data()+21, 36));}
                     }
                     else if (std::string_view(newMessage.data(), 21) == "MeasureWaferCompleted")
                     {
-                        measureMessageReceived = true;
-                    }
+                        auto checkMessageLambda = [&](const Wafer& wafer) 
+                        { 
+                            if (std::string_view(newMessage.data()+22, 36) == wafer.GetId().Get())
+                            {
+                                GSL::Dprintf(GSL::INFO, "processing MeasureWaferCompleted message with Id = ", std::string_view(newMessage.data()+22, 36));
+                                measureMessageReceived = true;
+                            }
+                        };
+                        std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
+                        if (!measureMessageReceived) {GSL::Dprintf(GSL::ERROR, "UNKNOWN MeasureWaferCompleted message with Id = ", std::string_view(newMessage.data()+21, 36));}
+                    } 
                 }
                 else if (!record.is_eof()) {
                     // Is it an error notification, handle it.
@@ -78,25 +94,30 @@ namespace MachineControl
 
     void MachineControl::Initialize()
     {
-        std::this_thread::sleep_for (std::chrono::seconds(2)); // Wait for leveling and expose to initialize. this needs to become an event
         machineControlStateMachine.on_state_transition(transition_to_Idle{});
         eventListenerThread = std::thread(&MachineControl::eventListenerThreadHandler, this);
+        std::this_thread::sleep_for (std::chrono::seconds(5)); // Wait for leveling and expose to initialize. this needs to become an event
     }
 
     void MachineControl::Execute()
     {
         const int nrOfLots = 1;
-        const int nrOfWafersInLot = 15;
+        const int nrOfWafersInLot = 25;
         machineControlStateMachine.on_state_transition(transition_to_Executing{});
 
         for (int lotNr = 0; lotNr<nrOfLots; lotNr++) // One lot for now
         {
             Lot newLot;
 
-            for (int waferInLotNr = 1; waferInLotNr < nrOfWafersInLot; waferInLotNr++)
+            for (int waferInLotNr = 0; waferInLotNr < nrOfWafersInLot; waferInLotNr++)
             {
-                Wafer newWafer; // load new wafer
-                newWafer.PreAligned(); // Move wafer to prealigned state (will be event later)
+                lotWafers.emplace_back(newLot.GetId()); // Create a wafer and put it in the list
+                Wafer *currentWafer = &lotWafers.back();
+                newLot.AddWafer(currentWafer->GetId());
+
+                std::this_thread::sleep_for (std::chrono::milliseconds(10));
+                currentWafer->PreAligned(); // Move wafer to prealigned state (will be event later)
+                std::this_thread::sleep_for (std::chrono::milliseconds(10));
 
                 // Leveling part
                 {
@@ -105,7 +126,7 @@ namespace MachineControl
                     curlpp::Cleanup myCleanup; // RAII cleanup
                     curlpp::Easy levelingRequest;
                     std::ostringstream urlCommand;
-                    urlCommand << "http://127.0.0.1:8003//measure/leveling/measure/" << newWafer.GetId().Get();
+                    urlCommand << "http://127.0.0.1:8003//measure/leveling/measure/" << currentWafer->GetId().Get();
                     levelingRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
                     levelingRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
                     levelingRequest.perform();
@@ -118,10 +139,12 @@ namespace MachineControl
 
                     std::cout << std::endl;
                     GSL::Dprintf(GSL::INFO, "Finished leveling measure heightmap command #", waferInLotNr);
-                    newWafer.Measured();
+                    currentWafer->Measured();
                 }
 
-                newWafer.ApprovedForExpose();
+                std::this_thread::sleep_for (std::chrono::milliseconds(10));
+                currentWafer->ApprovedForExpose();
+                std::this_thread::sleep_for (std::chrono::milliseconds(10));
 
                 // Expose part
                 {
@@ -129,7 +152,7 @@ namespace MachineControl
                     curlpp::Cleanup myCleanup; // RAII cleanup
                     curlpp::Easy exposeRequest;
                     std::ostringstream urlCommand;
-                    urlCommand << "http://127.0.0.1:8002/expose/expose/" << newWafer.GetId().Get();
+                    urlCommand << "http://127.0.0.1:8002/expose/expose/" << currentWafer->GetId().Get();
                     exposeRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
                     exposeRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
                     exposeRequest.perform();
@@ -142,10 +165,12 @@ namespace MachineControl
 
                     std::cout << std::endl;
                     GSL::Dprintf(GSL::INFO, "MachineControl::Execute() -> finished expose command #", waferInLotNr);
-                    newWafer.Exposed();
+                    currentWafer->Exposed();
                 }
 
-                newWafer.Unloaded();
+                std::this_thread::sleep_for (std::chrono::milliseconds(10));
+                currentWafer->Unloaded();
+                std::this_thread::sleep_for (std::chrono::milliseconds(10));
             }
 
         } // end for all lots

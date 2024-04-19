@@ -2,10 +2,11 @@
 #define WAFER_H
 
 #include <list>
+#include <cppkafka/cppkafka.h>
 #include "hiberlite.h"
 #include "domain/base/AggregateRootBase.hpp"
 #include "FiniteStateMachine.hpp"
-
+#include "Uuid.hpp"
 #include "GenLogger.hpp"
 
 // Life of a Wafer: Loaded -> Prealigned -> Measured -> Approved for expose side -> exposed -> Unloaded
@@ -148,18 +149,19 @@ namespace waferState {
   };
 }
 
-  using wafer_state_machine = state_machine<  waferState::Loaded, 
-                                              waferState::Prealigned, 
-                                              waferState::Measured,
-                                              waferState::ApprovedForExpose,
-                                              waferState::Exposed,
-                                              waferState::Unloaded,
-                                              waferState::Rejected >;
+using wafer_state_machine = state_machine<  waferState::Loaded, 
+                                            waferState::Prealigned, 
+                                            waferState::Measured,
+                                            waferState::ApprovedForExpose,
+                                            waferState::Exposed,
+                                            waferState::Unloaded,
+                                            waferState::Rejected >;
 
 class Wafer : public AggregateRootBase
 {
 private:
   wafer_state_machine waferStateMachine;
+  std::unique_ptr<Uuid> parentLot_;
 
   //Boilerplate start
   friend class hiberlite::access;
@@ -170,32 +172,43 @@ private:
     ar & HIBERLITE_NVP(waferStateMachine);
   }
   //Boilerplate end
+
+  // Kafka part
+  std::unique_ptr<cppkafka::Configuration> kafkaConfig;
+  std::unique_ptr<cppkafka::Producer> kafkaProducer;
+  void stateChangePublisher(std::string state);
 public:
-  Wafer() : AggregateRootBase(){};
+  Wafer() : AggregateRootBase(){parentLot_ = nullptr;};
+  Wafer(Uuid lotId) : AggregateRootBase(){parentLot_ = std::make_unique<Uuid>(lotId);};
+  virtual ~Wafer(){}
+
+  Uuid GetLotId() const {return *parentLot_;}
 
   void PreAligned()
   {
     waferStateMachine.on_state_transition(waferState::transition_to_Prealigned{});
+    stateChangePublisher("PreAligned");
   }
   void Measured()
   {
     waferStateMachine.on_state_transition(waferState::transition_to_Measured{});
+    stateChangePublisher("Measured");
   }
   void ApprovedForExpose()
   {
     waferStateMachine.on_state_transition(waferState::transition_to_ApprovedForExpose{});
+    stateChangePublisher("ApprovedForExpose");
   }
   void Exposed()
   {
     waferStateMachine.on_state_transition(waferState::transition_to_Exposed{});
+    stateChangePublisher("Exposed");
   }
   void Unloaded()
   {
     waferStateMachine.on_state_transition(waferState::transition_to_Unloaded{});
+    stateChangePublisher("Unloaded");
   }
 };
-
-// Boilerplate
-HIBERLITE_EXPORT_CLASS(Wafer)
 
 #endif

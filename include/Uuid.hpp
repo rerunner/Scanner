@@ -5,6 +5,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include "boost/lexical_cast.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include "domain/base/ValueObjectBase.hpp"
 
 class Uuid
 {
@@ -26,5 +27,7 @@ private:
 public:
   Uuid ();
   Uuid (std::string withUuid_);
+  virtual bool operator==(const Uuid& other) const {return (uuid_ == other.Get());}
+  bool operator!=(const Uuid& other) const {return !(*this == other);}
   const std::string Get() const;
 };

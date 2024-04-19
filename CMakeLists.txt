@@ -74,6 +74,8 @@ endif (DOXYGEN_FOUND)
 # Scanner target
 add_executable(Scanner
 	${src}/include/Uuid.cpp
+	${src}/src/MachineControl/domain/Wafer.cpp
+	${src}/src/MachineControl/domain/Lot.cpp
 	${src}/src/main.cpp
 	${src}/src/MachineControl/application/MachineControl.cpp
 )

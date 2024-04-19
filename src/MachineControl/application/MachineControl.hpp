@@ -3,9 +3,10 @@
 
 #include <iostream>
 #include <source_location>
+#include "domain/Lot.hpp"
+#include "domain/Wafer.hpp"
 #include "FiniteStateMachine.hpp"
 
-//#include <boost/optional/optional_io.hpp>
 #include <cppkafka/cppkafka.h>
 
 #include "GenLogger.hpp"
@@ -97,6 +98,7 @@ namespace MachineControl
         std::unique_ptr<cppkafka::Configuration> kafkaConfig;
         std::unique_ptr<cppkafka::Consumer> kafkaConsumer;
         std::thread eventListenerThread;
+        std::list<Wafer> lotWafers;
         void eventListenerThreadHandler();
         bool quit_;
         bool exposeMessageReceived;
