@@ -10,13 +10,345 @@ using namespace curlpp::options;
 
 namespace MachineControl
 {
-    MachineControl::MachineControl() : quit_(false)
+    MachineControl::MachineControl() : quit_(false), waferInLotNr(0)
     {
+        scannerChucks[0].SetStation(StationEnumType::MeasureStation);
+        scannerChucks[1].SetStation(StationEnumType::ExposeStation);
     }
 
     MachineControl::~MachineControl()
     {
         quit_ = true;   
+    }
+
+    void MachineControl::LoadWaferOnChuck(int chuckNumber)
+    {
+        lotWafers.emplace_back(currentLot->GetId()); // Create a wafer and put it in the list
+        Wafer *currentWafer = &lotWafers.back(); // Reference without copy
+        currentLot->AddWafer(currentWafer->GetId());
+        scannerChucks[chuckNumber].LoadWafer(currentWafer->GetId());
+        waferInLotNr++;
+    }
+
+    void MachineControl::UnloadWaferFromChuck(int chuckNumber)
+    {
+        // Find wafer Id
+        std::shared_ptr<Uuid> wId = scannerChucks[chuckNumber].GetWaferId();
+
+        if (wId) // At startup the chuck can be empty returning from expose station
+        {
+            // Access loaded wafer 
+            for (std::list<Wafer>::const_iterator it = lotWafers.begin(); it != lotWafers.end(); ++it)
+            {
+                if (*wId == it->GetId())
+                {
+                    Wafer& waferMutable = const_cast<Wafer&>(*it); // Break the lock
+                    waferMutable.Unloaded(); // Move wafer to Unloaded state
+                }
+            }
+        }
+        scannerChucks[chuckNumber].UnloadWafer(); // Present or not, it's gone
+    }
+
+    std::string MachineControl::GetWaferState(Uuid wId)
+    {
+        //find loaded wafer and return state
+        std::string result = "";
+        for (std::list<Wafer>::const_iterator it = lotWafers.begin(); it != lotWafers.end(); ++it)
+        {
+            if (wId == it->GetId())
+            {
+                result = it->GetCurrentState();
+            }
+        }
+        return result;
+    }
+
+    void MachineControl::SwapChucks()
+    {
+        if ((scannerChucks[0].GetCurrentState() == "ReadyForSwap") && (scannerChucks[1].GetCurrentState() == "ReadyForSwap"))
+        {
+            // Swap
+            scannerChucks[0].SwapStation();
+            scannerChucks[1].SwapStation();
+            //Chuck States will have changed back to Loaded
+            //measureStation.ReturnToIdle(); // Measure station can 
+        }
+    }
+
+    void MachineControl::ProcessChuck(int chuckNumber)
+    {
+        switch (scannerChucks[chuckNumber].GetStation())
+        {
+            case StationEnumType::MeasureStation:
+                if (scannerChucks[chuckNumber].GetCurrentState() == "Unloaded")
+                {
+                    GSL::Dprintf(GSL::INFO, "MeasureStation has Chuck at state unloaded, loading Wafer");
+                    LoadWaferOnChuck(chuckNumber);
+                }
+                if (scannerChucks[chuckNumber].GetCurrentState() == "Loaded")
+                {
+                    if (GetWaferState(*(scannerChucks[chuckNumber].GetWaferId())) == "ApprovedForExpose")
+                    {
+                        GSL::Dprintf(GSL::INFO, "MeasureStation has Chuck ready to Swap");
+                        // Set chuck state to ReadyForSwap
+                        scannerChucks[chuckNumber].SetReadyForSwap();
+                    }
+                }
+                else if (scannerChucks[chuckNumber].GetCurrentState() == "ReadyForUnloading")
+                {
+                    UnloadWaferFromChuck(chuckNumber);
+                }
+                else
+                {
+                    // Nothing
+                }
+            break;
+            case StationEnumType::ExposeStation:
+                if (scannerChucks[chuckNumber].GetCurrentState() == "Unloaded")
+                {
+                    GSL::Dprintf(GSL::INFO, "ExposeStation has Chuck at state unloaded");
+                    // This is a startup state: Set chuck state to ReadyForSwap
+                    scannerChucks[chuckNumber].SetReadyForSwap(); 
+                }
+                if (scannerChucks[chuckNumber].GetCurrentState() == "Loaded")
+                {
+                    if (GetWaferState(*(scannerChucks[chuckNumber].GetWaferId())) == "Exposed")
+                    {
+                        GSL::Dprintf(GSL::INFO, "ExposeStation has Chuck ready to Swap");
+                        // Set chuck state to ReadyForSwap
+                        scannerChucks[chuckNumber].SetReadyForSwap();
+                    }
+                }
+                else
+                {
+                    //Nothing
+                }
+            break;
+            default:
+              // Error
+              GSL::Dprintf(GSL::ERROR, "Unknown Station!");
+            break;
+        }
+
+        SwapChucks(); // Check if chucks need to be swapped
+    }
+
+    void MachineControl::ProcessMeasureStation()
+    {
+        // Which chuck is at the measure station?
+        int chuckNumber;
+        if (scannerChucks[0].GetStation() == StationEnumType::MeasureStation)
+        {
+            chuckNumber = 0;
+        }
+        else
+        {
+            chuckNumber = 1;
+        }
+
+        // What is the measure station doing?
+        if (measureStation.GetStationState() == "Processing")
+        {
+            if (scannerChucks[chuckNumber].GetCurrentState() == "Loaded")
+            {
+                if (GetWaferState(*(scannerChucks[chuckNumber].GetWaferId())) == "ApprovedForExpose")
+                {
+                    // Move to Idle
+                    GSL::Dprintf(GSL::INFO, "MeasureStation is Processing and moving to Idle");
+                    measureStation.ReturnToIdle();
+                }
+                else
+                {
+                    // Do work if needed
+                    ProcessWaferAtMeasureStation();
+                }
+            }
+            else if (scannerChucks[chuckNumber].GetCurrentState() == "ReadyForUnloading")
+            {
+                // UnloadWafer
+                // Return to Idle
+                measureStation.ReturnToIdle();
+            }
+        }
+        else if (measureStation.GetStationState() == "Idle")
+        {
+            if ((scannerChucks[chuckNumber].GetCurrentState() == "Loaded") && (GetWaferState(*(scannerChucks[chuckNumber].GetWaferId())) == "Loaded"))
+            {
+                // Move to Processing
+                GSL::Dprintf(GSL::INFO, "MeasureStation is Idle and moving to Processing");
+                measureStation.ProcessWafer();
+            }
+            else 
+            {  
+                //Nothing
+            }
+        }
+        else { /* Trouble: cannot happen. */ }
+    }
+
+    void MachineControl::ProcessWaferAtMeasureStation()
+    {
+        // Which chuck is at the measure station?
+        int chuckNumber;
+        if (scannerChucks[0].GetStation() == StationEnumType::MeasureStation)
+        {
+            chuckNumber = 0;
+        }
+        else
+        {
+            chuckNumber = 1;
+        }
+
+        if (measureStation.GetCommandCompletedState())
+        {
+            std::shared_ptr<Uuid> wId = scannerChucks[chuckNumber].GetWaferId();
+            if (GetWaferState(*wId) == "Loaded")
+            {
+                // Execute prealign command
+                GSL::Dprintf(GSL::INFO, "Measurestation has Wafer at Loaded state: Execute PreAlign command");
+                // find loaded wafer 
+                for (std::list<Wafer>::const_iterator it = lotWafers.begin(); it != lotWafers.end(); ++it)
+                {
+                    // do whatever you wish but don't modify the list elements
+                    if (*wId == it->GetId())
+                    {
+                        Wafer& waferMutable = const_cast<Wafer&>(*it); // Break the lock
+                        waferMutable.PreAligned(); // Move wafer to prealigned state (will be event later)
+                        // Keep the command state at command completed for now
+                    }
+                }
+            }
+            else if (GetWaferState(*wId) == "PreAligned")
+            {
+                //commandProcessing
+                GSL::Dprintf(GSL::INFO, "Measurestation has Wafer at PreAligned state: Execute Measure command");
+                //Execute measure command
+                measureStation.DoCommand();
+                // Do the command to leveling
+                GSL::Dprintf(GSL::INFO, "starting leveling measure heightmap command #", waferInLotNr, " with curl");
+                curlpp::Cleanup myCleanup; // RAII cleanup
+                curlpp::Easy levelingRequest;
+                std::ostringstream urlCommand;
+                urlCommand << "http://127.0.0.1:8003//measure/leveling/measure/" << wId->Get();
+                levelingRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
+                levelingRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
+                levelingRequest.perform();
+                // The command state is false until the event comes through kafka
+            }
+            else if (GetWaferState(*wId) == "Measured")
+            {
+                //commandProcessing
+                // promote Wafer state to approved for expose
+                GSL::Dprintf(GSL::INFO, "Measurestation has Wafer at Measured state: Execute ApprovedForExpose command");
+                // find loaded wafer 
+                for (std::list<Wafer>::const_iterator it = lotWafers.begin(); it != lotWafers.end(); ++it)
+                {
+                    // do whatever you wish but don't modify the list elements
+                    if (*wId == it->GetId())
+                    {
+                        Wafer& waferMutable = const_cast<Wafer&>(*it); // Break the lock
+                        waferMutable.ApprovedForExpose(); // Move wafer to ApprovedForExpose state
+                        // Keep the state at command completed
+                    }
+                }
+            }
+            else if (GetWaferState(*wId) == "Exposed")
+            {
+                // On its way to be unloaded. Done by ProcessChuck
+                // Keep the state at command completed
+                GSL::Dprintf(GSL::INFO, "MeasureStation has Wafer at Exposed state, wafer will be unloaded");
+            }
+        }
+        else
+        {
+            // MeasureStation wafer command has not completed yet
+            std::this_thread::sleep_for (std::chrono::milliseconds(1));
+        }
+    }
+
+    void MachineControl::ProcessExposeStation()
+    {
+        // Which chuck is at the expose station?
+        int chuckNumber;
+        if (scannerChucks[0].GetStation() == StationEnumType::ExposeStation)
+        {
+            chuckNumber = 0;
+        }
+        else
+        {
+            chuckNumber = 1;
+        }
+
+        // What is the expose station doing?
+        if (exposeStation.GetStationState() == "Processing")
+        {
+            if (GetWaferState(*(scannerChucks[chuckNumber].GetWaferId())) == "Exposed")
+            {
+                // Move to Idle
+                GSL::Dprintf(GSL::INFO, "ExposeStation is moving from Processing to Idle");
+                exposeStation.ReturnToIdle();
+            }
+            else
+            {
+                // Do work if needed
+                ProcessWaferAtExposeStation();
+            }
+        }
+        else if (exposeStation.GetStationState() == "Idle")
+        {
+            if ((scannerChucks[chuckNumber].GetCurrentState() == "Loaded") && (GetWaferState(*(scannerChucks[chuckNumber].GetWaferId())) == "ApprovedForExpose"))
+            {
+                // Move to Processing
+                GSL::Dprintf(GSL::INFO, "ExposeStation is Idle and moving to Processing");
+                exposeStation.ProcessWafer();
+            }
+            else 
+            {
+                if (scannerChucks[chuckNumber].GetCurrentState() == "UnLoaded")
+                {
+                    GSL::Dprintf(GSL::INFO, "ExposeStation is Idle and Unloaded");
+                    // Take care of startup condition!
+                }
+                else
+                {
+                    // Do nothing
+                }
+            } 
+        }
+        else { /* Trouble: cannot happen. */ }
+    }
+
+    void MachineControl::ProcessWaferAtExposeStation()
+    {
+        // Which chuck is at the expose station?
+        int chuckNumber;
+        if (scannerChucks[0].GetStation() == StationEnumType::ExposeStation)
+        {
+            chuckNumber = 0;
+        }
+        else
+        {
+            chuckNumber = 1;
+        }
+
+        if (exposeStation.GetCommandCompletedState())
+        {
+            std::shared_ptr<Uuid> wId = scannerChucks[chuckNumber].GetWaferId();
+            if (GetWaferState(*wId) == "ApprovedForExpose")
+            {
+                exposeStation.DoCommand();
+                GSL::Dprintf(GSL::INFO, "starting expose command #", waferInLotNr - 1, " with curl");
+                curlpp::Cleanup myCleanup; // RAII cleanup
+                curlpp::Easy exposeRequest;
+                std::ostringstream urlCommand;
+                urlCommand << "http://127.0.0.1:8002/expose/expose/" << wId->Get();
+                exposeRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
+                exposeRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
+                exposeRequest.perform();
+                // The command state is false until the event comes through kafka 
+            }
+        }
     }
 
     void MachineControl::eventListenerThreadHandler()
@@ -64,6 +396,7 @@ namespace MachineControl
                                 GSL::Dprintf(GSL::INFO, "processing ExposeWaferCompleted message with Wafer Id = ", std::string_view(newMessage.data()+21, 36));
                                 Wafer& waferMutable = const_cast<Wafer&>(wafer); 
                                 waferMutable.Exposed();
+                                exposeStation.CommandHasCompleted(); // Temporary, to be removed
                             }
                         };
                         std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
@@ -77,6 +410,7 @@ namespace MachineControl
                                 GSL::Dprintf(GSL::INFO, "processing MeasureWaferCompleted message with Wafer Id = ", std::string_view(newMessage.data()+22, 36));
                                 Wafer& waferMutable = const_cast<Wafer&>(wafer); 
                                 waferMutable.Measured();
+                                measureStation.CommandHasCompleted(); // Temporary, to be removed
                             }
                         };
                         std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
@@ -111,19 +445,29 @@ namespace MachineControl
 
     void MachineControl::Execute()
     {
-        const int nrOfLots = 1;
+        const int nrOfLots = 3;
         const int nrOfWafersInLot = 25;
         machineControlStateMachine.on_state_transition(transition_to_Executing{});
 
         for (int lotNr = 0; lotNr<nrOfLots; lotNr++) // One lot for now
         {
-            Lot newLot;
+            currentLot = std::make_unique<Lot>();
 
+#if 1
+            do
+            {
+                ProcessChuck(0);
+                ProcessChuck(1);
+                ProcessMeasureStation();
+                ProcessExposeStation();
+                std::this_thread::sleep_for (std::chrono::milliseconds(10));
+            } while (waferInLotNr < nrOfWafersInLot);
+#else
             for (int waferInLotNr = 0; waferInLotNr < nrOfWafersInLot; waferInLotNr++)
             {
-                lotWafers.emplace_back(newLot.GetId()); // Create a wafer and put it in the list
+                lotWafers.emplace_back(currentLot->GetId()); // Create a wafer and put it in the list
                 Wafer *currentWafer = &lotWafers.back();
-                newLot.AddWafer(currentWafer->GetId());
+                currentLot->AddWafer(currentWafer->GetId());
 
                 std::this_thread::sleep_for (std::chrono::milliseconds(10));
                 currentWafer->PreAligned(); // Move wafer to prealigned state (will be event later)
@@ -177,7 +521,7 @@ namespace MachineControl
                 currentWafer->Unloaded();
                 std::this_thread::sleep_for (std::chrono::milliseconds(10));
             }
-
+#endif
         } // end for all lots
         machineControlStateMachine.on_state_transition(transition_to_Idle{});
     }

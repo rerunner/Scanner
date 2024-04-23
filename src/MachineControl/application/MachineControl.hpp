@@ -3,8 +3,10 @@
 
 #include <iostream>
 #include <source_location>
+#include "domain/Chuck.hpp"
 #include "domain/Lot.hpp"
 #include "domain/Wafer.hpp"
+#include "domain/Station.hpp"
 #include "FiniteStateMachine.hpp"
 
 #include <cppkafka/cppkafka.h>
@@ -98,9 +100,23 @@ namespace MachineControl
         std::unique_ptr<cppkafka::Configuration> kafkaConfig;
         std::unique_ptr<cppkafka::Consumer> kafkaConsumer;
         std::thread eventListenerThread;
+        Station measureStation;
+        Station exposeStation;
+        std::unique_ptr<Lot> currentLot;
         std::list<Wafer> lotWafers;
+        Chuck scannerChucks[2];
+        void LoadWaferOnChuck(int chuckNumber);
+        void UnloadWaferFromChuck(int chuckNumber);
+        std::string GetWaferState(Uuid wId);
+        void SwapChucks();
+        void ProcessChuck(int chuckNumber);
         void eventListenerThreadHandler();
+        void ProcessWaferAtMeasureStation();
+        void ProcessMeasureStation();
+        void ProcessWaferAtExposeStation();
+        void ProcessExposeStation();
         bool quit_;
+        int waferInLotNr;
     public:
         MachineControl();
         ~MachineControl();

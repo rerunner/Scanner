@@ -179,8 +179,8 @@ private:
   std::unique_ptr<cppkafka::Producer> kafkaProducer;
   void stateChangePublisher();
 public:
-  Wafer() : AggregateRootBase(){parentLot_ = nullptr;};
-  Wafer(Uuid lotId) : AggregateRootBase(){parentLot_ = std::make_unique<Uuid>(lotId);};
+  Wafer() : AggregateRootBase(){parentLot_ = nullptr; state = "Loaded";};
+  Wafer(Uuid lotId) : AggregateRootBase(){parentLot_ = std::make_unique<Uuid>(lotId); state = "Loaded";};
   virtual ~Wafer(){}
 
   Uuid GetLotId() const {return *parentLot_;}
