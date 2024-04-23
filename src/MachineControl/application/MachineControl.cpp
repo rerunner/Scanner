@@ -449,11 +449,10 @@ namespace MachineControl
         const int nrOfWafersInLot = 25;
         machineControlStateMachine.on_state_transition(transition_to_Executing{});
 
-        for (int lotNr = 0; lotNr<nrOfLots; lotNr++) // One lot for now
+        for (int lotNr = 0; lotNr<nrOfLots; lotNr++) // For all lots
         {
             currentLot = std::make_unique<Lot>();
 
-#if 1
             do
             {
                 ProcessChuck(0);
@@ -462,66 +461,7 @@ namespace MachineControl
                 ProcessExposeStation();
                 std::this_thread::sleep_for (std::chrono::milliseconds(10));
             } while (waferInLotNr < nrOfWafersInLot);
-#else
-            for (int waferInLotNr = 0; waferInLotNr < nrOfWafersInLot; waferInLotNr++)
-            {
-                lotWafers.emplace_back(currentLot->GetId()); // Create a wafer and put it in the list
-                Wafer *currentWafer = &lotWafers.back();
-                currentLot->AddWafer(currentWafer->GetId());
-
-                std::this_thread::sleep_for (std::chrono::milliseconds(10));
-                currentWafer->PreAligned(); // Move wafer to prealigned state (will be event later)
-                std::this_thread::sleep_for (std::chrono::milliseconds(10));
-
-                // Leveling part
-                {
-                    // Do the command to leveling
-                    GSL::Dprintf(GSL::INFO, "starting leveling measure heightmap command #", waferInLotNr, " with curl");
-                    curlpp::Cleanup myCleanup; // RAII cleanup
-                    curlpp::Easy levelingRequest;
-                    std::ostringstream urlCommand;
-                    urlCommand << "http://127.0.0.1:8003//measure/leveling/measure/" << currentWafer->GetId().Get();
-                    levelingRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
-                    levelingRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
-                    levelingRequest.perform();
-
-                    while (currentWafer->GetCurrentState() != "Measured") {
-                            std::this_thread::sleep_for (std::chrono::milliseconds(100));
-                        }
-
-                    std::cout << std::endl;
-                    GSL::Dprintf(GSL::INFO, "Finished leveling measure heightmap command #", waferInLotNr);
-
-                }
-
-                std::this_thread::sleep_for (std::chrono::milliseconds(10));
-                currentWafer->ApprovedForExpose();
-                std::this_thread::sleep_for (std::chrono::milliseconds(10));
-
-                // Expose part
-                {
-                    GSL::Dprintf(GSL::INFO, "starting expose command #", waferInLotNr, " with curl");
-                    curlpp::Cleanup myCleanup; // RAII cleanup
-                    curlpp::Easy exposeRequest;
-                    std::ostringstream urlCommand;
-                    urlCommand << "http://127.0.0.1:8002/expose/expose/" << currentWafer->GetId().Get();
-                    exposeRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
-                    exposeRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
-                    exposeRequest.perform();
-
-                    while (currentWafer->GetCurrentState() != "Exposed") {
-                            std::this_thread::sleep_for (std::chrono::milliseconds(100));
-                        }
-
-                    std::cout << std::endl;
-                    GSL::Dprintf(GSL::INFO, "MachineControl::Execute() -> finished expose command #", waferInLotNr);
-                }
-
-                std::this_thread::sleep_for (std::chrono::milliseconds(10));
-                currentWafer->Unloaded();
-                std::this_thread::sleep_for (std::chrono::milliseconds(10));
-            }
-#endif
+            waferInLotNr = 0; // But do check what it means for the last wafer in a lot! Lots must have a seamless jump
         } // end for all lots
         machineControlStateMachine.on_state_transition(transition_to_Idle{});
     }
