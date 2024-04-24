@@ -42,6 +42,7 @@ namespace MachineControl
             {
                 if (*wId == it->GetId())
                 {
+                    GSL::Dprintf(GSL::INFO, "Wafer ", it->GetId().Get(), " finished.");
                     Wafer& waferMutable = const_cast<Wafer&>(*it); // Break the lock
                     waferMutable.Unloaded(); // Move wafer to Unloaded state
                 }
@@ -462,6 +463,7 @@ namespace MachineControl
                 std::this_thread::sleep_for (std::chrono::milliseconds(10));
             } while (waferInLotNr < nrOfWafersInLot);
             waferInLotNr = 0; // But do check what it means for the last wafer in a lot! Lots must have a seamless jump
+            GSL::Dprintf(GSL::INFO, "Lot ", lotNr, " finished.");
         } // end for all lots
         machineControlStateMachine.on_state_transition(transition_to_Idle{});
     }

@@ -7,10 +7,13 @@
 #include <variant>        // std::visit
 
 #include "MachineControl/application/MachineControl.hpp"
+#include "GenLogger.hpp"
+
+unsigned int GSL::ACTIVE_MESSAGES = GSL::INFO;
 
 int main()
 {
-    std::cout << "Scanner application\n\n";
+    GSL::Dprintf(GSL::INFO, "Scanner application");
 
     MachineControl::MachineControl machineCTRL; // Create machine control
     machineCTRL.Initialize(); // Initialize
