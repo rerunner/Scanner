@@ -11,16 +11,16 @@
 #include "oatpp/parser/json/mapping/ObjectMapper.hpp"
 #include "oatpp/core/macro/component.hpp"
 
-
 #include <iostream>
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
 #include <variant>        // std::visit
 
-
 #include "Leveling/application/AppComponent.hpp"
 #include "Leveling/application/Runner.hpp"
 #include "Leveling/application/Leveling.hpp"
+
+unsigned int GSL::ACTIVE_MESSAGES = GSL::INFO;
 
 void run() {
   /* Register Components in scope of run() method */
@@ -40,7 +40,9 @@ void run() {
   }
 }
 
-int main(int argc, const char * argv[]) {
+int main(int argc, const char * argv[]) 
+{
+  GSL::Dprintf(GSL::INFO, "Leveling application");
 
   oatpp::base::Environment::init();
   run();
