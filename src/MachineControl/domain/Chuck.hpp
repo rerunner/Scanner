@@ -96,6 +96,11 @@ namespace chuckState {
         return {};
     }
 
+    state_transition_to<ReadyForSwap> on_state_transition(const transition_to_ReadyForSwap&) const {
+        GSL::Dprintf(GSL::DEBUG, "Leaving Unloaded state with transition to ReadyForSwap state"); // Only for empty Expose station
+        return {};
+    }
+
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Unloaded state!");

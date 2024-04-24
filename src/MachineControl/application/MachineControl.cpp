@@ -138,15 +138,7 @@ namespace MachineControl
     void MachineControl::ProcessMeasureStation()
     {
         // Which chuck is at the measure station?
-        int chuckNumber;
-        if (scannerChucks[0].GetStation() == StationEnumType::MeasureStation)
-        {
-            chuckNumber = 0;
-        }
-        else
-        {
-            chuckNumber = 1;
-        }
+        int chuckNumber = (scannerChucks[0].GetStation() == StationEnumType::MeasureStation)? 0 : 1;
 
         // What is the measure station doing?
         if (measureStation.GetStationState() == "Processing")
@@ -191,15 +183,7 @@ namespace MachineControl
     void MachineControl::ProcessWaferAtMeasureStation()
     {
         // Which chuck is at the measure station?
-        int chuckNumber;
-        if (scannerChucks[0].GetStation() == StationEnumType::MeasureStation)
-        {
-            chuckNumber = 0;
-        }
-        else
-        {
-            chuckNumber = 1;
-        }
+        int chuckNumber = (scannerChucks[0].GetStation() == StationEnumType::MeasureStation)? 0 : 1;
 
         if (measureStation.GetCommandCompletedState())
         {
@@ -271,15 +255,7 @@ namespace MachineControl
     void MachineControl::ProcessExposeStation()
     {
         // Which chuck is at the expose station?
-        int chuckNumber;
-        if (scannerChucks[0].GetStation() == StationEnumType::ExposeStation)
-        {
-            chuckNumber = 0;
-        }
-        else
-        {
-            chuckNumber = 1;
-        }
+        int chuckNumber = (scannerChucks[0].GetStation() == StationEnumType::ExposeStation)? 0 : 1;
 
         // What is the expose station doing?
         if (exposeStation.GetStationState() == "Processing")
@@ -323,15 +299,7 @@ namespace MachineControl
     void MachineControl::ProcessWaferAtExposeStation()
     {
         // Which chuck is at the expose station?
-        int chuckNumber;
-        if (scannerChucks[0].GetStation() == StationEnumType::ExposeStation)
-        {
-            chuckNumber = 0;
-        }
-        else
-        {
-            chuckNumber = 1;
-        }
+        int chuckNumber = (scannerChucks[0].GetStation() == StationEnumType::ExposeStation)? 0 : 1;
 
         if (exposeStation.GetCommandCompletedState())
         {
