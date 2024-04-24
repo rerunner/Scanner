@@ -121,7 +121,7 @@ namespace MachineControl
         MachineControl();
         ~MachineControl();
         void Initialize();
-        void Execute();
+        void Execute(int nrOfLots, int nrOfWafersInLot);
     };
 }
 

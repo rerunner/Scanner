@@ -412,10 +412,8 @@ namespace MachineControl
         std::this_thread::sleep_for (std::chrono::seconds(5)); // Wait for leveling and expose to initialize. this needs to become an event
     }
 
-    void MachineControl::Execute()
+    void MachineControl::Execute(int nrOfLots, int nrOfWafersInLot)
     {
-        const int nrOfLots = 3;
-        const int nrOfWafersInLot = 25;
         machineControlStateMachine.on_state_transition(transition_to_Executing{});
 
         for (int lotNr = 0; lotNr<nrOfLots; lotNr++) // For all lots
