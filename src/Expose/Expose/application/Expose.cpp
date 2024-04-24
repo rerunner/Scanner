@@ -35,7 +35,7 @@ namespace Expose { namespace Application
 {
     Expose::Expose(): WAFER_DOMAIN_ID(0)
     {
-        GSL::Dprintf(GSL::INFO, "Expose object created");
+        GSL::Dprintf(GSL::DEBUG, "Expose object created");
     }
     Expose::~Expose()
     {
@@ -134,7 +134,7 @@ namespace Expose { namespace Application
 
     std::string Expose::StartHeightMapListener(std::unique_ptr<UnitOfWork> & context_)
     {
-        GSL::Dprintf(GSL::INFO, "Create and activate the DDS data listener for reading incoming heightmaps and wait for a match");
+        GSL::Dprintf(GSL::DEBUG, "Create and activate the DDS data listener for reading incoming heightmaps and wait for a match");
 
         //! Creating the infrastructure that allows an application thread to block
         //! until some condition becomes true, such as data availability.
@@ -148,13 +148,13 @@ namespace Expose { namespace Application
         std::string ret = f.get(); //! Wait for the future ;-)
         waferheightmap_dr->ptr()->set_listener(0, OpenDDS::DCPS::NO_STATUS_MASK);
         context_->Commit(); // Write changes to repository
-        GSL::Dprintf(GSL::INFO, "returned heightmap Id: ", ret);
+        GSL::Dprintf(GSL::DEBUG, "returned heightmap Id: ", ret);
         return ret;
     }
 
     void Expose::exposeWafer(Uuid waferID)
     {
-        GSL::Dprintf(GSL::INFO, "exposeWafer starts with wafer Id = ", waferID.Get());
+        GSL::Dprintf(GSL::DEBUG, "exposeWafer starts with wafer Id = ", waferID.Get());
         std::unique_ptr<UnitOfWork> context_ = std::make_unique<UnitOfWork>(); // smart pointer of UoW as this is going to be passed around
 
         //! expose the whole wafer die by die with the provided image
@@ -181,7 +181,7 @@ namespace Expose { namespace Application
                 {
                     UNUSED( output );
                     input[ "0" ].pop( generatedExposure ); //! Take the measurement from the input
-                    GSL::Dprintf(GSL::INFO, "Expose Loop finished, Exposure ID = ", generatedExposure.GetId().Get());
+                    GSL::Dprintf(GSL::DEBUG, "Expose Loop finished, Exposure ID = ", generatedExposure.GetId().Get());
                     return( raft::proceed ); //! The source will push the stop tag.
                 });
 

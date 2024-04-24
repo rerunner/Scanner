@@ -24,7 +24,7 @@ public:
     std::string justProcessName = totalProcessName.substr(processNamePos+1);
     std::ostringstream databaseName;
     databaseName << justProcessName << "Database.db";
-    GSL::Dprintf(GSL::INFO, "Opening ", databaseName.str());
+    GSL::Dprintf(GSL::DEBUG, "Opening ", databaseName.str());
     db.open(databaseName.str());
     db.registerBeanClass<RepositoryBaseType>();
     

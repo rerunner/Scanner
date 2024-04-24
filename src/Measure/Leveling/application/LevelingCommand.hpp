@@ -58,8 +58,8 @@ namespace LevelingCommands
                                                                  thread_cnt(4), // Depth
                                                                  threads_(thread_cnt)
     {
-      GSL::Dprintf(GSL::INFO, "Creating dispatch queue: ", name_.c_str());
-      GSL::Dprintf(GSL::INFO, "Dispatch threads: ", thread_cnt);
+      GSL::Dprintf(GSL::DEBUG, "Creating dispatch queue: ", name_.c_str());
+      GSL::Dprintf(GSL::DEBUG, "Dispatch threads: ", thread_cnt);
 
       for(size_t i = 0; i < threads_.size(); i++)
       {
@@ -70,8 +70,8 @@ namespace LevelingCommands
     /// @brief 
     ~CommandExecutor()
     {
-      GSL::Dprintf(GSL::INFO, "CommandExecutor destructor");
-      GSL::Dprintf(GSL::INFO, "Destroying dispatch threads...");
+      GSL::Dprintf(GSL::DEBUG, "CommandExecutor destructor");
+      GSL::Dprintf(GSL::DEBUG, "Destroying dispatch threads...");
 
       // Signal to dispatch threads that it's time to wrap up
       std::unique_lock<std::mutex> lock(lock_);
@@ -84,7 +84,7 @@ namespace LevelingCommands
       {
         if(threads_[i].joinable())
         {
-          GSL::Dprintf(GSL::INFO, "Destructor: Joining thread", i, "until completion");
+          GSL::Dprintf(GSL::DEBUG, "Destructor: Joining thread", i, "until completion");
           threads_[i].join();
         }
       }
@@ -107,7 +107,7 @@ namespace LevelingCommands
     void operator()(const MeasureWafer& cmd)
     {
       dispatch([&] {
-        GSL::Dprintf(GSL::INFO, "Leveling command execution start for waferId = ", cmd.waferId.Get());
+        GSL::Dprintf(GSL::DEBUG, "Leveling command execution start for waferId = ", cmd.waferId.Get());
       
         //! Create the Kafka config
         std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
@@ -119,7 +119,7 @@ namespace LevelingCommands
 
 		    leveling_.measureWafer(cmd.waferId);
       
-        GSL::Dprintf(GSL::INFO, "Leveling command executed in async mode, sending Kafka message to indicate completion");
+        GSL::Dprintf(GSL::DEBUG, "Leveling command executed in async mode, sending Kafka message to indicate completion");
         //! Produce a Kafka event message for command completion
         std::stringstream smessage;
         smessage << "MeasureWaferCompleted:" << cmd.waferId.Get();

@@ -30,11 +30,11 @@ namespace MachineControl
         struct Error 
         { 
             void on_update() const {
-            GSL::Dprintf(GSL::INFO, "MC is running!");
+            GSL::Dprintf(GSL::DEBUG, "MC is running!");
             }
 
             state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                GSL::Dprintf(GSL::INFO, "Leaving Error state with transition to Idle state");
+                GSL::Dprintf(GSL::DEBUG, "Leaving Error state with transition to Idle state");
                 return {};
             }
 
@@ -48,13 +48,13 @@ namespace MachineControl
         { 
             // regular on update call 
             void on_update() const {
-                GSL::Dprintf(GSL::INFO, "still waiting");
+                GSL::Dprintf(GSL::DEBUG, "still waiting");
             }
 
             // specific transition to run, where we return the concrete state transition to Executing
             // to distinguish different state transitions, we use an empty function argument here
             state_transition_to<Executing> on_state_transition(const transition_to_Executing&) const{
-                GSL::Dprintf(GSL::INFO, "Leaving Idle state with transition to Executing state");
+                GSL::Dprintf(GSL::DEBUG, "Leaving Idle state with transition to Executing state");
                 return {};
             }
 
@@ -68,11 +68,11 @@ namespace MachineControl
         struct Executing 
         { 
             void on_update() const {
-            GSL::Dprintf(GSL::INFO, "Machine Control is running!");
+            GSL::Dprintf(GSL::DEBUG, "Machine Control is running!");
             }
 
             state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                GSL::Dprintf(GSL::INFO, "Leaving Executing state with transition to Idle state");
+                GSL::Dprintf(GSL::DEBUG, "Leaving Executing state with transition to Idle state");
                 return {};
             }
 

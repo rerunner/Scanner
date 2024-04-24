@@ -21,11 +21,11 @@ namespace stationState {
   struct Idle
   {
     void on_update() const {
-    GSL::Dprintf(GSL::INFO, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Processing> on_state_transition(const transition_to_Processing&) const {
-        GSL::Dprintf(GSL::INFO, "Leaving Idle state with transition to Processing state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Idle state with transition to Processing state");
         return {};
     }
 
@@ -39,11 +39,11 @@ namespace stationState {
   struct Processing
   {
     void on_update() const {
-    GSL::Dprintf(GSL::INFO, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-        GSL::Dprintf(GSL::INFO, "Leaving Processsing state with transition to Idle state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Processsing state with transition to Idle state");
         return {};
     }
 

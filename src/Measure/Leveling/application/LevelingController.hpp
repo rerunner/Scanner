@@ -61,22 +61,22 @@ class LevelingController : public oatpp::web::server::api::ApiController
 
     // Coroutine entrypoint act) returns Action (what to do next)
     Action act() override {
-      GSL::Dprintf(GSL::INFO, "Give commands to leveling object");
+      GSL::Dprintf(GSL::DEBUG, "Give commands to leveling object");
       auto mywId = request->getPathVariable("waferId");
       std::string printableWaferId = mywId;
-      GSL::Dprintf(GSL::INFO, "Leveling Command Received: Measure Heightmap of Wafer with uuid = ", printableWaferId);
+      GSL::Dprintf(GSL::DEBUG, "Leveling Command Received: Measure Heightmap of Wafer with uuid = ", printableWaferId);
 
       return request->readBodyToStringAsync().callbackTo(&measureWafer::returnResponse);
     }
 
     Action returnResponse(const oatpp::String& body){
       /* return Action to return created OutgoingResponse */
-      GSL::Dprintf(GSL::INFO, "Give commands to leveling object");
+      GSL::Dprintf(GSL::DEBUG, "Give commands to leveling object");
       auto mywId = request->getPathVariable("waferId");
       std::string requestedWaferIdStr = mywId;
       Uuid requestedWaferId(requestedWaferIdStr);
       command = std::make_shared<LevelingCommands::Command>(LevelingCommands::MeasureWafer{requestedWaferId});
-      GSL::Dprintf(GSL::INFO, "execute the command");
+      GSL::Dprintf(GSL::DEBUG, "execute the command");
       std::visit(*executor, *command);  
       return _return(controller->createResponse(Status::CODE_200, "Measure heightmap requested\n"));
     }

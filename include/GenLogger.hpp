@@ -9,7 +9,7 @@
 namespace GSL {
     enum MessageLevel 
     { 
-        INFO, 
+        DEBUG, 
         WARNING, 
         ERROR,
         FATAL
@@ -23,11 +23,11 @@ namespace GSL {
         std::ostringstream stream;
         switch (Severity)
         {
-            case GSL::INFO:
-            stream << "\033[0;92m [INFO] ";
+            case GSL::DEBUG:
+            stream << "\033[0;92m[DEBUG] ";
             break;
             case GSL::WARNING:
-            stream << "\033[0;93m [WARN] ";
+            stream << "\033[0;93m[WARN]  ";
             break;
             case GSL::ERROR:
             stream << "\033[0;91m[ERROR] ";

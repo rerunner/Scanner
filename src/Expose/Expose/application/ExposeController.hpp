@@ -61,22 +61,22 @@ class ExposeController : public oatpp::web::server::api::ApiController
 
     // Coroutine entrypoint act) returns Action (what to do next)
     Action act() override {
-      GSL::Dprintf(GSL::INFO, "Give commands to expose object");
+      GSL::Dprintf(GSL::DEBUG, "Give commands to expose object");
       auto mywId = request->getPathVariable("waferId");
       std::string printableWaferId = mywId;
-      GSL::Dprintf(GSL::INFO, "Expose Command Received: Expose Wafer with uuid = ", printableWaferId);
+      GSL::Dprintf(GSL::DEBUG, "Expose Command Received: Expose Wafer with uuid = ", printableWaferId);
 
       return request->readBodyToStringAsync().callbackTo(&exposeWafer::returnResponse);
     }
 
     Action returnResponse(const oatpp::String& body){
       /* return Action to return created OutgoingResponse */
-      GSL::Dprintf(GSL::INFO, "Give commands to expose object");
+      GSL::Dprintf(GSL::DEBUG, "Give commands to expose object");
       auto mywId = request->getPathVariable("waferId");
       std::string requestedWaferIdStr = mywId;
       Uuid requestedWaferId(requestedWaferIdStr);
       command = std::make_shared<ExposeCommands::Command>(ExposeCommands::ExposeWafer{requestedWaferId});
-      GSL::Dprintf(GSL::INFO, "execute the command");
+      GSL::Dprintf(GSL::DEBUG, "execute the command");
       std::visit(*executor, *command);  
       return _return(controller->createResponse(Status::CODE_200, "Expose wafer requested\n"));
     }

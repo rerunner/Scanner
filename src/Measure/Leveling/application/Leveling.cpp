@@ -34,7 +34,7 @@ namespace Leveling  { namespace Application
 {
     Leveling::Leveling(): WAFER_DOMAIN_ID(0)
     {
-      GSL::Dprintf(GSL::INFO, "Leveling constructed with DDS WAFER_DOMAIN_ID ", WAFER_DOMAIN_ID);
+      GSL::Dprintf(GSL::DEBUG, "Leveling constructed with DDS WAFER_DOMAIN_ID ", WAFER_DOMAIN_ID);
     }
 
     void Leveling::SetupDataWriter()
@@ -106,7 +106,7 @@ namespace Leveling  { namespace Application
         //waferHeightMap_dw = scanner::generated::WaferHeightMapDataWriter::_narrow(waferHeightMap_base_dw.in());
         waferHeightMap_dw = scanner::generated::WaferHeightMapDataWriter::_narrow(waferHeightMap_base_dw);
 
-        GSL::Dprintf(GSL::INFO, "Leveling datawriter created, subscribed to topic ", waferheightmap_topic->get_name());
+        GSL::Dprintf(GSL::DEBUG, "Leveling datawriter created, subscribed to topic ", waferheightmap_topic->get_name());
 
         // Register the WaferHeightMap
         whm_handle = waferHeightMap_dw->register_instance(whm_evt);
@@ -133,7 +133,7 @@ namespace Leveling  { namespace Application
       // DTO assembler end
 
       // call the write method of the WaferHeightMap datawriter
-      GSL::Dprintf(GSL::INFO, "Publishing HeightMap of WAFER ID = ", newWaferHeightMapDTO.waferID, " using DDS datawriter.");
+      GSL::Dprintf(GSL::DEBUG, "Publishing HeightMap of WAFER ID = ", newWaferHeightMapDTO.waferID, " using DDS datawriter.");
       return waferHeightMap_dw->write(newWaferHeightMapDTO, whm_handle);
     }
 
@@ -141,11 +141,11 @@ namespace Leveling  { namespace Application
     {
       UnitOfWork context_;
 
-      GSL::Dprintf(GSL::INFO, "measureWafer starts with wafer Id = ", waferId.Get());
+      GSL::Dprintf(GSL::DEBUG, "measureWafer starts with wafer Id = ", waferId.Get());
 
       // Create empty wafer heightmap
       std::shared_ptr<WaferHeightMap> waferHeightMap = std::make_shared<WaferHeightMap>(waferId);
-      GSL::Dprintf(GSL::INFO, "WaferHeightMap created with heightmap ID = ", waferHeightMap->GetId().Get());
+      GSL::Dprintf(GSL::DEBUG, "WaferHeightMap created with heightmap ID = ", waferHeightMap->GetId().Get());
       
       // Raft streaming start
       Measurement generatedMeasurement;
@@ -171,11 +171,11 @@ namespace Leveling  { namespace Application
       
       context_.RegisterNew<WaferHeightMap>(waferHeightMap);
       
-      GSL::Dprintf(GSL::INFO, "WaferHeightMap with ID = ", waferHeightMap->GetId().Get(), " persisted");
+      GSL::Dprintf(GSL::DEBUG, "WaferHeightMap with ID = ", waferHeightMap->GetId().Get(), " persisted");
 
       this->SetupDataWriter();
       this->Publish(&context_, waferHeightMap);
-      GSL::Dprintf(GSL::INFO, "measureWafer done");
+      GSL::Dprintf(GSL::DEBUG, "measureWafer done");
       context_.Commit(); //Use case "measure height map" ended
       return waferHeightMap->GetId();
     }

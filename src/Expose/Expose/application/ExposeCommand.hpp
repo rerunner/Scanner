@@ -54,8 +54,8 @@ namespace Expose { namespace Application { namespace ExposeCommands {
                                                    thread_cnt(4), // Depth
                                                    threads_(thread_cnt)
     {
-      GSL::Dprintf(GSL::INFO, "Creating dispatch queue: ", name_.c_str());
-      GSL::Dprintf(GSL::INFO, "Dispatch threads: ", thread_cnt);
+      GSL::Dprintf(GSL::DEBUG, "Creating dispatch queue: ", name_.c_str());
+      GSL::Dprintf(GSL::DEBUG, "Dispatch threads: ", thread_cnt);
 
       for(size_t i = 0; i < threads_.size(); i++)
       {
@@ -67,8 +67,8 @@ namespace Expose { namespace Application { namespace ExposeCommands {
     /// @brief 
     ~CommandExecutor()
     {
-      GSL::Dprintf(GSL::INFO, "CommandExecutor destructor");
-      GSL::Dprintf(GSL::INFO, "Destroying dispatch threads...");
+      GSL::Dprintf(GSL::DEBUG, "CommandExecutor destructor");
+      GSL::Dprintf(GSL::DEBUG, "Destroying dispatch threads...");
 
       // Signal to dispatch threads that it's time to wrap up
       std::unique_lock<std::mutex> lock(lock_);
@@ -81,7 +81,7 @@ namespace Expose { namespace Application { namespace ExposeCommands {
       {
         if(threads_[i].joinable())
         {
-          GSL::Dprintf(GSL::INFO, "Destructor: Joining thread", i, "until completion");
+          GSL::Dprintf(GSL::DEBUG, "Destructor: Joining thread", i, "until completion");
           threads_[i].join();
         }
       }
@@ -104,7 +104,7 @@ namespace Expose { namespace Application { namespace ExposeCommands {
     void operator()(const ExposeWafer& cmd)
     {
        dispatch([&] {
-        GSL::Dprintf(GSL::INFO, "Expose command execution start for waferId = ", cmd.waferId.Get());
+        GSL::Dprintf(GSL::DEBUG, "Expose command execution start for waferId = ", cmd.waferId.Get());
       
         //! Create the Kafka config
         std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
@@ -116,7 +116,7 @@ namespace Expose { namespace Application { namespace ExposeCommands {
 
         expose_.exposeWafer(cmd.waferId);
 
-        GSL::Dprintf(GSL::INFO, "Expose command executed in async mode, sending Kafka message to indicate completion");
+        GSL::Dprintf(GSL::DEBUG, "Expose command executed in async mode, sending Kafka message to indicate completion");
         //! Produce a Kafka event message for command completion
         std::stringstream smessage;
         smessage << "ExposeWaferCompleted:" << cmd.waferId.Get();

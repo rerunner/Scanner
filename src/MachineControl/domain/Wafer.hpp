@@ -31,11 +31,11 @@ namespace waferState {
   struct Loaded 
   {
     void on_update() const {
-    GSL::Dprintf(GSL::INFO, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Prealigned> on_state_transition(const transition_to_Prealigned&) const {
-        GSL::Dprintf(GSL::INFO, "Leaving Loaded state with transition to Prealigned state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Loaded state with transition to Prealigned state");
         return {};
     }
 
@@ -48,11 +48,11 @@ namespace waferState {
   struct Prealigned
   {
     void on_update() const {
-    GSL::Dprintf(GSL::INFO, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Measured> on_state_transition(const transition_to_Measured&) const {
-        GSL::Dprintf(GSL::INFO, "Leaving Prealigned state with transition to Measured state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Prealigned state with transition to Measured state");
         return {};
     }
 
@@ -65,11 +65,11 @@ namespace waferState {
   struct Measured
   {
     void on_update() const {
-    GSL::Dprintf(GSL::INFO, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<ApprovedForExpose> on_state_transition(const transition_to_ApprovedForExpose&) const {
-        GSL::Dprintf(GSL::INFO, "Leaving Measured state with transition to ApprovedForExpose state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Measured state with transition to ApprovedForExpose state");
         return {};
     }
 
@@ -82,11 +82,11 @@ namespace waferState {
   struct ApprovedForExpose
   {
     void on_update() const {
-    GSL::Dprintf(GSL::INFO, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Exposed> on_state_transition(const transition_to_Exposed&) const {
-        GSL::Dprintf(GSL::INFO, "Leaving ApprovedForExpose state with transition to Exposed state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving ApprovedForExpose state with transition to Exposed state");
         return {};
     }
 
@@ -99,11 +99,11 @@ namespace waferState {
   struct Exposed
   {
     void on_update() const {
-    GSL::Dprintf(GSL::INFO, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
-        GSL::Dprintf(GSL::INFO, "Leaving Exposed state with transition to Unloaded state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Exposed state with transition to Unloaded state");
         return {};
     }
 
@@ -116,11 +116,11 @@ namespace waferState {
   struct Unloaded
   {
     void on_update() const {
-    GSL::Dprintf(GSL::INFO, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
-        GSL::Dprintf(GSL::INFO, "Leaving Unloaded state with transition to Loaded state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Unloaded state with transition to Loaded state");
         return {};
     }
 
@@ -133,11 +133,11 @@ namespace waferState {
   struct Rejected
   { // Dummy for now
     void on_update() const {
-    GSL::Dprintf(GSL::INFO, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
-        GSL::Dprintf(GSL::INFO, "Leaving Rejected state with transition to Unloaded state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Rejected state with transition to Unloaded state");
         return {};
     }
 
