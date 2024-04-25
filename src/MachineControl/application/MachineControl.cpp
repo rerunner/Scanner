@@ -414,12 +414,13 @@ namespace MachineControl
 
     void MachineControl::Execute(int nrOfLots, int nrOfWafersInLot)
     {
+        executeCommandContext = std::make_unique<unitofwork::UnitOfWork>();
         machineControlStateMachine.on_state_transition(transition_to_Executing{});
 
         for (int lotNr = 0; lotNr<nrOfLots; lotNr++) // For all lots
         {
-            currentLot = std::make_unique<Lot>();
-
+            currentLot = std::make_shared<Lot>();
+            executeCommandContext->RegisterNew(currentLot);
             do
             {
                 ProcessChuck(0);
@@ -430,6 +431,7 @@ namespace MachineControl
             } while (waferInLotNr < nrOfWafersInLot);
             waferInLotNr = 0; // But do check what it means for the last wafer in a lot! Lots must have a seamless jump
             GSL::Dprintf(GSL::INFO, "Lot ", lotNr, " finished.");
+            executeCommandContext->Commit();
         } // end for all lots
         machineControlStateMachine.on_state_transition(transition_to_Idle{});
     }

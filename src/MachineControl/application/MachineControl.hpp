@@ -12,6 +12,7 @@
 #include <cppkafka/cppkafka.h>
 
 #include "GenLogger.hpp"
+#include "infrastructure/base/UnitOfWork.hpp"
 
 namespace MachineControl
 {
@@ -102,8 +103,9 @@ namespace MachineControl
         std::thread eventListenerThread;
         Station measureStation;
         Station exposeStation;
-        std::unique_ptr<Lot> currentLot;
+        std::shared_ptr<Lot> currentLot;
         std::list<Wafer> lotWafers;
+        std::unique_ptr<unitofwork::UnitOfWork> executeCommandContext;
         Chuck scannerChucks[2];
         void LoadWaferOnChuck(int chuckNumber);
         void UnloadWaferFromChuck(int chuckNumber);

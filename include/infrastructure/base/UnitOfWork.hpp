@@ -15,6 +15,7 @@
 #include "Uuid.hpp"
 #include "IRepositoryFactory.h"
 #include "IRepositoryBase.h"
+#include "RepositoryFactory.h" // ?
 #include "RepositoryORMBase.h"
 #include "GenLogger.hpp"
 #include "domain/WaferHeightMap.hpp"
