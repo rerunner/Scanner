@@ -157,11 +157,11 @@ using wafer_state_machine = state_machine<  waferState::Loaded,
                                             waferState::Unloaded,
                                             waferState::Rejected >;
 
-class Wafer : public AggregateRootBase
+class Wafer : public std::enable_shared_from_this<Wafer> , public AggregateRootBase
 {
 private:
   wafer_state_machine waferStateMachine;
-  std::unique_ptr<Uuid> parentLot_;
+  Uuid parentLot_;
   std::string state;
 
   //Boilerplate start
@@ -170,20 +170,24 @@ private:
   void hibernate(Archive & ar)
   {
     ar & HIBERLITE_NVP(id_); // From Base class
-    ar & HIBERLITE_NVP(waferStateMachine);
+    ar & HIBERLITE_NVP(state); // Recorded state when wafer gets committed to the database
   }
   //Boilerplate end
 
   // Kafka part
-  std::unique_ptr<cppkafka::Configuration> kafkaConfig;
-  std::unique_ptr<cppkafka::Producer> kafkaProducer;
+  //std::unique_ptr<cppkafka::Configuration> kafkaConfig;
+  //std::unique_ptr<cppkafka::Producer> kafkaProducer;
+  cppkafka::Configuration *kafkaConfig;
+  cppkafka::Producer *kafkaProducer;
   void stateChangePublisher();
 public:
-  Wafer() : AggregateRootBase(){parentLot_ = nullptr; state = "Loaded";};
-  Wafer(Uuid lotId) : AggregateRootBase(){parentLot_ = std::make_unique<Uuid>(lotId); state = "Loaded";};
+  Wafer() : AggregateRootBase(){/*parentLot_ = nullptr;*/ state = "Loaded";};
+  Wafer(Uuid lotId) : AggregateRootBase(){parentLot_ = lotId; state = "Loaded"; kafkaConfig = nullptr; kafkaProducer = nullptr;};
   virtual ~Wafer(){}
 
-  Uuid GetLotId() const {return *parentLot_;}
+  std::shared_ptr<Wafer> getWafer() { return shared_from_this(); }
+
+  Uuid GetLotId() const {return parentLot_;}
   std::string GetCurrentState() const {return state;}
 
   void PreAligned()

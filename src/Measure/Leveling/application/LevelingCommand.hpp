@@ -47,6 +47,7 @@ namespace LevelingCommands
     std::queue<fp_t> q_;
     std::condition_variable cv_;
     bool quit_ = false;
+    std::string message; // for kafka
     
     // Kafka part
     std::unique_ptr<cppkafka::Configuration> kafkaConfig;
@@ -123,9 +124,10 @@ namespace LevelingCommands
         //! Produce a Kafka event message for command completion
         std::stringstream smessage;
         smessage << "MeasureWaferCompleted:" << cmd.waferId.Get();
-        std::string message = smessage.str();
+        //std::string message = smessage.str();
+        message = smessage.str();
         kafkaProducer->produce(cppkafka::MessageBuilder("levelingTopic").partition(0).payload(message));
-        kafkaProducer->flush();
+        kafkaProducer->flush(std::chrono::milliseconds(10000)); // 10s timeout
 	    });
     }
 

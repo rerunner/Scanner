@@ -23,11 +23,12 @@ namespace MachineControl
 
     void MachineControl::LoadWaferOnChuck(int chuckNumber)
     {
-        lotWafers.emplace_back(currentLot->GetId()); // Create a wafer and put it in the list
-        Wafer *currentWafer = &lotWafers.back(); // Reference without copy
+        lotWafers.emplace_back(std::make_shared<Wafer>(currentLot->GetId())); // Create a wafer and put it in the list
+        std::shared_ptr<Wafer> currentWafer = lotWafers.back(); // Reference without copy
         currentLot->AddWafer(currentWafer->GetId());
         scannerChucks[chuckNumber].LoadWafer(currentWafer->GetId());
         waferInLotNr++;
+        executeCommandContext->RegisterNew(currentWafer->getWafer()); // Add the object to the unit of work
     }
 
     void MachineControl::UnloadWaferFromChuck(int chuckNumber)
@@ -38,13 +39,13 @@ namespace MachineControl
         if (wId) // At startup the chuck can be empty returning from expose station
         {
             // Access loaded wafer 
-            for (std::list<Wafer>::const_iterator it = lotWafers.begin(); it != lotWafers.end(); ++it)
+            for (auto it : lotWafers)
             {
                 if (*wId == it->GetId())
                 {
-                    GSL::Dprintf(GSL::INFO, "Wafer ", it->GetId().Get(), " finished.");
-                    Wafer& waferMutable = const_cast<Wafer&>(*it); // Break the lock
-                    waferMutable.Unloaded(); // Move wafer to Unloaded state
+                    GSL::Dprintf(GSL::INFO, waferInLotNr, " Wafers Processed by Lot ");
+                    GSL::Dprintf(GSL::DEBUG, "Wafer ", it->GetId().Get(), " finished.");
+                    it->Unloaded();
                 }
             }
         }
@@ -55,7 +56,7 @@ namespace MachineControl
     {
         //find loaded wafer and return state
         std::string result = "";
-        for (std::list<Wafer>::const_iterator it = lotWafers.begin(); it != lotWafers.end(); ++it)
+        for (auto it : lotWafers)
         {
             if (wId == it->GetId())
             {
@@ -72,8 +73,6 @@ namespace MachineControl
             // Swap
             scannerChucks[0].SwapStation();
             scannerChucks[1].SwapStation();
-            //Chuck States will have changed back to Loaded
-            //measureStation.ReturnToIdle(); // Measure station can 
         }
     }
 
@@ -193,13 +192,12 @@ namespace MachineControl
                 // Execute prealign command
                 GSL::Dprintf(GSL::DEBUG, "Measurestation has Wafer at Loaded state: Execute PreAlign command");
                 // find loaded wafer 
-                for (std::list<Wafer>::const_iterator it = lotWafers.begin(); it != lotWafers.end(); ++it)
+                for (auto it : lotWafers)
                 {
                     // do whatever you wish but don't modify the list elements
                     if (*wId == it->GetId())
                     {
-                        Wafer& waferMutable = const_cast<Wafer&>(*it); // Break the lock
-                        waferMutable.PreAligned(); // Move wafer to prealigned state (will be event later)
+                        it->PreAligned(); // Move wafer to prealigned state (will be event later)
                         // Keep the command state at command completed for now
                     }
                 }
@@ -227,13 +225,12 @@ namespace MachineControl
                 // promote Wafer state to approved for expose
                 GSL::Dprintf(GSL::DEBUG, "Measurestation has Wafer at Measured state: Execute ApprovedForExpose command");
                 // find loaded wafer 
-                for (std::list<Wafer>::const_iterator it = lotWafers.begin(); it != lotWafers.end(); ++it)
+                for (auto it : lotWafers)
                 {
                     // do whatever you wish but don't modify the list elements
                     if (*wId == it->GetId())
                     {
-                        Wafer& waferMutable = const_cast<Wafer&>(*it); // Break the lock
-                        waferMutable.ApprovedForExpose(); // Move wafer to ApprovedForExpose state
+                        it->ApprovedForExpose();
                         // Keep the state at command completed
                     }
                 }
@@ -354,17 +351,15 @@ namespace MachineControl
                     std::ostringstream newMessageStream;
                     newMessageStream << record.get_payload();
                     std::string newMessage = newMessageStream.str();
-                    //GSL::Dprintf(GSL::DEBUG, "----> Payload [", newMessage, "]");
 
                     if (std::string_view(newMessage.data(), 20) == "ExposeWaferCompleted")
                     {
-                        auto checkMessageLambda = [&](const Wafer& wafer) 
+                        auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
                         { 
-                            if (std::string_view(newMessage.data()+21, 36) == wafer.GetId().Get())
+                            if (std::string_view(newMessage.data()+21, 36) == wafer->GetId().Get())
                             {
                                 GSL::Dprintf(GSL::DEBUG, "processing ExposeWaferCompleted message with Wafer Id = ", std::string_view(newMessage.data()+21, 36));
-                                Wafer& waferMutable = const_cast<Wafer&>(wafer); 
-                                waferMutable.Exposed();
+                                wafer->Exposed();
                                 exposeStation.CommandHasCompleted(); // Temporary, to be removed
                             }
                         };
@@ -372,13 +367,12 @@ namespace MachineControl
                     }
                     else if (std::string_view(newMessage.data(), 21) == "MeasureWaferCompleted")
                     {
-                        auto checkMessageLambda = [&](const Wafer& wafer) 
+                        auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
                         { 
-                            if (std::string_view(newMessage.data()+22, 36) == wafer.GetId().Get())
+                            if (std::string_view(newMessage.data()+22, 36) == wafer->GetId().Get())
                             {
                                 GSL::Dprintf(GSL::DEBUG, "processing MeasureWaferCompleted message with Wafer Id = ", std::string_view(newMessage.data()+22, 36));
-                                Wafer& waferMutable = const_cast<Wafer&>(wafer); 
-                                waferMutable.Measured();
+                                wafer->Measured();
                                 measureStation.CommandHasCompleted(); // Temporary, to be removed
                             }
                         };
@@ -386,9 +380,9 @@ namespace MachineControl
                     }
                     else if (std::string_view(newMessage.data(), 14) == "NewWaferState:")
                     {  // We got a wafer state change message
-                        auto checkMessageLambda = [&](const Wafer& wafer) 
+                        auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
                         { 
-                            if (std::string_view(newMessage.data()+15, 36) == wafer.GetId().Get())
+                            if (std::string_view(newMessage.data()+15, 36) == wafer->GetId().Get())
                             { 
                                 GSL::Dprintf(GSL::DEBUG, "processing NewWaferState message for Wafer Id = ", std::string_view(newMessage.data()+21));
                             }
@@ -427,7 +421,7 @@ namespace MachineControl
                 ProcessChuck(1);
                 ProcessMeasureStation();
                 ProcessExposeStation();
-                std::this_thread::sleep_for (std::chrono::milliseconds(10));
+                std::this_thread::sleep_for (std::chrono::milliseconds(1));
             } while (waferInLotNr < nrOfWafersInLot);
             waferInLotNr = 0; // But do check what it means for the last wafer in a lot! Lots must have a seamless jump
             GSL::Dprintf(GSL::INFO, "Lot ", lotNr, " finished.");

@@ -6,9 +6,11 @@ void Wafer::stateChangePublisher()
     std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
     cppkafka::ConfigurationOption exposeConfigOption{"metadata.broker.list", "localhost:9092"};
     kafkaConfigOptions.push_back(exposeConfigOption);
-    kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
+    //kafkaConfig = std::make_shared<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
+    kafkaConfig = new cppkafka::Configuration(cppkafka::Configuration{kafkaConfigOptions});
     //! Create the Kafka producer
-    kafkaProducer = std::make_unique<cppkafka::Producer>(*kafkaConfig);
+    //kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaConfig);
+    kafkaProducer = new cppkafka::Producer(*kafkaConfig);
 
     //! Produce a Kafka event message for command completion
     std::stringstream smessage;

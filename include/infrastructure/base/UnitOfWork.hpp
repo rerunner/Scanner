@@ -91,7 +91,7 @@ public:
     void RegisterNew(std::shared_ptr<EntityType> entPtr)
     {
         GSL::Dprintf(GSL::DEBUG, "ENTER");
-        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr), RegistryTypeEnum::RegisterNew);        
+        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterNew);
         _newEntities.push_back(std::move(myNewEntityPtr)); //Register
         GSL::Dprintf(GSL::DEBUG, "EXIT");
     }
@@ -100,7 +100,7 @@ public:
     void RegisterDirty(std::shared_ptr<EntityType> entPtr)
     { 
         GSL::Dprintf(GSL::DEBUG, "ENTER");
-        EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr), RegistryTypeEnum::RegisterDirty);
+        EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDirty);
         _updatedEntities.push_back(std::move(myUpdatedEntityPtr)); //Register
         GSL::Dprintf(GSL::DEBUG, "EXIT");
     }
@@ -109,7 +109,7 @@ public:
     void RegisterDeleted(std::shared_ptr<EntityType> entPtr)
     { 
         GSL::Dprintf(GSL::DEBUG, "ENTER");
-        EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(std::move(entPtr), RegistryTypeEnum::RegisterDeleted);
+        EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDeleted);
         _updatedEntities.push_back(std::move(myDeletedEntityPtr)); //Register
         GSL::Dprintf(GSL::DEBUG, "EXIT");
     }

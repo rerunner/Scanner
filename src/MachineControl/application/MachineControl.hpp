@@ -104,7 +104,7 @@ namespace MachineControl
         Station measureStation;
         Station exposeStation;
         std::shared_ptr<Lot> currentLot;
-        std::list<Wafer> lotWafers;
+        std::list<std::shared_ptr<Wafer>> lotWafers;
         std::unique_ptr<unitofwork::UnitOfWork> executeCommandContext;
         Chuck scannerChucks[2];
         void LoadWaferOnChuck(int chuckNumber);

@@ -43,6 +43,7 @@ namespace Expose { namespace Application { namespace ExposeCommands {
     std::queue<fp_t> q_;
     std::condition_variable cv_;
     bool quit_ = false;
+    std::string message;
 
     // Kafka part
     std::unique_ptr<cppkafka::Configuration> kafkaConfig;
@@ -120,9 +121,9 @@ namespace Expose { namespace Application { namespace ExposeCommands {
         //! Produce a Kafka event message for command completion
         std::stringstream smessage;
         smessage << "ExposeWaferCompleted:" << cmd.waferId.Get();
-        std::string message = smessage.str();
+        message = smessage.str();
         kafkaProducer->produce(cppkafka::MessageBuilder("exposeTopic").partition(0).payload(message));
-        kafkaProducer->flush();
+        kafkaProducer->flush(std::chrono::milliseconds(10000)); // 10s timeout
        });
     }
 

@@ -9,7 +9,7 @@
 #include "MachineControl/application/MachineControl.hpp"
 #include "GenLogger.hpp"
 
-unsigned int GSL::ACTIVE_MESSAGES = GSL::INFO | GSL::FATAL | GSL::ERROR;
+unsigned int GSL::ACTIVE_MESSAGES = GSL::INFO | GSL::FATAL | GSL::ERROR | GSL::DEBUG;
 
 int main()
 {
