@@ -175,8 +175,6 @@ private:
   //Boilerplate end
 
   // Kafka part
-  //std::unique_ptr<cppkafka::Configuration> kafkaConfig;
-  //std::unique_ptr<cppkafka::Producer> kafkaProducer;
   cppkafka::Configuration *kafkaConfig;
   cppkafka::Producer *kafkaProducer;
   void stateChangePublisher();

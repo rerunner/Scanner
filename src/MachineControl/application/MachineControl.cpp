@@ -5,7 +5,9 @@
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
+#include <nlohmann/json.hpp>
 
+using json = nlohmann::json;
 using namespace curlpp::options;
 
 namespace MachineControl
@@ -324,7 +326,7 @@ namespace MachineControl
         std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
         cppkafka::ConfigurationOption machinecontrolConfigOption{"metadata.broker.list", "localhost:9092"};
         kafkaConfigOptions.push_back(machinecontrolConfigOption);
-        kafkaConfigOptions.push_back({ "group.id", "foo" });
+        kafkaConfigOptions.push_back({ "group.id", "machinecontrol" }); // Every microservice needs its own unique kafka group id
         kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
         
         // Create a consumer instance
@@ -343,6 +345,7 @@ namespace MachineControl
         {
             // Poll messages from Kafka brokers
             cppkafka::Message record = kafkaConsumer->poll(std::chrono::milliseconds(100));
+            
             if (record)
             {
                 if (!record.get_error())
@@ -351,43 +354,44 @@ namespace MachineControl
                     std::ostringstream newMessageStream;
                     newMessageStream << record.get_payload();
                     std::string newMessage = newMessageStream.str();
-
-                    if (std::string_view(newMessage.data(), 20) == "ExposeWaferCompleted")
+                    std::string mTopic = record.get_topic();
+                    GSL::Dprintf(GSL::DEBUG, "Topic of new message is ", mTopic);
+                    if (mTopic == "exposeTopic")
                     {
-                        auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
-                        { 
-                            if (std::string_view(newMessage.data()+21, 36) == wafer->GetId().Get())
-                            {
-                                GSL::Dprintf(GSL::DEBUG, "processing ExposeWaferCompleted message with Wafer Id = ", std::string_view(newMessage.data()+21, 36));
-                                wafer->Exposed();
-                                exposeStation.CommandHasCompleted(); // Temporary, to be removed
-                            }
-                        };
-                        std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
-                    }
-                    else if (std::string_view(newMessage.data(), 21) == "MeasureWaferCompleted")
-                    {
-                        auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
-                        { 
-                            if (std::string_view(newMessage.data()+22, 36) == wafer->GetId().Get())
-                            {
-                                GSL::Dprintf(GSL::DEBUG, "processing MeasureWaferCompleted message with Wafer Id = ", std::string_view(newMessage.data()+22, 36));
-                                wafer->Measured();
-                                measureStation.CommandHasCompleted(); // Temporary, to be removed
-                            }
-                        };
-                        std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
-                    }
-                    else if (std::string_view(newMessage.data(), 14) == "NewWaferState:")
-                    {  // We got a wafer state change message
-                        auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
-                        { 
-                            if (std::string_view(newMessage.data()+15, 36) == wafer->GetId().Get())
+                        if (std::string_view(newMessage.data(), 20) == "ExposeWaferCompleted")
+                        {
+                            auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
                             { 
-                                GSL::Dprintf(GSL::DEBUG, "processing NewWaferState message for Wafer Id = ", std::string_view(newMessage.data()+21));
-                            }
-                        };
-                        std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
+                                if (std::string_view(newMessage.data()+21, 36) == wafer->GetId().Get())
+                                {
+                                    GSL::Dprintf(GSL::DEBUG, "processing ExposeWaferCompleted message with Wafer Id = ", std::string_view(newMessage.data()+21, 36));
+                                    wafer->Exposed();
+                                    exposeStation.CommandHasCompleted(); // Temporary, to be removed
+                                }
+                            };
+                            std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
+                        }
+                    }
+                    else if (mTopic == "levelingTopic")
+                    {
+                        if (std::string_view(newMessage.data(), 21) == "MeasureWaferCompleted")
+                        {
+                            auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
+                            { 
+                                if (std::string_view(newMessage.data()+22, 36) == wafer->GetId().Get())
+                                {
+                                    GSL::Dprintf(GSL::DEBUG, "processing MeasureWaferCompleted message with Wafer Id = ", std::string_view(newMessage.data()+22, 36));
+                                    wafer->Measured();
+                                    measureStation.CommandHasCompleted(); // Temporary, to be removed
+                                }
+                            };
+                            std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
+                        }
+                    }
+                    else if (mTopic == "waferStateTopic")
+                    {
+                        json j_message = json::from_cbor(record.get_payload());
+                        GSL::Dprintf(GSL::INFO, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
                     } 
                 }
                 else if (!record.is_eof()) {

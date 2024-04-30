@@ -1,4 +1,7 @@
+#include <nlohmann/json.hpp>
 #include "Wafer.hpp"
+
+using json = nlohmann::json;
 
 void Wafer::stateChangePublisher()
 {
@@ -6,18 +9,17 @@ void Wafer::stateChangePublisher()
     std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
     cppkafka::ConfigurationOption exposeConfigOption{"metadata.broker.list", "localhost:9092"};
     kafkaConfigOptions.push_back(exposeConfigOption);
-    //kafkaConfig = std::make_shared<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
     kafkaConfig = new cppkafka::Configuration(cppkafka::Configuration{kafkaConfigOptions});
     //! Create the Kafka producer
-    //kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaConfig);
     kafkaProducer = new cppkafka::Producer(*kafkaConfig);
 
-    //! Produce a Kafka event message for command completion
-    std::stringstream smessage;
-    //smessage << "NewWaferState: " << state << " for " << id_.Get();
-    smessage << "NewWaferState: " << id_.Get() << " " << state;
-    std::string message = smessage.str();
-    kafkaProducer->produce(cppkafka::MessageBuilder("waferStateTopic").partition(0).payload(message));
+    json jMessage;
+    jMessage.emplace("Id", id_.Get());
+    jMessage.emplace("State", state);
+    // serialize to CBOR
+    std::vector<std::uint8_t> message = json::to_cbor(jMessage);
+    cppkafka::Buffer bmess(message); // Make sure the kafka message is using the cbor binary format and not a string
+    kafkaProducer->produce(cppkafka::MessageBuilder("waferStateTopic").partition(0).payload(bmess));
     
     kafkaProducer->flush(std::chrono::milliseconds(10000)); // 10s timeout
 }

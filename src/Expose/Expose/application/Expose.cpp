@@ -28,18 +28,73 @@
 #include <dds/DCPS/LocalObject.h>
 #include <dds/DCPS/Definitions.h>
 
+#include <nlohmann/json.hpp>
+
 #include "ScannerC.h"
 #include "GenLogger.hpp"
 
+using json = nlohmann::json;
+
 namespace Expose { namespace Application 
 {
-    Expose::Expose(): WAFER_DOMAIN_ID(0)
+    Expose::Expose(): WAFER_DOMAIN_ID(0), quit_(false)
     {
+        eventListenerThread = std::thread(&Expose::eventListenerThreadHandler, this);
         GSL::Dprintf(GSL::DEBUG, "Expose object created");
     }
     Expose::~Expose()
     {
+        quit_ = true;
         this->UnSubscribe();
+    }
+
+    void Expose::eventListenerThreadHandler()
+    {
+        // Create the Kafka config
+        GSL::Dprintf(GSL::DEBUG, "Creating the Kafka config");
+        std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
+        cppkafka::ConfigurationOption machinecontrolConfigOption{"metadata.broker.list", "localhost:9092"};
+        kafkaConfigOptions.push_back(machinecontrolConfigOption);
+        kafkaConfigOptions.push_back({ "group.id", "expose" }); // Every microservice needs its own unique kafka group id
+        kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
+        
+        // Create a consumer instance
+        GSL::Dprintf(GSL::DEBUG, "Creating a consumer instance");
+        kafkaConsumer = std::make_unique<cppkafka::Consumer>(*kafkaConfig);
+
+        // Subscribe to topics
+        std::vector<std::string> exposeTopics;
+        exposeTopics.push_back("waferStateTopic");
+        GSL::Dprintf(GSL::DEBUG, "Subscribing to Lot and Wafer topics");
+        kafkaConsumer->subscribe(exposeTopics);
+        GSL::Dprintf(GSL::INFO, "Expose now polling for Lot and Wafer messages from Kafka brokers");    
+        do
+        {
+            // Poll messages from Kafka brokers
+            cppkafka::Message record = kafkaConsumer->poll(std::chrono::milliseconds(100));
+            if (record)
+            {
+                if (!record.get_error())
+                {
+                    std::ostringstream newMessageStream;
+                    newMessageStream << record.get_payload();
+                    std::string newMessage = newMessageStream.str();
+                    GSL::Dprintf(GSL::DEBUG, "Got a new message...", newMessage);
+
+                    GSL::Dprintf(GSL::DEBUG, "processing NewWaferState message");
+                    json j_message = json::from_cbor(record.get_payload());
+                    GSL::Dprintf(GSL::INFO, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
+                    
+                }
+                else if (!record.is_eof()) {
+                    // Is it an error notification, handle it.
+                    // This is explicitly skipping EOF notifications as they're not actually errors,
+                    // but that's how rdkafka provides them
+                    GSL::Dprintf(GSL::ERROR, "Expose kafka error");    
+                }
+            }
+        } while(!quit_);
+        GSL::Dprintf(GSL::INFO, "Expose NOT ANYMORE polling for Lot and Wafer messages from Kafka brokers");    
     }
 
     void Expose::Subscribe()
