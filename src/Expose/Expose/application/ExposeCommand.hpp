@@ -14,9 +14,12 @@
 #include <condition_variable>
 
 #include <cppkafka/cppkafka.h>
+#include <nlohmann/json.hpp>
 
 #include "GenLogger.hpp"
 #include "Expose/application/Expose.hpp"
+
+using json = nlohmann::json;
 
 namespace Expose { namespace Application { namespace ExposeCommands {
   struct DummyMethod 
@@ -57,6 +60,14 @@ namespace Expose { namespace Application { namespace ExposeCommands {
     {
       GSL::Dprintf(GSL::DEBUG, "Creating dispatch queue: ", name_.c_str());
       GSL::Dprintf(GSL::DEBUG, "Dispatch threads: ", thread_cnt);
+
+      //! Create the Kafka config
+      std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
+      cppkafka::ConfigurationOption exposeConfigOption{"metadata.broker.list", "localhost:9092"};
+      kafkaConfigOptions.push_back(exposeConfigOption);
+      kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
+      //! Create the Kafka producer
+      kafkaProducer = std::make_unique<cppkafka::Producer>(*kafkaConfig);
 
       for(size_t i = 0; i < threads_.size(); i++)
       {
@@ -106,23 +117,19 @@ namespace Expose { namespace Application { namespace ExposeCommands {
     {
        dispatch([&] {
         GSL::Dprintf(GSL::DEBUG, "Expose command execution start for waferId = ", cmd.waferId.Get());
-      
-        //! Create the Kafka config
-        std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
-        cppkafka::ConfigurationOption exposeConfigOption{"metadata.broker.list", "localhost:9092"};
-        kafkaConfigOptions.push_back(exposeConfigOption);
-        kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
-        //! Create the Kafka producer
-        kafkaProducer = std::make_unique<cppkafka::Producer>(*kafkaConfig);
 
         expose_.exposeWafer(cmd.waferId);
 
-        GSL::Dprintf(GSL::DEBUG, "Expose command executed in async mode, sending Kafka message to indicate completion");
-        //! Produce a Kafka event message for command completion
-        std::stringstream smessage;
-        smessage << "ExposeWaferCompleted:" << cmd.waferId.Get();
-        message = smessage.str();
-        kafkaProducer->produce(cppkafka::MessageBuilder("exposeTopic").partition(0).payload(message));
+        GSL::Dprintf(GSL::DEBUG, "Expose command finished execution in async mode, sending Kafka message to indicate completion");
+        json jMessage;
+        jMessage.emplace("Message", "CommandCompleted");
+        jMessage.emplace("Command", "ExposeWafer");
+        jMessage.emplace("Id", cmd.waferId.Get());
+        // serialize to CBOR
+        std::vector<std::uint8_t> message = json::to_cbor(jMessage);
+        cppkafka::Buffer bmess(message); // Make sure the kafka message is using the cbor binary format and not a string
+        kafkaProducer->produce(cppkafka::MessageBuilder("exposeTopic").partition(0).payload(bmess));
+
         kafkaProducer->flush(std::chrono::milliseconds(10000)); // 10s timeout
        });
     }

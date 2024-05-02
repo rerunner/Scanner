@@ -179,8 +179,8 @@ private:
   cppkafka::Producer *kafkaProducer;
   void stateChangePublisher();
 public:
-  Wafer() : AggregateRootBase(){/*parentLot_ = nullptr;*/ state = "Loaded";};
-  Wafer(Uuid lotId) : AggregateRootBase(){parentLot_ = lotId; state = "Loaded"; kafkaConfig = nullptr; kafkaProducer = nullptr;};
+  Wafer();
+  Wafer(Uuid lotId);
   virtual ~Wafer(){}
 
   std::shared_ptr<Wafer> getWafer() { return shared_from_this(); }

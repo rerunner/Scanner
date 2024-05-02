@@ -337,7 +337,7 @@ namespace MachineControl
         std::vector<std::string> machineControlTopics;
         machineControlTopics.push_back("levelingTopic");
         machineControlTopics.push_back("exposeTopic");
-        machineControlTopics.push_back("waferStateTopic");
+        //machineControlTopics.push_back("waferStateTopic");
         GSL::Dprintf(GSL::DEBUG, "Subscribing to Leveling and Expose topics");
         kafkaConsumer->subscribe(machineControlTopics);
         GSL::Dprintf(GSL::DEBUG, "MachineControl now polling for Leveling and Expose messages from Kafka brokers");    
@@ -358,13 +358,15 @@ namespace MachineControl
                     GSL::Dprintf(GSL::DEBUG, "Topic of new message is ", mTopic);
                     if (mTopic == "exposeTopic")
                     {
-                        if (std::string_view(newMessage.data(), 20) == "ExposeWaferCompleted")
+                        json j_message = json::from_cbor(record.get_payload()); 
+                        GSL::Dprintf(GSL::INFO, "Message = ", j_message["Message"], " Command = ", j_message["Command"]);
+                        if ((j_message["Message"] == "CommandCompleted") && (j_message["Command"] == "ExposeWafer"))
                         {
                             auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
                             { 
-                                if (std::string_view(newMessage.data()+21, 36) == wafer->GetId().Get())
+                                if (j_message["Id"] == wafer->GetId().Get())
                                 {
-                                    GSL::Dprintf(GSL::DEBUG, "processing ExposeWaferCompleted message with Wafer Id = ", std::string_view(newMessage.data()+21, 36));
+                                    GSL::Dprintf(GSL::DEBUG, "processing ExposeWaferCompleted message with Wafer Id = ", j_message["Id"]);
                                     wafer->Exposed();
                                     exposeStation.CommandHasCompleted(); // Temporary, to be removed
                                 }
@@ -374,13 +376,15 @@ namespace MachineControl
                     }
                     else if (mTopic == "levelingTopic")
                     {
-                        if (std::string_view(newMessage.data(), 21) == "MeasureWaferCompleted")
+                        json j_message = json::from_cbor(record.get_payload()); 
+                        GSL::Dprintf(GSL::INFO, "Message = ", j_message["Message"], " Command = ", j_message["Command"]);
+                        if ((j_message["Message"] == "CommandCompleted") && (j_message["Command"] == "MeasureWafer"))
                         {
                             auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
                             { 
-                                if (std::string_view(newMessage.data()+22, 36) == wafer->GetId().Get())
+                                if (j_message["Id"] == wafer->GetId().Get())
                                 {
-                                    GSL::Dprintf(GSL::DEBUG, "processing MeasureWaferCompleted message with Wafer Id = ", std::string_view(newMessage.data()+22, 36));
+                                    GSL::Dprintf(GSL::DEBUG, "processing MeasureWaferCompleted message with Wafer Id = ", j_message["Id"]);
                                     wafer->Measured();
                                     measureStation.CommandHasCompleted(); // Temporary, to be removed
                                 }
@@ -388,16 +392,19 @@ namespace MachineControl
                             std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
                         }
                     }
+#if 0
                     else if (mTopic == "waferStateTopic")
                     {
                         json j_message = json::from_cbor(record.get_payload());
                         GSL::Dprintf(GSL::INFO, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
                     } 
+#endif
                 }
                 else if (!record.is_eof()) {
                     // Is it an error notification, handle it.
                     // This is explicitly skipping EOF notifications as they're not actually errors,
                     // but that's how rdkafka provides them
+                    GSL::Dprintf(GSL::ERROR, "Expose kafka error");    
                 }
             }
         } while(!quit_);

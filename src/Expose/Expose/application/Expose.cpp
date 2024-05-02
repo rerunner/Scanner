@@ -67,7 +67,6 @@ namespace Expose { namespace Application
         exposeTopics.push_back("waferStateTopic");
         GSL::Dprintf(GSL::DEBUG, "Subscribing to Lot and Wafer topics");
         kafkaConsumer->subscribe(exposeTopics);
-        GSL::Dprintf(GSL::INFO, "Expose now polling for Lot and Wafer messages from Kafka brokers");    
         do
         {
             // Poll messages from Kafka brokers
@@ -83,7 +82,11 @@ namespace Expose { namespace Application
 
                     GSL::Dprintf(GSL::DEBUG, "processing NewWaferState message");
                     json j_message = json::from_cbor(record.get_payload());
-                    GSL::Dprintf(GSL::INFO, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
+                    GSL::Dprintf(GSL::DEBUG, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
+                    if (j_message["State"] == "Unloaded")
+                    {
+                        GSL::Dprintf(GSL::INFO, "CAN DELETE WAFER");
+                    }
                     
                 }
                 else if (!record.is_eof()) {
@@ -94,7 +97,6 @@ namespace Expose { namespace Application
                 }
             }
         } while(!quit_);
-        GSL::Dprintf(GSL::INFO, "Expose NOT ANYMORE polling for Lot and Wafer messages from Kafka brokers");    
     }
 
     void Expose::Subscribe()

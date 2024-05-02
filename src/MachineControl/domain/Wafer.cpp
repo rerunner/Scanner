@@ -3,8 +3,11 @@
 
 using json = nlohmann::json;
 
-void Wafer::stateChangePublisher()
+
+Wafer::Wafer() : AggregateRootBase()
 {
+    state = "Loaded";
+
     //! Create the Kafka config
     std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
     cppkafka::ConfigurationOption exposeConfigOption{"metadata.broker.list", "localhost:9092"};
@@ -12,8 +15,25 @@ void Wafer::stateChangePublisher()
     kafkaConfig = new cppkafka::Configuration(cppkafka::Configuration{kafkaConfigOptions});
     //! Create the Kafka producer
     kafkaProducer = new cppkafka::Producer(*kafkaConfig);
+}
 
+Wafer::Wafer(Uuid lotId) : AggregateRootBase()
+{
+    parentLot_ = lotId; state = "Loaded"; kafkaConfig = nullptr; kafkaProducer = nullptr;
+
+    //! Create the Kafka config
+    std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
+    cppkafka::ConfigurationOption exposeConfigOption{"metadata.broker.list", "localhost:9092"};
+    kafkaConfigOptions.push_back(exposeConfigOption);
+    kafkaConfig = new cppkafka::Configuration(cppkafka::Configuration{kafkaConfigOptions});
+    //! Create the Kafka producer
+    kafkaProducer = new cppkafka::Producer(*kafkaConfig);
+}
+
+void Wafer::stateChangePublisher()
+{
     json jMessage;
+    jMessage.emplace("Message", "StateChange");
     jMessage.emplace("Id", id_.Get());
     jMessage.emplace("State", state);
     // serialize to CBOR
