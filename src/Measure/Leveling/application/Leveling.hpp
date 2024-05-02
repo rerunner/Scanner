@@ -8,6 +8,8 @@
 #include <dds/DCPS/PublisherImpl.h>
 #include "dds/DCPS/StaticIncludes.h"
 
+#include <cppkafka/cppkafka.h>
+
 #include "domain/WaferHeightMap.hpp"
 #include "infrastructure/base/RepositoryFactory.h"
 #include "infrastructure/IWaferHeightMapRepository.hpp"
@@ -20,6 +22,13 @@ namespace Leveling  { namespace Application
   class Leveling
   {
     private:
+    // Kafka part
+    std::unique_ptr<cppkafka::Configuration> kafkaConfig;
+    std::unique_ptr<cppkafka::Consumer> kafkaConsumer;
+    std::thread eventListenerThread;
+    bool quit_;
+    void eventListenerThreadHandler();
+    // DDS part
     // constants & declarations for DDS WaferHeightMap domain Id, types, and topic
     std::unique_ptr<DDS::DomainParticipantFactory_var> dpf;
     std::unique_ptr<DDS::DomainParticipant_var> participant;
@@ -38,7 +47,7 @@ namespace Leveling  { namespace Application
 
     public:
     Leveling();
-    virtual ~Leveling(){}
+    virtual ~Leveling();
 
     void dummyMethod(Uuid waferId){}
 
