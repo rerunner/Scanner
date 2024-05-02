@@ -41,7 +41,7 @@ namespace MachineControl
         if (wId) // At startup the chuck can be empty returning from expose station
         {
             // Access loaded wafer 
-            for (auto it : lotWafers)
+            for (const auto& it : lotWafers)
             {
                 if (*wId == it->GetId())
                 {
@@ -58,7 +58,7 @@ namespace MachineControl
     {
         //find loaded wafer and return state
         std::string result = "";
-        for (auto it : lotWafers)
+        for (const auto& it : lotWafers)
         {
             if (wId == it->GetId())
             {
@@ -194,7 +194,7 @@ namespace MachineControl
                 // Execute prealign command
                 GSL::Dprintf(GSL::DEBUG, "Measurestation has Wafer at Loaded state: Execute PreAlign command");
                 // find loaded wafer 
-                for (auto it : lotWafers)
+                for (const auto& it : lotWafers)
                 {
                     // do whatever you wish but don't modify the list elements
                     if (*wId == it->GetId())
@@ -227,7 +227,7 @@ namespace MachineControl
                 // promote Wafer state to approved for expose
                 GSL::Dprintf(GSL::DEBUG, "Measurestation has Wafer at Measured state: Execute ApprovedForExpose command");
                 // find loaded wafer 
-                for (auto it : lotWafers)
+                for (const auto& it : lotWafers)
                 {
                     // do whatever you wish but don't modify the list elements
                     if (*wId == it->GetId())

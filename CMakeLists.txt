@@ -92,6 +92,8 @@ add_executable(Leveling
 	${src}/src/Measure/Leveling/application/Leveling.cpp
 	${src}/src/Measure/Leveling/application/Runner.cpp
 	${src}/src/Measure/Leveling/application/LevelingCommand.hpp
+	${src}/src/MachineControl/domain/Wafer.cpp
+	${src}/src/MachineControl/domain/Lot.cpp
 )
 
 add_executable(Expose 

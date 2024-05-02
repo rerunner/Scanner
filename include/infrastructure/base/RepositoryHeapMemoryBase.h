@@ -41,4 +41,9 @@ public:
     }
     throw std::runtime_error(std::string("Entity not found in repository\n"));
   };
+
+  std::vector<RepositoryBaseType> GetAll()
+  {
+    return entityVector;
+  };
 };

@@ -20,7 +20,7 @@
 #include "Leveling/application/Runner.hpp"
 #include "Leveling/application/Leveling.hpp"
 
-unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::INFO;
+unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::INFO | GSL::DEBUG;
 
 void run() {
   /* Register Components in scope of run() method */

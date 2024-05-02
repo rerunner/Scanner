@@ -77,4 +77,19 @@ public:
     GSL::Dprintf(GSL::ERROR, "Object ", requestedId.Get(), " not found in repository");
     throw std::runtime_error(std::string("Object not found in repository\n"));
   };
+
+  std::vector<RepositoryBaseType> GetAll()
+  {
+    std::vector<RepositoryBaseType> vList;
+    GSL::Dprintf(GSL::INFO, "GetAll ENTER");
+    std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db.getAllBeans<RepositoryBaseType>();
+    for (auto &iter:v)
+    {
+      GSL::Dprintf(GSL::INFO, "GetAll FOUND ONE ENTRY");
+      hiberlite::bean_ptr<RepositoryBaseType> xptr = db.loadBean<RepositoryBaseType>(iter.get_id());
+      vList.push_back(*xptr);
+    }
+    GSL::Dprintf(GSL::INFO, "GetAll LEAVING");
+    return vList;
+  };
 };

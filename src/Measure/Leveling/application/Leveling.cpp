@@ -29,6 +29,7 @@
 
 #include "ScannerC.h"
 #include "GenLogger.hpp"
+#include "domain/WaferHeightMap.hpp"
 
 using json = nlohmann::json;
 
@@ -82,7 +83,24 @@ namespace Leveling  { namespace Application
                     GSL::Dprintf(GSL::DEBUG, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
                     if (j_message["State"] == "Unloaded")
                     {
-                        GSL::Dprintf(GSL::INFO, "CAN DELETE WAFER");
+                        GSL::Dprintf(GSL::ERROR, "CAN DELETE WAFER with ID ", j_message["Id"]);
+                        UnitOfWork context_;
+                        GSL::Dprintf(GSL::DEBUG, "UoW created");
+                        auto repository = context_.GetRepository<WaferHeightMap>();
+                        GSL::Dprintf(GSL::DEBUG, "repository opened to waferheightmap");
+                        auto whmList = repository->GetAll();
+                        GSL::Dprintf(GSL::DEBUG, "repository requested to return all wafer heightmaps");
+                        Uuid targetId(j_message["Id"]);
+                        GSL::Dprintf(GSL::DEBUG, "Searching for wafer id in list of wafer heightmaps");
+                        for (auto &iter:whmList)
+                        {
+                          GSL::Dprintf(GSL::DEBUG, "Searching in wafer heightmap id ", iter.GetId().Get(), " with wID = ", iter.GetWaferId().Get());
+                          if (targetId.Get() == iter.GetWaferId().Get())
+                          {
+                            GSL::Dprintf(GSL::DEBUG, "MATCH FOUND !!!!! Deleting WaferHeightMap of Wafer Id", targetId.Get());
+                            repository->Delete(iter);
+                          }
+                        }
                     }
                     
                 }

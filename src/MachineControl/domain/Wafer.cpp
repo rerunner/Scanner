@@ -33,6 +33,7 @@ Wafer::Wafer(Uuid lotId) : AggregateRootBase()
 void Wafer::stateChangePublisher()
 {
     json jMessage;
+    GSL::Dprintf(GSL::ERROR, "Wafer state changed for wafer id = ", id_.Get());
     jMessage.emplace("Message", "StateChange");
     jMessage.emplace("Id", id_.Get());
     jMessage.emplace("State", state);
