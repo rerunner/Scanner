@@ -55,7 +55,7 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 
     if ((status == DDS::RETCODE_OK) && (whmContext))
     {
-      GSL::Dprintf(GSL::DEBUG, "Expose: received WaferID = ", whm.waferID );
+      GSL::Dprintf(GSL::DEBUG, "Expose DDS: received WaferID = ", whm.waferID , " going to copy it.");
       //GSL::Dprintf(GSL::DEBUG, "SampleInfo.sample_rank = ", si.sample_rank);
       // Translate from received DTO to local representation
       std::ostringstream oss;
@@ -68,7 +68,9 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
         Measurement myMeas(myPosition, myZpos);
         myHeightMap->AddMeasurement(myMeas);
       }
+      GSL::Dprintf(GSL::DEBUG, "Expose DDS: Done copy.");
       whmContext->RegisterNew<WaferHeightMap>(myHeightMap);
+      
       myHeightmapId->set_value(myHeightMap->GetId().Get()); // signal the future ;-)
     }
     else if (status == DDS::RETCODE_NO_DATA)

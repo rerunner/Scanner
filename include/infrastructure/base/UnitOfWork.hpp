@@ -40,7 +40,6 @@ class EntityRegister
 
     void Commit()
     {
-        GSL::Dprintf(GSL::DEBUG, "Commit registry changes");
         std::unique_ptr<IRepositoryFactory<EntityType>> repositoryFactory = std::make_unique<RepositoryFactory<EntityType>>();
         auto repository = repositoryFactory->GetRepository(RepositoryType::ORM);
         switch (registryType)

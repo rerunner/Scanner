@@ -75,17 +75,26 @@ namespace Expose { namespace Application
             {
                 if (!record.get_error())
                 {
-                    std::ostringstream newMessageStream;
-                    newMessageStream << record.get_payload();
-                    std::string newMessage = newMessageStream.str();
-                    GSL::Dprintf(GSL::DEBUG, "Got a new message...", newMessage);
-
-                    GSL::Dprintf(GSL::DEBUG, "processing NewWaferState message");
                     json j_message = json::from_cbor(record.get_payload());
+                    GSL::Dprintf(GSL::DEBUG, "Processing NewWaferState message for Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
                     GSL::Dprintf(GSL::DEBUG, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
                     if (j_message["State"] == "Unloaded")
                     {
-                        GSL::Dprintf(GSL::INFO, "CAN DELETE WAFER");
+                        GSL::Dprintf(GSL::DEBUG, "Can delete heightmap data associated with Wafer ID ", j_message["Id"]);
+                        std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
+                        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM);
+                        auto whmList = repository->GetAll();
+                        Uuid targetId(j_message["Id"]);
+                        for (auto &iter:whmList)
+                        {
+                          GSL::Dprintf(GSL::DEBUG, "Searching WaferHeightMap List, found Wafer Id = ", iter.GetWaferId().Get());
+                          if (targetId.Get() == iter.GetWaferId().Get())
+                          {
+                            GSL::Dprintf(GSL::DEBUG, "MATCH FOUND !!!!! Deleting WaferHeightMap of Wafer Id = ", targetId.Get());
+                            repository->Delete(iter);
+                          }
+                        }
+                        GSL::Dprintf(GSL::DEBUG, "Searching WaferHeightMap List DONE!");
                     }
                     
                 }
@@ -191,7 +200,7 @@ namespace Expose { namespace Application
 
     std::string Expose::StartHeightMapListener(std::unique_ptr<UnitOfWork> & context_)
     {
-        GSL::Dprintf(GSL::DEBUG, "Create and activate the DDS data listener for reading incoming heightmaps and wait for a match");
+        GSL::Dprintf(GSL::DEBUG, "Looking for matching HeightMap");
 
         //! Creating the infrastructure that allows an application thread to block
         //! until some condition becomes true, such as data availability.
@@ -204,8 +213,9 @@ namespace Expose { namespace Application
         waferheightmap_dr->ptr()->set_listener(waferheightmap_listener, DDS::DATA_AVAILABLE_STATUS | DDS::LIVELINESS_CHANGED_STATUS);
         std::string ret = f.get(); //! Wait for the future ;-)
         waferheightmap_dr->ptr()->set_listener(0, OpenDDS::DCPS::NO_STATUS_MASK);
+        GSL::Dprintf(GSL::DEBUG, "HeightMap, Start committing to database.");
         context_->Commit(); // Write changes to repository
-        GSL::Dprintf(GSL::DEBUG, "returned heightmap Id: ", ret);
+        GSL::Dprintf(GSL::DEBUG, "HeightMap, End committing to database.");
         return ret;
     }
 
@@ -221,6 +231,7 @@ namespace Expose { namespace Application
         std::string foundHeightMapId = StartHeightMapListener(context_);
 
         //! Start Expose loop
+        GSL::Dprintf(GSL::DEBUG, "Start expose loop");
         {
             //! Raft streaming start
             Exposure generatedExposure;
@@ -248,5 +259,6 @@ namespace Expose { namespace Application
             //! Raft streaming End
         }
         //! End Expose Loop
+        GSL::Dprintf(GSL::DEBUG, "End expose loop");
     }
 }}
