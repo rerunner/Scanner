@@ -84,8 +84,14 @@ private:
     std::list<boost::any> _deletedEntities;
 
 public:
-    UnitOfWork(){GSL::Dprintf(GSL::DEBUG, "UnitOfWork created. UoW ID = ", _context.Get());}
-    virtual ~UnitOfWork(){GSL::Dprintf(GSL::DEBUG, "UnitOfWork destroyed. UoW ID = ", _context.Get());}
+    UnitOfWork()
+    {
+        GSL::Dprintf(GSL::DEBUG, "UnitOfWork created. UoW ID = ", _context.Get());
+    }
+    virtual ~UnitOfWork()
+    {
+        GSL::Dprintf(GSL::DEBUG, "UnitOfWork destroyed. UoW ID = ", _context.Get());
+    }
 
     template <typename EntityType>
     void RegisterNew(std::shared_ptr<EntityType> entPtr)
@@ -125,33 +131,6 @@ public:
     void Rollback()
     {
         //Todo, remove without commit
-    }
-    
-    template <typename entityType>
-    IRepositoryBase<entityType> *GetRepository()
-    {
-        GSL::Dprintf(GSL::DEBUG, "ENTER UoW ID = ", _context.Get());
-        entityType dummyEntity;
-        std::string typeKey = typeid(dummyEntity).name();
-        Dict::iterator it = repositories_.find(typeKey);
-        if (it != repositories_.end())
-        {
-            GSL::Dprintf(GSL::DEBUG, "Entity type ", typeKey, " found existing in UnitOfWork.");
-            RepositoryORMBase<entityType> *repository = static_cast<RepositoryORMBase<entityType> *>(it->second); // Point to the correct repository object
-            GSL::Dprintf(GSL::DEBUG, "EXIT UoW ID = ", _context.Get());
-            return repository;
-        }
-        else // Create a new one
-        {
-            GSL::Dprintf(GSL::DEBUG, "Entity type ", typeKey, " not found yet in UnitOfWork, adding it.");
-            // Create Factory for the Template type repository
-            std::unique_ptr<IRepositoryFactory<entityType>> repositoryFactory = std::make_unique<RepositoryFactory<entityType>>();
-            // Use factory to create specialized repository
-            auto repository = repositoryFactory->GetRepository(RepositoryType::ORM);
-            //repositories_[typeKey] = &repository;
-            GSL::Dprintf(GSL::DEBUG, "EXIT UoW ID = ", _context.Get());
-            return repository;
-        }
     }
 
     template <typename entityType>

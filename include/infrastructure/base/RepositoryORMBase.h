@@ -9,12 +9,14 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <mutex>
 
 template <typename RepositoryBaseType>
 class RepositoryORMBase : public IRepositoryBase<RepositoryBaseType>
 {
 private:
   hiberlite::Database db;
+  inline static std::mutex mtx;
 public:
   //Constructor creates DB
   RepositoryORMBase()
@@ -25,6 +27,7 @@ public:
     std::ostringstream databaseName;
     databaseName << justProcessName << "Database.db";
     GSL::Dprintf(GSL::DEBUG, "Opening ", databaseName.str());
+    mtx.lock();
     db.open(databaseName.str());
     db.registerBeanClass<RepositoryBaseType>();
     
@@ -35,6 +38,13 @@ public:
     catch (std::exception& e) {
       GSL::Dprintf(GSL::WARNING, "didn't create the tables: ", e.what());
     }
+  }
+
+  ~RepositoryORMBase()
+  {
+    GSL::Dprintf(GSL::DEBUG, "Closing database and clearing mutex");
+    db.close();
+    mtx.unlock();
   }
   
   void Store(RepositoryBaseType entity)
@@ -81,15 +91,12 @@ public:
   std::vector<RepositoryBaseType> GetAll()
   {
     std::vector<RepositoryBaseType> vList;
-    GSL::Dprintf(GSL::INFO, "GetAll ENTER");
     std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db.getAllBeans<RepositoryBaseType>();
     for (auto &iter:v)
     {
-      GSL::Dprintf(GSL::INFO, "GetAll FOUND ONE ENTRY");
       hiberlite::bean_ptr<RepositoryBaseType> xptr = db.loadBean<RepositoryBaseType>(iter.get_id());
       vList.push_back(*xptr);
     }
-    GSL::Dprintf(GSL::INFO, "GetAll LEAVING");
     return vList;
   };
 };

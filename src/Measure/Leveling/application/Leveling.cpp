@@ -73,36 +73,26 @@ namespace Leveling  { namespace Application
             {
                 if (!record.get_error())
                 {
-                    std::ostringstream newMessageStream;
-                    newMessageStream << record.get_payload();
-                    std::string newMessage = newMessageStream.str();
-                    GSL::Dprintf(GSL::DEBUG, "Got a new message...", newMessage);
-
-                    GSL::Dprintf(GSL::DEBUG, "processing NewWaferState message");
                     json j_message = json::from_cbor(record.get_payload());
-                    GSL::Dprintf(GSL::DEBUG, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
+                    GSL::Dprintf(GSL::DEBUG, "Processing NewWaferState message for Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
                     if (j_message["State"] == "Unloaded")
                     {
-                        GSL::Dprintf(GSL::ERROR, "CAN DELETE WAFER with ID ", j_message["Id"]);
-                        UnitOfWork context_;
-                        GSL::Dprintf(GSL::DEBUG, "UoW created");
-                        auto repository = context_.GetRepository<WaferHeightMap>();
-                        GSL::Dprintf(GSL::DEBUG, "repository opened to waferheightmap");
+                        GSL::Dprintf(GSL::DEBUG, "Can delete heightmap data associated with Wafer ID ", j_message["Id"]);
+                        std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
+                        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM);
                         auto whmList = repository->GetAll();
-                        GSL::Dprintf(GSL::DEBUG, "repository requested to return all wafer heightmaps");
                         Uuid targetId(j_message["Id"]);
-                        GSL::Dprintf(GSL::DEBUG, "Searching for wafer id in list of wafer heightmaps");
                         for (auto &iter:whmList)
                         {
-                          GSL::Dprintf(GSL::DEBUG, "Searching in wafer heightmap id ", iter.GetId().Get(), " with wID = ", iter.GetWaferId().Get());
+                          GSL::Dprintf(GSL::DEBUG, "Searching WaferHeightMap List, found Wafer Id = ", iter.GetWaferId().Get());
                           if (targetId.Get() == iter.GetWaferId().Get())
                           {
-                            GSL::Dprintf(GSL::DEBUG, "MATCH FOUND !!!!! Deleting WaferHeightMap of Wafer Id", targetId.Get());
+                            GSL::Dprintf(GSL::DEBUG, "MATCH FOUND !!!!! Deleting WaferHeightMap of Wafer Id = ", targetId.Get());
                             repository->Delete(iter);
                           }
                         }
-                    }
-                    
+                        GSL::Dprintf(GSL::DEBUG, "Searching WaferHeightMap List DONE!");
+                    }   
                 }
                 else if (!record.is_eof()) {
                     // Is it an error notification, handle it.

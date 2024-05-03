@@ -9,14 +9,14 @@
 #include "MachineControl/application/MachineControl.hpp"
 #include "GenLogger.hpp"
 
-unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::INFO | GSL::DEBUG;
+unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::INFO;
 
 int main()
 {
-    GSL::Dprintf(GSL::INFO, "Scanner application");
-
     int nrOfLots = 3;
     int nrOfWafersInLot = 25;
+
+    GSL::Dprintf(GSL::INFO, "Scanner application running for ", nrOfLots);
 
     MachineControl::MachineControl machineCTRL; // Create machine control
     machineCTRL.Initialize(); // Initialize

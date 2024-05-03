@@ -359,7 +359,7 @@ namespace MachineControl
                     if (mTopic == "exposeTopic")
                     {
                         json j_message = json::from_cbor(record.get_payload()); 
-                        GSL::Dprintf(GSL::INFO, "Message = ", j_message["Message"], " Command = ", j_message["Command"]);
+                        GSL::Dprintf(GSL::DEBUG, "Message = ", j_message["Message"], " Command = ", j_message["Command"]);
                         if ((j_message["Message"] == "CommandCompleted") && (j_message["Command"] == "ExposeWafer"))
                         {
                             auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 
@@ -377,7 +377,7 @@ namespace MachineControl
                     else if (mTopic == "levelingTopic")
                     {
                         json j_message = json::from_cbor(record.get_payload()); 
-                        GSL::Dprintf(GSL::INFO, "Message = ", j_message["Message"], " Command = ", j_message["Command"]);
+                        GSL::Dprintf(GSL::DEBUG, "Message = ", j_message["Message"], " Command = ", j_message["Command"]);
                         if ((j_message["Message"] == "CommandCompleted") && (j_message["Command"] == "MeasureWafer"))
                         {
                             auto checkMessageLambda = [&](const std::shared_ptr<Wafer>& wafer) 

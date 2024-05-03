@@ -33,7 +33,10 @@ Wafer::Wafer(Uuid lotId) : AggregateRootBase()
 void Wafer::stateChangePublisher()
 {
     json jMessage;
-    GSL::Dprintf(GSL::ERROR, "Wafer state changed for wafer id = ", id_.Get());
+    if (state == "Unloaded")
+    {
+        GSL::Dprintf(GSL::DEBUG, "Wafer state changed to ", state, " for wafer id = ", id_.Get());
+    }
     jMessage.emplace("Message", "StateChange");
     jMessage.emplace("Id", id_.Get());
     jMessage.emplace("State", state);
@@ -42,7 +45,7 @@ void Wafer::stateChangePublisher()
     cppkafka::Buffer bmess(message); // Make sure the kafka message is using the cbor binary format and not a string
     kafkaProducer->produce(cppkafka::MessageBuilder("waferStateTopic").partition(0).payload(bmess));
     
-    kafkaProducer->flush(std::chrono::milliseconds(10000)); // 10s timeout
+    kafkaProducer->flush(std::chrono::milliseconds(30000)); // 30s timeout
 }
 
 // Boilerplate
