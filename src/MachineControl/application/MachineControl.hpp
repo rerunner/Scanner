@@ -96,6 +96,7 @@ namespace MachineControl
     class MachineControl
     {
     private:
+        unitofwork::UnitOfWorkFactory UoWFactory;
         machinecontrol_state_machine machineControlStateMachine;
         // Kafka part
         std::unique_ptr<cppkafka::Configuration> kafkaConfig;

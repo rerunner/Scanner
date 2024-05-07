@@ -38,6 +38,19 @@ namespace Leveling  { namespace Application
     Leveling::Leveling(): WAFER_DOMAIN_ID(0)
     {
       eventListenerThread = std::thread(&Leveling::eventListenerThreadHandler, this);
+
+      // hiberlite boilerplate start
+      hiberlite::Database *levelingDB = UoWFactory.GetDataBasePtr();
+      levelingDB->registerBeanClass<WaferHeightMap>();
+      levelingDB->dropModel(); // --> Probably some recovery mode can call this
+      try {
+          levelingDB->createModel();
+      }
+      catch (std::exception& e) {
+        GSL::Dprintf(GSL::WARNING, "didn't create the tables: ", e.what());
+      }
+      // hiberlite boilerplate end
+
       GSL::Dprintf(GSL::DEBUG, "Leveling constructed with DDS WAFER_DOMAIN_ID ", WAFER_DOMAIN_ID);
     }
 
@@ -79,7 +92,7 @@ namespace Leveling  { namespace Application
                     {
                         GSL::Dprintf(GSL::DEBUG, "Can delete heightmap data associated with Wafer ID ", j_message["Id"]);
                         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
-                        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM);
+                        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, UoWFactory.GetDataBasePtr());
                         auto whmList = repository->GetAll();
                         Uuid targetId(j_message["Id"]);
                         for (auto &iter:whmList)
@@ -158,8 +171,6 @@ namespace Leveling  { namespace Application
                                             0,
                                             ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
-        //DDS::TopicDescription_ptr const topic_description = participant->lookup_topicdescription(scanner::generated::WAFER_HEIGHTMAP_TOPIC);
-
         DDS::DataWriterQos leveling_dr_qos;
         pub->get_default_datawriter_qos (leveling_dr_qos);
         leveling_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
@@ -170,7 +181,6 @@ namespace Leveling  { namespace Application
                                                           ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
         // Safely downcast data writer to type-specific data writer
-        //waferHeightMap_dw = scanner::generated::WaferHeightMapDataWriter::_narrow(waferHeightMap_base_dw.in());
         waferHeightMap_dw = scanner::generated::WaferHeightMapDataWriter::_narrow(waferHeightMap_base_dw);
 
         GSL::Dprintf(GSL::DEBUG, "Leveling datawriter created, subscribed to topic ", waferheightmap_topic->get_name());
@@ -179,7 +189,7 @@ namespace Leveling  { namespace Application
         whm_handle = waferHeightMap_dw->register_instance(whm_evt);
     }
     
-    DDS::ReturnCode_t Leveling::Publish(UnitOfWork *passedWhmContext, std::shared_ptr<WaferHeightMap> waferHeightMap)
+    DDS::ReturnCode_t Leveling::Publish(std::shared_ptr<WaferHeightMap> waferHeightMap)
     {
       // Get the heightmap to publish
       std::list<Measurement> myHeightMap = waferHeightMap->GetHeightMap();
@@ -206,7 +216,7 @@ namespace Leveling  { namespace Application
 
     Uuid Leveling::measureWafer(Uuid waferId)
     {
-      UnitOfWork context_;
+      std::unique_ptr<UnitOfWork> context_ = UoWFactory.GetNewUnitOfWork();
 
       GSL::Dprintf(GSL::DEBUG, "measureWafer starts with wafer Id = ", waferId.Get());
 
@@ -236,14 +246,14 @@ namespace Leveling  { namespace Application
       m.exe();
       //Raft streaming End
       
-      context_.RegisterNew<WaferHeightMap>(waferHeightMap);
+      context_->RegisterNew<WaferHeightMap>(waferHeightMap);
       
       GSL::Dprintf(GSL::DEBUG, "WaferHeightMap with ID = ", waferHeightMap->GetId().Get(), " persisted");
 
       this->SetupDataWriter();
-      this->Publish(&context_, waferHeightMap);
+      this->Publish(waferHeightMap);
+      context_->Commit(); //Use case "measure height map" ended
       GSL::Dprintf(GSL::DEBUG, "measureWafer done");
-      context_.Commit(); //Use case "measure height map" ended
       return waferHeightMap->GetId();
     }
 }}

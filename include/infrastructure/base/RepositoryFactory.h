@@ -10,8 +10,9 @@ class RepositoryFactory : public IRepositoryFactory<T>
 private:
 	RepositoryHeapMemoryBase<T> *heapRep;
 	RepositoryORMBase<T> *ormRep;
+
 public:
-	IRepositoryBase<T> *GetRepository(RepositoryType repository)
+	IRepositoryBase<T> *GetRepository(RepositoryType repository, hiberlite::Database *db = nullptr)
 	{
 		switch (repository)
 		{
@@ -20,7 +21,7 @@ public:
 			return heapRep;
 			break;
 		case RepositoryType::ORM:
-			ormRep =  new RepositoryORMBase<T>();
+			ormRep =  new RepositoryORMBase<T>(db);
 			return ormRep;
 			break;
 		default:
@@ -30,7 +31,7 @@ public:
 	}
 	virtual ~RepositoryFactory<T>()
 	{
-		if (ormRep) {delete ormRep;}
+		if (ormRep) {delete ormRep;	}
 		if (heapRep) {delete heapRep;}
 	};
 };

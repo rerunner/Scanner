@@ -32,6 +32,7 @@ namespace Expose { namespace Application
   class Expose
   {
     private:
+    UnitOfWorkFactory UoWFactory;
     // Kafka part
     std::unique_ptr<cppkafka::Configuration> kafkaConfig;
     std::unique_ptr<cppkafka::Consumer> kafkaConsumer;

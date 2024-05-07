@@ -40,6 +40,20 @@ namespace Expose { namespace Application
     Expose::Expose(): WAFER_DOMAIN_ID(0), quit_(false)
     {
         eventListenerThread = std::thread(&Expose::eventListenerThreadHandler, this);
+
+        // hiberlite boilerplate start
+        hiberlite::Database *exposeDB = UoWFactory.GetDataBasePtr();
+        //exposeDB->registerBeanClass<Exposure>();
+        exposeDB->registerBeanClass<WaferHeightMap>();
+		exposeDB->dropModel(); // --> Probably some recovery mode can call this
+		try {
+			exposeDB->createModel();
+		}
+		catch (std::exception& e) {
+			GSL::Dprintf(GSL::WARNING, "didn't create the tables: ", e.what());
+		}
+        // hiberlite boilerplate end
+        
         GSL::Dprintf(GSL::DEBUG, "Expose object created");
     }
     Expose::~Expose()
@@ -82,7 +96,7 @@ namespace Expose { namespace Application
                     {
                         GSL::Dprintf(GSL::DEBUG, "Can delete heightmap data associated with Wafer ID ", j_message["Id"]);
                         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
-                        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM);
+                        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, UoWFactory.GetDataBasePtr());
                         auto whmList = repository->GetAll();
                         Uuid targetId(j_message["Id"]);
                         for (auto &iter:whmList)
@@ -222,7 +236,7 @@ namespace Expose { namespace Application
     void Expose::exposeWafer(Uuid waferID)
     {
         GSL::Dprintf(GSL::DEBUG, "exposeWafer starts with wafer Id = ", waferID.Get());
-        std::unique_ptr<UnitOfWork> context_ = std::make_unique<UnitOfWork>(); // smart pointer of UoW as this is going to be passed around
+        std::unique_ptr<UnitOfWork> context_ = UoWFactory.GetNewUnitOfWork();
 
         //! expose the whole wafer die by die with the provided image
         //! Uses the wafer heightmap for lens correction.

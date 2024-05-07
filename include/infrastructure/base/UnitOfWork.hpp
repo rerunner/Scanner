@@ -37,11 +37,14 @@ class EntityRegister
 {
     std::shared_ptr<EntityType> entityInstance;
     RegistryTypeEnum registryType;
+    hiberlite::Database *db;
+    inline static std::mutex mtx;
 
     void Commit()
     {
+        std::scoped_lock lock{mtx};
         std::unique_ptr<IRepositoryFactory<EntityType>> repositoryFactory = std::make_unique<RepositoryFactory<EntityType>>();
-        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM);
+        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, db);
         switch (registryType)
         {
             case RegistryTypeEnum::RegisterNew:
@@ -58,15 +61,17 @@ class EntityRegister
         }
     }
 public:
-    EntityRegister(std::shared_ptr<EntityType> newEnt, RegistryTypeEnum newRegistryType)
+    EntityRegister(std::shared_ptr<EntityType> newEnt, RegistryTypeEnum newRegistryType, hiberlite::Database *passedDb)
     {
         entityInstance = newEnt;
         registryType = newRegistryType;
+        db = passedDb;
     }
     
     ~EntityRegister()
     {
         Commit();
+        db = nullptr;
     }
 };
 
@@ -81,14 +86,17 @@ private:
     std::list<boost::any> _newEntities;
     std::list<boost::any> _updatedEntities;
     std::list<boost::any> _deletedEntities;
+    hiberlite::Database *db;
 
 public:
-    UnitOfWork()
+    UnitOfWork(hiberlite::Database *passedDb)
     {
+        db = passedDb;
         GSL::Dprintf(GSL::DEBUG, "UnitOfWork created. UoW ID = ", _context.Get());
     }
     virtual ~UnitOfWork()
     {
+        db = nullptr;
         GSL::Dprintf(GSL::DEBUG, "UnitOfWork destroyed. UoW ID = ", _context.Get());
     }
 
@@ -96,7 +104,7 @@ public:
     void RegisterNew(std::shared_ptr<EntityType> entPtr)
     {
         GSL::Dprintf(GSL::DEBUG, "ENTER");
-        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterNew);
+        EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterNew, db);
         _newEntities.push_back(std::move(myNewEntityPtr)); //Register
         GSL::Dprintf(GSL::DEBUG, "EXIT");
     }
@@ -105,7 +113,7 @@ public:
     void RegisterDirty(std::shared_ptr<EntityType> entPtr)
     { 
         GSL::Dprintf(GSL::DEBUG, "ENTER");
-        EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDirty);
+        EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDirty, db);
         _updatedEntities.push_back(std::move(myUpdatedEntityPtr)); //Register
         GSL::Dprintf(GSL::DEBUG, "EXIT");
     }
@@ -114,7 +122,7 @@ public:
     void RegisterDeleted(std::shared_ptr<EntityType> entPtr)
     { 
         GSL::Dprintf(GSL::DEBUG, "ENTER");
-        EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDeleted);
+        EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDeleted, db);
         _updatedEntities.push_back(std::move(myDeletedEntityPtr)); //Register
         GSL::Dprintf(GSL::DEBUG, "EXIT");
     }
@@ -137,6 +145,41 @@ public:
 
     template <typename entityType>
     std::list<entityType> GetAll(){/*todo*/}
+};
+
+
+class UnitOfWorkFactory
+{
+private:
+    hiberlite::Database *db;
+    void OpenHiberlite()
+	{
+		db = new hiberlite::Database;
+		std::string totalProcessName = program_invocation_name; // Linux specific
+		std::size_t processNamePos = totalProcessName.find_last_of("/\\");
+		std::string justProcessName = totalProcessName.substr(processNamePos+1);
+		std::ostringstream databaseName;
+		databaseName << justProcessName << "Database.db";
+		GSL::Dprintf(GSL::INFO, "Opening ", databaseName.str());
+		db->open(databaseName.str());
+	}
+    void CloseHiberlite()
+	{
+		GSL::Dprintf(GSL::INFO, "Closing database");
+		db->close();
+		delete db;
+		db = nullptr;
+	}
+public:
+    UnitOfWorkFactory(){OpenHiberlite();}
+    std::unique_ptr<UnitOfWork> GetNewUnitOfWork()
+	{
+        return std::make_unique<UnitOfWork>(db);
+	}
+    hiberlite::Database *GetDataBasePtr()
+    {
+        return db;
+    }
 };
 
 } // namespace UnitOfWork

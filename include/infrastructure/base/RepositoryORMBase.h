@@ -15,46 +15,35 @@ template <typename RepositoryBaseType>
 class RepositoryORMBase : public IRepositoryBase<RepositoryBaseType>
 {
 private:
-  hiberlite::Database db;
-  inline static std::mutex mtx;
+  hiberlite::Database *db;
+  inline static std::mutex repMtx;
 public:
   //Constructor creates DB
-  RepositoryORMBase()
+  RepositoryORMBase(hiberlite::Database *passedDb)
   {
-    std::string totalProcessName = program_invocation_name; // Linux specific
-    std::size_t processNamePos = totalProcessName.find_last_of("/\\");
-    std::string justProcessName = totalProcessName.substr(processNamePos+1);
-    std::ostringstream databaseName;
-    databaseName << justProcessName << "Database.db";
-    GSL::Dprintf(GSL::DEBUG, "Opening ", databaseName.str());
-    mtx.lock();
-    db.open(databaseName.str());
-    db.registerBeanClass<RepositoryBaseType>();
-    
-    //db.dropModel(); --> Probably some recovery mode can call this
-    try {
-      db.createModel();
-    }
-    catch (std::exception& e) {
-      GSL::Dprintf(GSL::WARNING, "didn't create the tables: ", e.what());
-    }
+    std::scoped_lock lock{repMtx};
+    db = passedDb;
   }
 
   ~RepositoryORMBase()
   {
-    GSL::Dprintf(GSL::DEBUG, "Closing database and clearing mutex");
-    db.close();
-    mtx.unlock();
+    std::scoped_lock lock{repMtx};
+    if (db)
+    {
+      db = nullptr;
+    }
   }
   
   void Store(RepositoryBaseType entity)
   {
-    hiberlite::bean_ptr<RepositoryBaseType> managedCopyPtr = db.copyBean(entity);
+    std::scoped_lock lock{repMtx};
+    hiberlite::bean_ptr<RepositoryBaseType> managedCopyPtr = db->copyBean(entity);
   };
 	
   void Delete(RepositoryBaseType entity)
   {
-    std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db.getAllBeans<RepositoryBaseType>();
+    std::scoped_lock lock{repMtx};
+    std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db->getAllBeans<RepositoryBaseType>();
 
     //Iterate over vector to find the wanted Id
     std::string id = entity.GetId().Get();
@@ -62,7 +51,7 @@ public:
     for (auto &iter:v)
     {
       teller = iter.get_id();
-      hiberlite::bean_ptr<RepositoryBaseType> xptr = db.loadBean<RepositoryBaseType>(teller);
+      hiberlite::bean_ptr<RepositoryBaseType> xptr = db->loadBean<RepositoryBaseType>(teller);
       if (id.compare((*xptr).GetId().Get()) == 0)
       {
 	      xptr.destroy();
@@ -74,11 +63,12 @@ public:
 	
   RepositoryBaseType Get(Uuid requestedId)
   {
-    std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db.getAllBeans<RepositoryBaseType>();
+    std::scoped_lock lock{repMtx};
+    std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db->getAllBeans<RepositoryBaseType>();
 
     for (auto &iter:v)
     {
-      hiberlite::bean_ptr<RepositoryBaseType> xptr = db.loadBean<RepositoryBaseType>(iter.get_id());
+      hiberlite::bean_ptr<RepositoryBaseType> xptr = db->loadBean<RepositoryBaseType>(iter.get_id());
       if (requestedId.Get().compare((*xptr).GetId().Get()) == 0)
       {
 	      return (*xptr);
@@ -90,11 +80,12 @@ public:
 
   std::vector<RepositoryBaseType> GetAll()
   {
+    std::scoped_lock lock{repMtx};
     std::vector<RepositoryBaseType> vList;
-    std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db.getAllBeans<RepositoryBaseType>();
+    std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db->getAllBeans<RepositoryBaseType>();
     for (auto &iter:v)
     {
-      hiberlite::bean_ptr<RepositoryBaseType> xptr = db.loadBean<RepositoryBaseType>(iter.get_id());
+      hiberlite::bean_ptr<RepositoryBaseType> xptr = db->loadBean<RepositoryBaseType>(iter.get_id());
       vList.push_back(*xptr);
     }
     return vList;

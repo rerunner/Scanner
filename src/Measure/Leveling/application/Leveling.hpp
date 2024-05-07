@@ -22,6 +22,7 @@ namespace Leveling  { namespace Application
   class Leveling
   {
     private:
+    UnitOfWorkFactory UoWFactory;
     // Kafka part
     std::unique_ptr<cppkafka::Configuration> kafkaConfig;
     std::unique_ptr<cppkafka::Consumer> kafkaConsumer;
@@ -43,7 +44,7 @@ namespace Leveling  { namespace Application
 
     // Methods
     void SetupDataWriter(); 
-    DDS::ReturnCode_t Publish(UnitOfWork *passedWhmContext, std::shared_ptr<WaferHeightMap> waferHeightMap);
+    DDS::ReturnCode_t Publish(std::shared_ptr<WaferHeightMap> waferHeightMap);
 
     public:
     Leveling();

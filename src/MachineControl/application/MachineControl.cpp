@@ -16,6 +16,18 @@ namespace MachineControl
     {
         scannerChucks[0].SetStation(StationEnumType::MeasureStation);
         scannerChucks[1].SetStation(StationEnumType::ExposeStation);
+
+        // hiberlite boilerplate start
+        hiberlite::Database *mcDB = UoWFactory.GetDataBasePtr();
+        mcDB->registerBeanClass<Lot>();
+        mcDB->registerBeanClass<Wafer>();
+        mcDB->dropModel(); // --> Probably some recovery mode can call this
+        try {
+            mcDB->createModel();
+        }
+        catch (std::exception& e) {
+            GSL::Dprintf(GSL::WARNING, "didn't create the tables: ", e.what());
+        }
     }
 
     MachineControl::~MachineControl()
@@ -419,7 +431,7 @@ namespace MachineControl
 
     void MachineControl::Execute(int nrOfLots, int nrOfWafersInLot)
     {
-        executeCommandContext = std::make_unique<unitofwork::UnitOfWork>();
+        executeCommandContext = UoWFactory.GetNewUnitOfWork();
         machineControlStateMachine.on_state_transition(transition_to_Executing{});
 
         for (int lotNr = 0; lotNr<nrOfLots; lotNr++) // For all lots
