@@ -87,4 +87,20 @@ public:
     }
     return vList;
   };
+
+  std::vector<RepositoryBaseType> GetAllChildren(Uuid parentId)
+  {
+    std::scoped_lock lock{repMtx};
+    std::vector<RepositoryBaseType> vList;
+    std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db->getAllBeans<RepositoryBaseType>();
+    for (auto &iter:v)
+    {
+      hiberlite::bean_ptr<RepositoryBaseType> xptr = db->loadBean<RepositoryBaseType>(iter.get_id());
+      if (parentId.Get().compare((*xptr).GetParentId().Get()) == 0) // TODO: make WaferId ParentId.
+      {
+        vList.push_back(*xptr);
+      }
+    }
+    return vList;
+  };
 };

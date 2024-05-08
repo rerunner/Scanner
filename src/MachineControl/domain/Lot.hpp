@@ -18,6 +18,7 @@ private:
   void hibernate(Archive & ar)
   {
     ar & HIBERLITE_NVP(id_); // From Base class
+    ar & HIBERLITE_NVP(parentId_); // From Base class
     ar & HIBERLITE_NVP(waferIds_);
   }
   //Boilerplate end

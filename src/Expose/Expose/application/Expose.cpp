@@ -91,20 +91,13 @@ namespace Expose { namespace Application
                         GSL::Dprintf(GSL::DEBUG, "Received request to DELETE heightmap for Wafer ID ", j_message["Id"]);
                         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
                         auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, UoWFactory.GetDataBasePtr());
-                        GSL::Dprintf(GSL::DEBUG, "START creating list of all waferheightmaps in database.");
-                        auto whmList = repository->GetAll();
-                        GSL::Dprintf(GSL::DEBUG, "DONE  creating list of all waferheightmaps in database.");
-                        Uuid targetId(j_message["Id"]);
-                        for (auto &iter:whmList)
+                        Uuid waferID(j_message["Id"]);
+                        auto whmList = repository->GetAllChildren(waferID); //Fetch all heightmaps in the database and find the one with the correct wafer id
+                        GSL::Dprintf(GSL::DEBUG, "Searched for waferheightmap to delete. found number = ", whmList.size());
+                        if(whmList.size() > 0)
                         {
-                          GSL::Dprintf(GSL::DEBUG, "Searching database, found Wafer Id = ", iter.GetWaferId().Get());
-                          if (targetId.Get() == iter.GetWaferId().Get())
-                          {
-                            GSL::Dprintf(GSL::DEBUG, "MATCH FOUND !!!!! Deleting WaferHeightMap of Wafer Id = ", targetId.Get());
-                            repository->Delete(iter);
-                          }
+                            repository->Delete(whmList[0]); // There is only one in the list
                         }
-                        GSL::Dprintf(GSL::DEBUG, "Searching WaferHeightMap List DONE!");
                     }
                     
                 }
@@ -219,37 +212,48 @@ namespace Expose { namespace Application
     {
         GSL::Dprintf(GSL::DEBUG, "exposeWafer starts with wafer Id = ", waferID.Get());
 
-        // Todo: read the stored heightmap
-
-        //! Start Expose loop
-        GSL::Dprintf(GSL::DEBUG, "Start expose loop");
+        // Read the stored heightmap
+        std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
+        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, UoWFactory.GetDataBasePtr());
+        auto whmList = repository->GetAllChildren(waferID); //Fetch all heightmaps in the database and find the one with the correct wafer id
+        if(whmList.size() > 0)
         {
-            //! Raft streaming start
-            Exposure generatedExposure;
-            PredictUnit predictUnit;
-            FeedForwardCalcUnit feedForwardCalcUnit;
-            RADependentCalcUnit raDependentCalcUnit;
-            LotOpDependentCalcUnit lotOpDependentCalcUnit;
-            PostLotOpDepCalcUnit postLotOpDepCalcUnit;
+            //std::unique_ptr<Uuid> whmID = std::make_unique<Uuid>(whmList[0].GetId().Get());
 
-            using SinkLambdaExposeResult = raft::lambdak<Exposure>;
-            SinkLambdaExposeResult sinkLambdaExposeResult(1,/** input port */
-                        0, /** output port */
-                [&](Port &input,
-                    Port &output)
-                {
-                    UNUSED( output );
-                    input[ "0" ].pop( generatedExposure ); //! Take the measurement from the input
-                    GSL::Dprintf(GSL::DEBUG, "Expose Loop finished, Exposure ID = ", generatedExposure.GetId().Get());
-                    return( raft::proceed ); //! The source will push the stop tag.
-                });
+            //! Start Expose loop
+            GSL::Dprintf(GSL::DEBUG, "Start expose loop");
+            {
+                //! Raft streaming start
+                Exposure generatedExposure;
+                PredictUnit predictUnit;
+                FeedForwardCalcUnit feedForwardCalcUnit;
+                RADependentCalcUnit raDependentCalcUnit;
+                LotOpDependentCalcUnit lotOpDependentCalcUnit(&whmList[0]);
+                PostLotOpDepCalcUnit postLotOpDepCalcUnit;
 
-            raft::map m;
-            m += predictUnit >> feedForwardCalcUnit >> raDependentCalcUnit >> lotOpDependentCalcUnit >> postLotOpDepCalcUnit >> sinkLambdaExposeResult;
-            m.exe();
-            //! Raft streaming End
+                using SinkLambdaExposeResult = raft::lambdak<Exposure>;
+                SinkLambdaExposeResult sinkLambdaExposeResult(1,/** input port */
+                            0, /** output port */
+                    [&](Port &input,
+                        Port &output)
+                    {
+                        UNUSED( output );
+                        input[ "0" ].pop( generatedExposure ); //! Take the measurement from the input
+                        GSL::Dprintf(GSL::DEBUG, "Expose Loop finished, Exposure ID = ", generatedExposure.GetId().Get());
+                        return( raft::proceed ); //! The source will push the stop tag.
+                    });
+
+                raft::map m;
+                m += predictUnit >> feedForwardCalcUnit >> raDependentCalcUnit >> lotOpDependentCalcUnit >> postLotOpDepCalcUnit >> sinkLambdaExposeResult;
+                m.exe();
+                //! Raft streaming End
+            }
+            //! End Expose Loop
+            GSL::Dprintf(GSL::DEBUG, "End expose loop");
         }
-        //! End Expose Loop
-        GSL::Dprintf(GSL::DEBUG, "End expose loop");
+        else
+        {
+            GSL::Dprintf(GSL::ERROR, "No WaferHeightMap found for Expose Loop");
+        }
     }
 }}

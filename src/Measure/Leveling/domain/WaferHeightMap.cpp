@@ -4,11 +4,13 @@
 WaferHeightMap::WaferHeightMap(Uuid wId) : AggregateRootBase()
 {
     waferId_ = wId;
+    parentId_ = wId;
 };
 
 WaferHeightMap::WaferHeightMap(Uuid wId, Measurement m) : AggregateRootBase()
 {
     waferId_ = wId;
+    parentId_ = wId;
     measurements_.push_back(m); //First entry
 }
 

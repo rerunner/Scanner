@@ -170,6 +170,7 @@ private:
   void hibernate(Archive & ar)
   {
     ar & HIBERLITE_NVP(id_); // From Base class
+    ar & HIBERLITE_NVP(parentId_); // From Base class
     ar & HIBERLITE_NVP(state); // Recorded state when wafer gets committed to the database
   }
   //Boilerplate end

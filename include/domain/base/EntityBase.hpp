@@ -9,11 +9,14 @@ class EntityBase
 {
 protected:
   Uuid id_;
+  Uuid parentId_;
   
 public:
   EntityBase(){}
   
   Uuid GetId() const { return id_; }
+
+  Uuid GetParentId() const { return parentId_; }
 
   bool operator==(const EntityBase& other) const
   {

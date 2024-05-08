@@ -15,6 +15,7 @@ private:
   void hibernate(Archive & ar)
   {
     ar & HIBERLITE_NVP(id_); // From Entity Base class
+    ar & HIBERLITE_NVP(parentId_); // From Entity Base class
     ar & HIBERLITE_NVP(myPrediction);
   }
   //Boilerplate end

@@ -10,4 +10,5 @@ public:
   virtual void Delete(T entity) = 0;
   virtual T Get(Uuid id) = 0;
   virtual std::vector<T> GetAll() = 0;
+  virtual std::vector<T> GetAllChildren(Uuid id) = 0;
 };

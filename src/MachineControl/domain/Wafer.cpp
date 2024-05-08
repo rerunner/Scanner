@@ -19,7 +19,7 @@ Wafer::Wafer() : AggregateRootBase()
 
 Wafer::Wafer(Uuid lotId) : AggregateRootBase()
 {
-    parentLot_ = lotId; state = "Loaded"; kafkaConfig = nullptr; kafkaProducer = nullptr;
+    parentId_ = lotId; parentLot_ = lotId; state = "Loaded"; kafkaConfig = nullptr; kafkaProducer = nullptr;
 
     //! Create the Kafka config
     std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;

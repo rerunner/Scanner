@@ -46,4 +46,9 @@ public:
   {
     return entityVector;
   };
+
+  std::vector<RepositoryBaseType> GetAllChildren(Uuid parentId)
+  {
+    return entityVector; // Not yet implemented
+  };
 };
