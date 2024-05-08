@@ -94,27 +94,37 @@ public:
     UnitOfWork(hiberlite::Database *passedDb)
     {
         db = passedDb;
-        GSL::Dprintf(GSL::DEBUG, "UnitOfWork created. UoW ID = ", _context.Get());
     }
     virtual ~UnitOfWork()
     {
         db = nullptr;
-        GSL::Dprintf(GSL::DEBUG, "UnitOfWork destroyed. UoW ID = ", _context.Get());
     }
 
     template <typename EntityType>
     void RegisterNew(std::shared_ptr<EntityType> entPtr)
     {
-        GSL::Dprintf(GSL::DEBUG, "ENTER");
+        try {
+            db->registerBeanClass<EntityType>();
+        }
+        catch (std::exception& e) {
+			GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
+		}
+
         EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterNew, db);
         _newEntities.push_back(std::move(myNewEntityPtr)); //Register
-        GSL::Dprintf(GSL::DEBUG, "EXIT");
     }
 
     template <typename EntityType>
     void RegisterDirty(std::shared_ptr<EntityType> entPtr)
     { 
         GSL::Dprintf(GSL::DEBUG, "ENTER");
+        try {
+            db->registerBeanClass<EntityType>();
+        }
+        catch (std::exception& e) {
+			GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
+		}
+		
         EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDirty, db);
         _updatedEntities.push_back(std::move(myUpdatedEntityPtr)); //Register
         GSL::Dprintf(GSL::DEBUG, "EXIT");
@@ -124,6 +134,13 @@ public:
     void RegisterDeleted(std::shared_ptr<EntityType> entPtr)
     { 
         GSL::Dprintf(GSL::DEBUG, "ENTER");
+        try {
+            db->registerBeanClass<EntityType>();
+        }
+        catch (std::exception& e) {
+			GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
+		}
+		
         EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDeleted, db);
         _updatedEntities.push_back(std::move(myDeletedEntityPtr)); //Register
         GSL::Dprintf(GSL::DEBUG, "EXIT");
@@ -134,6 +151,12 @@ public:
         GSL::Dprintf(GSL::DEBUG, "Commit UoW ID = ", _context.Get());
         // Too bad that we don't know the templated types anymore :-(
         // Committing changed or new objects happens in the destructor of list of changed entities (at destruction of this UoW instance)
+        try {
+			db->createModel();
+		}
+		catch (std::exception& e) {
+			GSL::Dprintf(GSL::DEBUG, "didn't create the tables: ", e.what());
+		}
         _newEntities.clear(); // clearing calls destructor, hence commit happens
     }
 

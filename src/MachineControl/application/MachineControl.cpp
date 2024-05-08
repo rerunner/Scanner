@@ -19,15 +19,7 @@ namespace MachineControl
 
         // hiberlite boilerplate start
         hiberlite::Database *mcDB = UoWFactory.GetDataBasePtr();
-        mcDB->registerBeanClass<Lot>();
-        mcDB->registerBeanClass<Wafer>();
-        mcDB->dropModel(); // --> Probably some recovery mode can call this
-        try {
-            mcDB->createModel();
-        }
-        catch (std::exception& e) {
-            GSL::Dprintf(GSL::WARNING, "didn't create the tables: ", e.what());
-        }
+        // hiberlite boilerplate end
     }
 
     MachineControl::~MachineControl()

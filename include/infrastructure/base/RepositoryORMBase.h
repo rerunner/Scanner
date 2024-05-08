@@ -21,13 +21,11 @@ public:
   //Constructor creates DB
   RepositoryORMBase(hiberlite::Database *passedDb)
   {
-    //std::scoped_lock lock{repMtx};
     db = passedDb;
   }
 
   ~RepositoryORMBase()
   {
-    //std::scoped_lock lock{repMtx};
     if (db)
     {
       db = nullptr;
@@ -58,7 +56,6 @@ public:
 	      break;
       }
     }
-    return;
   };
 	
   RepositoryBaseType Get(Uuid requestedId)

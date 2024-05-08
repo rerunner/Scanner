@@ -41,14 +41,6 @@ namespace Leveling  { namespace Application
 
       // hiberlite boilerplate start
       hiberlite::Database *levelingDB = UoWFactory.GetDataBasePtr();
-      levelingDB->registerBeanClass<WaferHeightMap>();
-      levelingDB->dropModel(); // --> Probably some recovery mode can call this
-      try {
-          levelingDB->createModel();
-      }
-      catch (std::exception& e) {
-        GSL::Dprintf(GSL::WARNING, "didn't create the tables: ", e.what());
-      }
       // hiberlite boilerplate end
 
       GSL::Dprintf(GSL::DEBUG, "Leveling constructed with DDS WAFER_DOMAIN_ID ", WAFER_DOMAIN_ID);

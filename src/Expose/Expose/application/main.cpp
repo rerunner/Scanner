@@ -20,7 +20,7 @@
 #include "Expose/application/Runner.hpp"
 #include "Expose/application/Expose.hpp"
 
-unsigned int GSL::ACTIVE_MESSAGES = GSL::INFO | GSL::FATAL | GSL::ERROR;
+unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::WARNING | GSL::INFO;
 
 void run() {
   /* Register Components in scope of run() method */

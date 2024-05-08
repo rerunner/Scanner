@@ -43,15 +43,6 @@ namespace Expose { namespace Application
 
         // hiberlite boilerplate start
         hiberlite::Database *exposeDB = UoWFactory.GetDataBasePtr();
-        //exposeDB->registerBeanClass<Exposure>();
-        exposeDB->registerBeanClass<WaferHeightMap>();
-		exposeDB->dropModel(); // --> Probably some recovery mode can call this
-		try {
-			exposeDB->createModel();
-		}
-		catch (std::exception& e) {
-			GSL::Dprintf(GSL::WARNING, "didn't create the tables: ", e.what());
-		}
         // hiberlite boilerplate end
 
         Subscribe();
