@@ -18,15 +18,15 @@
 #include "GenLogger.hpp"
 
 
-DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &other) : whmContext(other.whmContext)
+//DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &other) : whmContext(other.whmContext)
+DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &other) : whmContextFactory(other.whmContextFactory)
 {
-  myHeightmapId = other.myHeightmapId;
   GSL::Dprintf(GSL::DEBUG, "DataReaderListenerImpl constructed from other");
 }
 
-DataReaderListenerImpl::DataReaderListenerImpl(std::unique_ptr<UnitOfWork> & passedWhmContext, std::promise<std::string>* heightmapId) : whmContext(passedWhmContext)
+//DataReaderListenerImpl::DataReaderListenerImpl(std::unique_ptr<UnitOfWork> & passedWhmContext, std::promise<std::string>* heightmapId) : whmContext(passedWhmContext)
+DataReaderListenerImpl::DataReaderListenerImpl(UnitOfWorkFactory *passedWhmContextFactory) : whmContextFactory(passedWhmContextFactory)
 {
-  myHeightmapId = heightmapId;
   GSL::Dprintf(GSL::DEBUG, "DataReaderListenerImpl listening for dds data to get the heightmap");
 }
 
@@ -53,14 +53,16 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
 
     DDS::ReturnCode_t status = heightmap_dr->take_next_sample(whm, si) ;
 
-    if ((status == DDS::RETCODE_OK) && (whmContext))
+    if (status == DDS::RETCODE_OK)
     {
+      std::unique_ptr<UnitOfWork> whmContext = whmContextFactory->GetNewUnitOfWork();
       GSL::Dprintf(GSL::DEBUG, "Expose DDS: received WaferID = ", whm.waferID , " going to copy it.");
-      //GSL::Dprintf(GSL::DEBUG, "SampleInfo.sample_rank = ", si.sample_rank);
       // Translate from received DTO to local representation
       std::ostringstream oss;
       oss << whm.waferID; // Is there a better way from TAO managed string to std::string?
-      std::shared_ptr<WaferHeightMap> myHeightMap = std::make_shared<WaferHeightMap>(oss.str());
+      std::string waferUuidString = oss.str();
+      Uuid waferUuid(waferUuidString);
+      std::shared_ptr<WaferHeightMap> myHeightMap = std::make_shared<WaferHeightMap>(waferUuid);
       for (int i = 0; i < 10000 ; i++)
       {
         Position myPosition(whm.measurements[i].xyPosition.xPos, whm.measurements[i].xyPosition.yPos);
@@ -68,10 +70,9 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
         Measurement myMeas(myPosition, myZpos);
         myHeightMap->AddMeasurement(myMeas);
       }
-      GSL::Dprintf(GSL::DEBUG, "Expose DDS: Done copy.");
+      GSL::Dprintf(GSL::DEBUG, "Expose DDS Datalistener stores heightmap for wafer ID ", myHeightMap->GetWaferId().Get());
       whmContext->RegisterNew<WaferHeightMap>(myHeightMap);
-      
-      myHeightmapId->set_value(myHeightMap->GetId().Get()); // signal the future ;-)
+      whmContext->Commit();
     }
     else if (status == DDS::RETCODE_NO_DATA)
     {
@@ -79,7 +80,7 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
     }
     else
     {
-      GSL::Dprintf(GSL::ERROR, "read Quote: Error: ", status);
+      GSL::Dprintf(GSL::ERROR, "read WaferHeightMap got Error: ", status);
     }
   } catch (CORBA::Exception& e) 
   {

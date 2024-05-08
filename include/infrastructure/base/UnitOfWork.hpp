@@ -50,7 +50,9 @@ class EntityRegister
             case RegistryTypeEnum::RegisterNew:
             case RegistryTypeEnum::RegisterDirty:
             case RegistryTypeEnum::RegisterClean:
+                GSL::Dprintf(GSL::DEBUG, "EntityRegister Commit STORE START");
                 repository->Store(*entityInstance);
+                GSL::Dprintf(GSL::DEBUG, "EntityRegister Commit STORE DONE");
                 break;
             case RegistryTypeEnum::RegisterDeleted:
                 repository->Delete(*entityInstance);
@@ -160,12 +162,12 @@ private:
 		std::string justProcessName = totalProcessName.substr(processNamePos+1);
 		std::ostringstream databaseName;
 		databaseName << justProcessName << "Database.db";
-		GSL::Dprintf(GSL::INFO, "Opening ", databaseName.str());
+		GSL::Dprintf(GSL::DEBUG, "Opening ", databaseName.str());
 		db->open(databaseName.str());
 	}
     void CloseHiberlite()
 	{
-		GSL::Dprintf(GSL::INFO, "Closing database");
+		GSL::Dprintf(GSL::DEBUG, "Closing database");
 		db->close();
 		delete db;
 		db = nullptr;

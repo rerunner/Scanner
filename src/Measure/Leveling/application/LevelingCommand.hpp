@@ -119,11 +119,11 @@ namespace LevelingCommands
     void operator()(const MeasureWafer& cmd)
     {
       dispatch([&] {
-        GSL::Dprintf(GSL::DEBUG, "Leveling command execution start for waferId = ", cmd.waferId.Get());
+        GSL::Dprintf(GSL::INFO, "Leveling MeasureWafer command execution started for waferId = ", cmd.waferId.Get());
       
         leveling_.measureWafer(cmd.waferId);
 
-        GSL::Dprintf(GSL::DEBUG, "Leveling command executed in async mode, sending Kafka message to indicate completion");
+        GSL::Dprintf(GSL::DEBUG, "Leveling MeasureWafer command execution completed, sending Kafka message");
         json jMessage;
         jMessage.emplace("Message", "CommandCompleted");
         jMessage.emplace("Command", "MeasureWafer");

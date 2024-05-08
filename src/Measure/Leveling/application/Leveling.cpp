@@ -157,12 +157,12 @@ namespace Leveling  { namespace Application
         // Get QoS to use for the topic, could also use TOPIC_QOS_DEFAULT instead
         DDS::TopicQos leveling_topic_qos;
         participant.get()->ptr()->get_default_topic_qos(leveling_topic_qos);
-        leveling_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
+        //leveling_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
 
         // Create a topic for the WaferHeightMap type...
         DDS::Topic_var waferheightmap_topic = participant.get()->ptr()->create_topic ( scanner::generated::WAFER_HEIGHTMAP_TOPIC,
                                                                           waferheightmap_servant->get_type_name (),
-                                                                          leveling_topic_qos, //TOPIC_QOS_DEFAULT,
+                                                                          TOPIC_QOS_DEFAULT, //leveling_topic_qos,
                                                                           0,
                                                                           ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
@@ -173,7 +173,7 @@ namespace Leveling  { namespace Application
 
         DDS::DataWriterQos leveling_dr_qos;
         pub->get_default_datawriter_qos (leveling_dr_qos);
-        leveling_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
+        //leveling_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
         // Create a DataWriter for the WaferHeightMap topic
         waferHeightMap_base_dw = pub->create_datawriter(  waferheightmap_topic,
                                                           leveling_dr_qos, //DATAWRITER_QOS_DEFAULT,

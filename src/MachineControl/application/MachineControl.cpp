@@ -378,7 +378,7 @@ namespace MachineControl
                             { 
                                 if (j_message["Id"] == wafer->GetId().Get())
                                 {
-                                    GSL::Dprintf(GSL::DEBUG, "processing ExposeWaferCompleted message with Wafer Id = ", j_message["Id"]);
+                                    GSL::Dprintf(GSL::INFO, "ExposeWaferCompleted message received for Wafer Id = ", j_message["Id"]);
                                     wafer->Exposed();
                                     exposeStation.CommandHasCompleted(); // Temporary, to be removed
                                 }
@@ -396,7 +396,7 @@ namespace MachineControl
                             { 
                                 if (j_message["Id"] == wafer->GetId().Get())
                                 {
-                                    GSL::Dprintf(GSL::DEBUG, "processing MeasureWaferCompleted message with Wafer Id = ", j_message["Id"]);
+                                    GSL::Dprintf(GSL::DEBUG, "MeasureWaferCompleted message received for Wafer Id = ", j_message["Id"]);
                                     wafer->Measured();
                                     measureStation.CommandHasCompleted(); // Temporary, to be removed
                                 }

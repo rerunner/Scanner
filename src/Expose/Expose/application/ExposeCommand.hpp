@@ -116,11 +116,11 @@ namespace Expose { namespace Application { namespace ExposeCommands {
     void operator()(const ExposeWafer& cmd)
     {
        dispatch([&] {
-        GSL::Dprintf(GSL::DEBUG, "Expose command execution start for waferId = ", cmd.waferId.Get());
+        GSL::Dprintf(GSL::INFO, "Expose Expose command execution start for waferId = ", cmd.waferId.Get());
 
         expose_.exposeWafer(cmd.waferId);
 
-        GSL::Dprintf(GSL::DEBUG, "Expose command finished execution in async mode, sending Kafka message to indicate completion");
+        GSL::Dprintf(GSL::DEBUG, "Expose Expose command execution completed, sending Kafka message");
         json jMessage;
         jMessage.emplace("Message", "CommandCompleted");
         jMessage.emplace("Command", "ExposeWafer");

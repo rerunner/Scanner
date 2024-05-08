@@ -47,7 +47,7 @@ namespace Expose { namespace Application
     DDS::DataReader_var *waferheightmap_dr;
     void Subscribe();
     void UnSubscribe();
-    std::string StartHeightMapListener(std::unique_ptr<UnitOfWork> & context_);
+    void StartHeightMapListener();
 
     public:
     Expose();

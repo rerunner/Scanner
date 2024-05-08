@@ -53,6 +53,9 @@ namespace Expose { namespace Application
 			GSL::Dprintf(GSL::WARNING, "didn't create the tables: ", e.what());
 		}
         // hiberlite boilerplate end
+
+        Subscribe();
+        StartHeightMapListener();
         
         GSL::Dprintf(GSL::DEBUG, "Expose object created");
     }
@@ -94,14 +97,16 @@ namespace Expose { namespace Application
                     GSL::Dprintf(GSL::DEBUG, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
                     if (j_message["State"] == "Unloaded")
                     {
-                        GSL::Dprintf(GSL::DEBUG, "Can delete heightmap data associated with Wafer ID ", j_message["Id"]);
+                        GSL::Dprintf(GSL::DEBUG, "Received request to DELETE heightmap for Wafer ID ", j_message["Id"]);
                         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
                         auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, UoWFactory.GetDataBasePtr());
+                        GSL::Dprintf(GSL::DEBUG, "START creating list of all waferheightmaps in database.");
                         auto whmList = repository->GetAll();
+                        GSL::Dprintf(GSL::DEBUG, "DONE  creating list of all waferheightmaps in database.");
                         Uuid targetId(j_message["Id"]);
                         for (auto &iter:whmList)
                         {
-                          GSL::Dprintf(GSL::DEBUG, "Searching WaferHeightMap List, found Wafer Id = ", iter.GetWaferId().Get());
+                          GSL::Dprintf(GSL::DEBUG, "Searching database, found Wafer Id = ", iter.GetWaferId().Get());
                           if (targetId.Get() == iter.GetWaferId().Get())
                           {
                             GSL::Dprintf(GSL::DEBUG, "MATCH FOUND !!!!! Deleting WaferHeightMap of Wafer Id = ", targetId.Get());
@@ -174,13 +179,13 @@ namespace Expose { namespace Application
         //! Get QoS to use for the topic, could also use TOPIC_QOS_DEFAULT instead
         DDS::TopicQos expose_topic_qos;
         participant->get_default_topic_qos(expose_topic_qos);
-        expose_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
+        //expose_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
 
         //! Create a topic for the WaferHeightMap type...
         CORBA::String_var type_name = waferheightmap_ts->get_type_name();
         DDS::Topic_var waferheightmap_topic = participant->create_topic ( scanner::generated::WAFER_HEIGHTMAP_TOPIC,
                                                                             type_name,
-                                                                            expose_topic_qos,
+                                                                            TOPIC_QOS_DEFAULT, //expose_topic_qos,
                                                                             0,
                                                                             ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
@@ -188,7 +193,7 @@ namespace Expose { namespace Application
         //! Create the WaferHeightMap DataReader
         DDS::DataReaderQos expose_dr_qos;
         sub->get_default_datareader_qos (expose_dr_qos);
-        expose_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
+        //expose_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
 
         waferheightmap_dr = new DDS::DataReader_var(sub->create_datareader(  waferheightmap_topic,
                                                                 expose_dr_qos, 
@@ -212,37 +217,18 @@ namespace Expose { namespace Application
         }
     }
 
-    std::string Expose::StartHeightMapListener(std::unique_ptr<UnitOfWork> & context_)
+    void Expose::StartHeightMapListener()
     {
-        GSL::Dprintf(GSL::DEBUG, "Looking for matching HeightMap");
-
-        //! Creating the infrastructure that allows an application thread to block
-        //! until some condition becomes true, such as data availability.
-        //! Create a Status Condition for the reader
-        //! Create DataReaderListeners 
-        std::promise<std::string> theHeightMapId;
-        std::future<std::string> f = theHeightMapId.get_future();
-        
-        DDS::DataReaderListener_var waferheightmap_listener(new DataReaderListenerImpl(context_, &theHeightMapId));
+        GSL::Dprintf(GSL::DEBUG, "Expose fetching matching HeightMap");
+        DDS::DataReaderListener_var waferheightmap_listener(new DataReaderListenerImpl(&UoWFactory));
         waferheightmap_dr->ptr()->set_listener(waferheightmap_listener, DDS::DATA_AVAILABLE_STATUS | DDS::LIVELINESS_CHANGED_STATUS);
-        std::string ret = f.get(); //! Wait for the future ;-)
-        waferheightmap_dr->ptr()->set_listener(0, OpenDDS::DCPS::NO_STATUS_MASK);
-        GSL::Dprintf(GSL::DEBUG, "HeightMap, Start committing to database.");
-        context_->Commit(); // Write changes to repository
-        GSL::Dprintf(GSL::DEBUG, "HeightMap, End committing to database.");
-        return ret;
     }
 
     void Expose::exposeWafer(Uuid waferID)
     {
         GSL::Dprintf(GSL::DEBUG, "exposeWafer starts with wafer Id = ", waferID.Get());
-        std::unique_ptr<UnitOfWork> context_ = UoWFactory.GetNewUnitOfWork();
 
-        //! expose the whole wafer die by die with the provided image
-        //! Uses the wafer heightmap for lens correction.
-        //! Two phases repeat: stepping phase (to the next die) and scanning phase (of one die)
-        this->Subscribe();
-        std::string foundHeightMapId = StartHeightMapListener(context_);
+        // Todo: read the stored heightmap
 
         //! Start Expose loop
         GSL::Dprintf(GSL::DEBUG, "Start expose loop");
