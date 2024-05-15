@@ -10,6 +10,7 @@ Todo: the decription
 - oatpp-swagger
 - OpenDDS
 - RaftLib
+- nlohmann/json
 
 # Nice to have
 - context-mapper
@@ -20,6 +21,5 @@ Todo: the decription
 
 # To Do
 - Add description
-- Create Lot state domain event
-- Move kafka messages from plain strings to e.g. json/avro/parquet messages
-- Implement clean-up of runtime data after wafer done and lot done.
+- Implement Lot state domain event
+- Implement clean-up of runtime data after lot done.
