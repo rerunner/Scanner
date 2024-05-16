@@ -20,6 +20,9 @@
 #include "GenLogger.hpp"
 #include "domain/WaferHeightMap.hpp"
 
+//#define REPOSITORY_TYPE RepositoryType::HeapRepository
+#define REPOSITORY_TYPE RepositoryType::ORM
+
 namespace unitofwork {
 
 typedef std::map<std::string, void*> Dict; // Dictionary for repositories
@@ -67,7 +70,7 @@ public:
         entityInstance = newEnt;
         registryType = newRegistryType;
         db = passedDb;
-        repositoryType_ = RepositoryType::ORM;
+        repositoryType_ = REPOSITORY_TYPE;
     }
     
     ~EntityRegister()
@@ -95,7 +98,7 @@ public:
     UnitOfWork(hiberlite::Database *passedDb)
     {
         db = passedDb;
-        repositoryType_ = RepositoryType::ORM;
+        repositoryType_ = REPOSITORY_TYPE;
     }
     virtual ~UnitOfWork()
     {
@@ -198,8 +201,8 @@ private:
 		std::ostringstream databaseName;
 		databaseName << justProcessName << "Database.db";
 		GSL::Dprintf(GSL::DEBUG, "Opening ", databaseName.str());
-		db->open(databaseName.str());
-        //db->open(":memory:");
+		//db->open(databaseName.str());
+        db->open(":memory:");
 	}
     void CloseHiberlite()
 	{
@@ -211,7 +214,7 @@ private:
 public:
     UnitOfWorkFactory()
     {
-        repositoryType_ = RepositoryType::ORM;
+        repositoryType_ = REPOSITORY_TYPE;
         if (repositoryType_ == RepositoryType::ORM)
         {
             OpenHiberlite();

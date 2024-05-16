@@ -90,7 +90,7 @@ namespace Expose { namespace Application
                     {
                         GSL::Dprintf(GSL::DEBUG, "Received request to DELETE heightmap for Wafer ID ", j_message["Id"]);
                         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
-                        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, UoWFactory.GetDataBasePtr());
+                        auto repository = repositoryFactory->GetRepository(REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
                         Uuid waferID(j_message["Id"]);
                         auto whmList = repository->GetAllChildren(waferID); //Fetch all heightmaps in the database and find the one with the correct wafer id
                         GSL::Dprintf(GSL::DEBUG, "Searched for waferheightmap to delete. found number = ", whmList.size());
@@ -214,7 +214,7 @@ namespace Expose { namespace Application
 
         // Read the stored heightmap
         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
-        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, UoWFactory.GetDataBasePtr());
+        auto repository = repositoryFactory->GetRepository(REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
         //auto repository = repositoryFactory->GetRepository(RepositoryType::HeapRepository, UoWFactory.GetDataBasePtr());
         auto whmList = repository->GetAllChildren(waferID); //Fetch all heightmaps in the database and find the one with the correct wafer id
         if(whmList.size() > 0)
