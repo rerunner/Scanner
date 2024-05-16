@@ -161,12 +161,13 @@ namespace Expose { namespace Application
         DDS::TopicQos expose_topic_qos;
         participant->get_default_topic_qos(expose_topic_qos);
         //expose_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
+        expose_topic_qos.reliability.kind = DDS::ReliabilityQosPolicyKind::RELIABLE_RELIABILITY_QOS;
 
         //! Create a topic for the WaferHeightMap type...
         CORBA::String_var type_name = waferheightmap_ts->get_type_name();
         DDS::Topic_var waferheightmap_topic = participant->create_topic ( scanner::generated::WAFER_HEIGHTMAP_TOPIC,
                                                                             type_name,
-                                                                            TOPIC_QOS_DEFAULT, //expose_topic_qos,
+                                                                            expose_topic_qos, //TOPIC_QOS_DEFAULT,
                                                                             0,
                                                                             ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
@@ -175,6 +176,7 @@ namespace Expose { namespace Application
         DDS::DataReaderQos expose_dr_qos;
         sub->get_default_datareader_qos (expose_dr_qos);
         //expose_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
+        expose_dr_qos.reliability.kind = DDS::ReliabilityQosPolicyKind::RELIABLE_RELIABILITY_QOS;
 
         waferheightmap_dr = new DDS::DataReader_var(sub->create_datareader(  waferheightmap_topic,
                                                                 expose_dr_qos, 

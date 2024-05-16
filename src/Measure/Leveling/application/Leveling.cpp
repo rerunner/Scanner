@@ -145,11 +145,14 @@ namespace Leveling  { namespace Application
         DDS::TopicQos leveling_topic_qos;
         participant.get()->ptr()->get_default_topic_qos(leveling_topic_qos);
         //leveling_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
+        leveling_topic_qos.reliability.kind = DDS::ReliabilityQosPolicyKind::RELIABLE_RELIABILITY_QOS;
+        leveling_topic_qos.reliability.max_blocking_time.sec = 1; // one second
+        leveling_topic_qos.reliability.max_blocking_time.nanosec = 0; 
 
         // Create a topic for the WaferHeightMap type...
         DDS::Topic_var waferheightmap_topic = participant.get()->ptr()->create_topic ( scanner::generated::WAFER_HEIGHTMAP_TOPIC,
                                                                           waferheightmap_servant->get_type_name (),
-                                                                          TOPIC_QOS_DEFAULT, //leveling_topic_qos,
+                                                                          leveling_topic_qos, //TOPIC_QOS_DEFAULT, 
                                                                           0,
                                                                           ::OpenDDS::DCPS::DEFAULT_STATUS_MASK);
 
@@ -161,6 +164,10 @@ namespace Leveling  { namespace Application
         DDS::DataWriterQos leveling_dr_qos;
         pub->get_default_datawriter_qos (leveling_dr_qos);
         //leveling_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
+        leveling_dr_qos.reliability.kind = DDS::ReliabilityQosPolicyKind::RELIABLE_RELIABILITY_QOS;
+        leveling_dr_qos.reliability.max_blocking_time.sec = 1; // one second
+        leveling_dr_qos.reliability.max_blocking_time.nanosec = 0; 
+
         // Create a DataWriter for the WaferHeightMap topic
         waferHeightMap_base_dw = pub->create_datawriter(  waferheightmap_topic,
                                                           leveling_dr_qos, //DATAWRITER_QOS_DEFAULT,
