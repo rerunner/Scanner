@@ -66,19 +66,19 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 		Entity Lot {
 			aggregateRoot
 
-			- LotId lotId
-			- List<Wafer> wafers
+			- Uuid id_
+			- List<Uuid> waferIds_
 
-			def @LotId GetLotId();
+			def @Uuid GetLotId();
 			Repository LotRepository {
-	                 @Lot find(@LotId lotId) throws LotNotFoundException;
+	                 @Lot find(@Uuid lotId) throws LotNotFoundException;
 	                 List<@Lot> findAll;
 	                 store(@Lot lot);
-	                 @LotId nextLotId();
+	                 @Uuid nextLotId();
 				}
 		}
 
-		ValueObject LotId {
+		ValueObject Uuid {
 			string id;
 		}
 	}
@@ -92,12 +92,9 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 		Entity Wafer {
 			aggregateRoot
 
-			- WaferId waferId
+			- Uuid waferId
 
-			def @WaferId GetWaferId();
-		}
-		ValueObject WaferId {
-			string id;
+			def @Uuid GetWaferId();
 		}
 	}
 }

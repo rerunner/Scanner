@@ -190,7 +190,7 @@ namespace Leveling  { namespace Application
       scanner::generated::WaferHeightMap newWaferHeightMapDTO;
       newWaferHeightMapDTO.heightMapID = waferHeightMap->GetId().Get().c_str();
       newWaferHeightMapDTO.waferID = waferHeightMap->GetWaferId().Get().c_str();
-      newWaferHeightMapDTO.measurements.length(10000); // Looping through all of the elements:
+      newWaferHeightMapDTO.measurements.length(scanner::generated::MAX_MEASUREMENT_STEPS); // Looping through all of the elements:
       for (int i = 0; Measurement myMeas : myHeightMap) //C++20 syntax
       {
         Position myPosition = myMeas.GetPosition();
@@ -202,7 +202,7 @@ namespace Leveling  { namespace Application
       // DTO assembler end
 
       // call the write method of the WaferHeightMap datawriter
-      GSL::Dprintf(GSL::DEBUG, "Publishing HeightMap of WAFER ID = ", newWaferHeightMapDTO.waferID, " using DDS datawriter.");
+      GSL::Dprintf(GSL::INFO, "[DDS]Publishing HeightMap of WAFER ID = ", newWaferHeightMapDTO.waferID, " using DDS datawriter.");
       return waferHeightMap_dw->write(newWaferHeightMapDTO, whm_handle);
     }
 

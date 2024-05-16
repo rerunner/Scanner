@@ -39,20 +39,19 @@ class EntityRegister
     RegistryTypeEnum registryType;
     hiberlite::Database *db;
     inline static std::mutex mtx;
+    RepositoryType repositoryType_;
 
     void Commit()
     {
         std::scoped_lock lock{mtx};
         std::unique_ptr<IRepositoryFactory<EntityType>> repositoryFactory = std::make_unique<RepositoryFactory<EntityType>>();
-        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, db);
+        auto repository = repositoryFactory->GetRepository(repositoryType_, db);
         switch (registryType)
         {
             case RegistryTypeEnum::RegisterNew:
             case RegistryTypeEnum::RegisterDirty:
             case RegistryTypeEnum::RegisterClean:
-                GSL::Dprintf(GSL::DEBUG, "EntityRegister Commit STORE START");
                 repository->Store(*entityInstance);
-                GSL::Dprintf(GSL::DEBUG, "EntityRegister Commit STORE DONE");
                 break;
             case RegistryTypeEnum::RegisterDeleted:
                 repository->Delete(*entityInstance);
@@ -68,6 +67,7 @@ public:
         entityInstance = newEnt;
         registryType = newRegistryType;
         db = passedDb;
+        repositoryType_ = RepositoryType::ORM;
     }
     
     ~EntityRegister()
@@ -89,11 +89,13 @@ private:
     std::list<boost::any> _updatedEntities;
     std::list<boost::any> _deletedEntities;
     hiberlite::Database *db;
+    RepositoryType repositoryType_;
 
 public:
     UnitOfWork(hiberlite::Database *passedDb)
     {
         db = passedDb;
+        repositoryType_ = RepositoryType::ORM;
     }
     virtual ~UnitOfWork()
     {
@@ -103,12 +105,15 @@ public:
     template <typename EntityType>
     void RegisterNew(std::shared_ptr<EntityType> entPtr)
     {
-        try {
-            db->registerBeanClass<EntityType>();
+        if (repositoryType_ == RepositoryType::ORM)
+        {
+            try {
+                db->registerBeanClass<EntityType>();
+            }
+            catch (std::exception& e) {
+                GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
+            }
         }
-        catch (std::exception& e) {
-			GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
-		}
 
         EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterNew, db);
         _newEntities.push_back(std::move(myNewEntityPtr)); //Register
@@ -117,14 +122,15 @@ public:
     template <typename EntityType>
     void RegisterDirty(std::shared_ptr<EntityType> entPtr)
     { 
-        GSL::Dprintf(GSL::DEBUG, "ENTER");
-        try {
-            db->registerBeanClass<EntityType>();
+        if (repositoryType_ == RepositoryType::ORM)
+        {
+            try {
+                db->registerBeanClass<EntityType>();
+            }
+            catch (std::exception& e) {
+                GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
+            }
         }
-        catch (std::exception& e) {
-			GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
-		}
-		
         EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDirty, db);
         _updatedEntities.push_back(std::move(myUpdatedEntityPtr)); //Register
         GSL::Dprintf(GSL::DEBUG, "EXIT");
@@ -133,13 +139,15 @@ public:
     template <typename EntityType>
     void RegisterDeleted(std::shared_ptr<EntityType> entPtr)
     { 
-        GSL::Dprintf(GSL::DEBUG, "ENTER");
-        try {
-            db->registerBeanClass<EntityType>();
+        if (repositoryType_ == RepositoryType::ORM)
+        {
+            try {
+                db->registerBeanClass<EntityType>();
+            }
+            catch (std::exception& e) {
+                GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
+            }
         }
-        catch (std::exception& e) {
-			GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
-		}
 		
         EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDeleted, db);
         _updatedEntities.push_back(std::move(myDeletedEntityPtr)); //Register
@@ -151,12 +159,15 @@ public:
         GSL::Dprintf(GSL::DEBUG, "Commit UoW ID = ", _context.Get());
         // Too bad that we don't know the templated types anymore :-(
         // Committing changed or new objects happens in the destructor of list of changed entities (at destruction of this UoW instance)
-        try {
-			db->createModel();
-		}
-		catch (std::exception& e) {
-			GSL::Dprintf(GSL::DEBUG, "didn't create the tables: ", e.what());
-		}
+        if (repositoryType_ == RepositoryType::ORM)
+        {
+            try {
+                db->createModel();
+            }
+            catch (std::exception& e) {
+                GSL::Dprintf(GSL::DEBUG, "didn't create the tables: ", e.what());
+            }
+        }
         _newEntities.clear(); // clearing calls destructor, hence commit happens
     }
 
@@ -177,6 +188,7 @@ class UnitOfWorkFactory
 {
 private:
     hiberlite::Database *db;
+    RepositoryType repositoryType_;
     void OpenHiberlite()
 	{
 		db = new hiberlite::Database;
@@ -187,6 +199,7 @@ private:
 		databaseName << justProcessName << "Database.db";
 		GSL::Dprintf(GSL::DEBUG, "Opening ", databaseName.str());
 		db->open(databaseName.str());
+        //db->open(":memory:");
 	}
     void CloseHiberlite()
 	{
@@ -196,7 +209,22 @@ private:
 		db = nullptr;
 	}
 public:
-    UnitOfWorkFactory(){OpenHiberlite();}
+    UnitOfWorkFactory()
+    {
+        repositoryType_ = RepositoryType::ORM;
+        if (repositoryType_ == RepositoryType::ORM)
+        {
+            OpenHiberlite();
+        }
+    }
+    ~UnitOfWorkFactory()
+    {
+        if (repositoryType_ == RepositoryType::ORM)
+        {
+            CloseHiberlite();
+        }
+    }
+
     std::unique_ptr<UnitOfWork> GetNewUnitOfWork()
 	{
         return std::make_unique<UnitOfWork>(db);

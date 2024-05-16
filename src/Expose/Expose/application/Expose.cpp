@@ -42,7 +42,7 @@ namespace Expose { namespace Application
         eventListenerThread = std::thread(&Expose::eventListenerThreadHandler, this);
 
         // hiberlite boilerplate start
-        hiberlite::Database *exposeDB = UoWFactory.GetDataBasePtr();
+        //hiberlite::Database *exposeDB = UoWFactory.GetDataBasePtr();
         // hiberlite boilerplate end
 
         Subscribe();
@@ -214,7 +214,8 @@ namespace Expose { namespace Application
 
         // Read the stored heightmap
         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
-        auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, UoWFactory.GetDataBasePtr());
+        //auto repository = repositoryFactory->GetRepository(RepositoryType::ORM, UoWFactory.GetDataBasePtr());
+        auto repository = repositoryFactory->GetRepository(RepositoryType::HeapRepository, UoWFactory.GetDataBasePtr());
         auto whmList = repository->GetAllChildren(waferID); //Fetch all heightmaps in the database and find the one with the correct wafer id
         if(whmList.size() > 0)
         {

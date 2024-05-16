@@ -56,21 +56,20 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
     if (status == DDS::RETCODE_OK)
     {
       std::unique_ptr<UnitOfWork> whmContext = whmContextFactory->GetNewUnitOfWork();
-      GSL::Dprintf(GSL::DEBUG, "Expose DDS: received WaferID = ", whm.waferID , " going to copy it.");
+      GSL::Dprintf(GSL::INFO, "[DDS] Expose received WaferID = ", whm.waferID , " going to copy it.");
       // Translate from received DTO to local representation
       std::ostringstream oss;
       oss << whm.waferID; // Is there a better way from TAO managed string to std::string?
       std::string waferUuidString = oss.str();
       Uuid waferUuid(waferUuidString);
       std::shared_ptr<WaferHeightMap> myHeightMap = std::make_shared<WaferHeightMap>(waferUuid);
-      for (int i = 0; i < 10000 ; i++)
+      for (int i = 0; i < scanner::generated::MAX_MEASUREMENT_STEPS ; i++)
       {
         Position myPosition(whm.measurements[i].xyPosition.xPos, whm.measurements[i].xyPosition.yPos);
         double myZpos = whm.measurements[i].zPos;
         Measurement myMeas(myPosition, myZpos);
         myHeightMap->AddMeasurement(myMeas);
       }
-      GSL::Dprintf(GSL::DEBUG, "Expose DDS Datalistener stores heightmap for wafer ID ", myHeightMap->GetWaferId().Get());
       whmContext->RegisterNew<WaferHeightMap>(myHeightMap);
       whmContext->Commit();
     }

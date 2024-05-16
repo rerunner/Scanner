@@ -18,7 +18,7 @@ struct Measurement
 
 typedef sequence<Measurement,MAX_MEASUREMENT_STEPS> measurementsType;
 @topic 
-struct WaferHeightMap 
+struct WaferHeightMap
 {
 	// ID of the heightmap whose measurements is being updated
 	@key string heightMapID;  
