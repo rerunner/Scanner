@@ -38,11 +38,6 @@ namespace Leveling  { namespace Application
     Leveling::Leveling(): WAFER_DOMAIN_ID(0)
     {
       eventListenerThread = std::thread(&Leveling::eventListenerThreadHandler, this);
-
-      // hiberlite boilerplate start
-      hiberlite::Database *levelingDB = UoWFactory.GetDataBasePtr();
-      // hiberlite boilerplate end
-
       GSL::Dprintf(GSL::DEBUG, "Leveling constructed with DDS WAFER_DOMAIN_ID ", WAFER_DOMAIN_ID);
     }
 
