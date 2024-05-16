@@ -56,7 +56,7 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
     if (status == DDS::RETCODE_OK)
     {
       std::unique_ptr<UnitOfWork> whmContext = whmContextFactory->GetNewUnitOfWork();
-      GSL::Dprintf(GSL::INFO, "[DDS] Expose received WaferID = ", whm.waferID , " going to copy it.");
+      GSL::Dprintf(GSL::DEBUG, "[DDS] Expose received WaferID = ", whm.waferID , " going to copy it.");
       // Translate from received DTO to local representation
       std::ostringstream oss;
       oss << whm.waferID; // Is there a better way from TAO managed string to std::string?

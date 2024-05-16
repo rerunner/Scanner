@@ -41,10 +41,6 @@ namespace Expose { namespace Application
     {
         eventListenerThread = std::thread(&Expose::eventListenerThreadHandler, this);
 
-        // hiberlite boilerplate start
-        //hiberlite::Database *exposeDB = UoWFactory.GetDataBasePtr();
-        // hiberlite boilerplate end
-
         Subscribe();
         StartHeightMapListener();
         
@@ -94,9 +90,10 @@ namespace Expose { namespace Application
                         Uuid waferID(j_message["Id"]);
                         auto whmList = repository->GetAllChildren(waferID); //Fetch all heightmaps in the database and find the one with the correct wafer id
                         GSL::Dprintf(GSL::DEBUG, "Searched for waferheightmap to delete. found number = ", whmList.size());
-                        if(whmList.size() > 0)
+                        for (int posInList = 0; posInList < whmList.size(); posInList++)
                         {
-                            repository->Delete(whmList[0]); // There is only one in the list
+                            GSL::Dprintf(GSL::DEBUG, "Deleting heightmap for wafer id ", whmList[posInList].GetParentId().Get());
+                            repository->Delete(whmList[posInList]); 
                         }
                     }
                     
@@ -215,12 +212,9 @@ namespace Expose { namespace Application
         // Read the stored heightmap
         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
         auto repository = repositoryFactory->GetRepository(REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
-        //auto repository = repositoryFactory->GetRepository(RepositoryType::HeapRepository, UoWFactory.GetDataBasePtr());
         auto whmList = repository->GetAllChildren(waferID); //Fetch all heightmaps in the database and find the one with the correct wafer id
         if(whmList.size() > 0)
         {
-            //std::unique_ptr<Uuid> whmID = std::make_unique<Uuid>(whmList[0].GetId().Get());
-
             //! Start Expose loop
             GSL::Dprintf(GSL::DEBUG, "Start expose loop");
             {

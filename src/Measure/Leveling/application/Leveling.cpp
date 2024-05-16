@@ -202,7 +202,7 @@ namespace Leveling  { namespace Application
       // DTO assembler end
 
       // call the write method of the WaferHeightMap datawriter
-      GSL::Dprintf(GSL::INFO, "[DDS]Publishing HeightMap of WAFER ID = ", newWaferHeightMapDTO.waferID, " using DDS datawriter.");
+      GSL::Dprintf(GSL::DEBUG, "[DDS]Publishing HeightMap of WAFER ID = ", newWaferHeightMapDTO.waferID, " using DDS datawriter.");
       return waferHeightMap_dw->write(newWaferHeightMapDTO, whm_handle);
     }
 

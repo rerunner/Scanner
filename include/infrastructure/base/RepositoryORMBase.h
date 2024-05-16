@@ -98,16 +98,14 @@ public:
     std::scoped_lock lock{repMtx};
     std::vector<RepositoryBaseType> vList;
     try {
-			std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db->getAllBeans<RepositoryBaseType>();
+      std::ostringstream oss;
+      oss << "parentId__uuid_" << " = '" << parentId.Get() << "'"; // SQL syntax, column = "parentId__uuid_" and value is the uuid string
+      std::string sqlQuery = oss.str();
+      std::vector<hiberlite::bean_ptr<RepositoryBaseType>> v = db->getBeansByQuery<RepositoryBaseType>(sqlQuery);
       for (auto &iter:v)
       {
         hiberlite::bean_ptr<RepositoryBaseType> xptr = db->loadBean<RepositoryBaseType>(iter.get_id());
-        GSL::Dprintf(GSL::INFO, "GetAllChildren -----> searching, found parent id = ", (*xptr).GetParentId().Get());
-        if (parentId.Get().compare((*xptr).GetParentId().Get()) == 0)
-        {
-          GSL::Dprintf(GSL::INFO, "GetAllChildren -----> Parent match");
-          vList.push_back(*xptr);
-        }
+        vList.push_back(*xptr);
       }
     }
 		catch (std::exception& e) {
