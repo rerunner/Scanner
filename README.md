@@ -21,5 +21,4 @@ Todo: the decription
 
 # To Do
 - Add description
-- Implement Lot state domain event
-- Implement clean-up of runtime data after lot done.
+- Add more measure steps
