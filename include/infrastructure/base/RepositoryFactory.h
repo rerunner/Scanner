@@ -29,7 +29,7 @@ public:
 			break;
 		}
 	}
-	virtual ~RepositoryFactory<T>()
+	virtual ~RepositoryFactory()
 	{
 		if (ormRep) {delete ormRep;	}
 		if (heapRep) {delete heapRep;}

@@ -12,7 +12,5 @@ template <typename T>
 class IRepositoryFactory
 {
 public:
-  virtual ~IRepositoryBase<T>(){};
-
-	virtual IRepositoryBase<T>* GetRepository(RepositoryType repository, hiberlite::Database *db) = 0;
+  virtual IRepositoryBase<T>* GetRepository(RepositoryType repository, hiberlite::Database *db) = 0;
 };

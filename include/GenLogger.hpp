@@ -26,7 +26,11 @@ namespace GSL {
 
     // Format to HH:MM:SS
 
+#if defined __clang__
     #define Dprintf(Severity, ...) GenTraceLoc(Severity, ::getpid(), std::this_thread::get_id(), __FILE_NAME__, std::experimental::source_location::current(), __VA_ARGS__)
+#else
+    #define Dprintf(Severity, ...) GenTraceLoc(Severity, ::getpid(), std::this_thread::get_id(), __FILE__, std::experimental::source_location::current(), __VA_ARGS__)
+#endif
 
     template <typename ...Args>
     void GenTraceLoc(unsigned int Severity, pid_t thePid, std::thread::id theTid, const char* theFileName, const std::experimental::source_location& location, Args&& ...args)
