@@ -5,15 +5,13 @@ using json = nlohmann::json;
 
 Lot::Lot() : AggregateRootBase()
 {
-    state = "Loaded"; kafkaConfig = nullptr; kafkaProducer = nullptr;
+    state = "Loaded";
 
     //! Create the Kafka config
     std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
-    cppkafka::ConfigurationOption exposeConfigOption{"metadata.broker.list", "localhost:9092"};
-    kafkaConfigOptions.push_back(exposeConfigOption);
-    kafkaConfig = std::make_shared<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
-    //! Create the Kafka producer
-    kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaConfig);
+    cppkafka::ConfigurationOption lotConfigOption{"metadata.broker.list", "localhost:9092"};
+    kafkaConfigOptions.push_back(lotConfigOption);
+    kafkaConfig = cppkafka::Configuration{kafkaConfigOptions};
 }
 
 void Lot::AddWafer(Uuid wId)
@@ -39,9 +37,10 @@ void Lot::stateChangePublisher()
     // serialize to CBOR
     std::vector<std::uint8_t> message = json::to_cbor(jMessage);
     cppkafka::Buffer bmess(message); // Make sure the kafka message is using the cbor binary format and not a string
-    kafkaProducer->produce(cppkafka::MessageBuilder("lotStateTopic").partition(0).payload(bmess));
+    cppkafka::Producer kafkaProducer(kafkaConfig); //! Create the Kafka producer
+    kafkaProducer.produce(cppkafka::MessageBuilder("lotStateTopic").partition(0).payload(bmess));
     
-    try {kafkaProducer->flush();}
+    try {kafkaProducer.flush();}
     catch (std::exception& e) {
         GSL::Dprintf(GSL::ERROR, "kafka flush failed with: ", e.what());
     }

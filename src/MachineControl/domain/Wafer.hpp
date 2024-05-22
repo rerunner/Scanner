@@ -176,10 +176,7 @@ private:
   //Boilerplate end
 
   // Kafka part
-  //std::shared_ptr<cppkafka::Configuration> kafkaConfig;
-  //std::shared_ptr<cppkafka::Producer> kafkaProducer;
   cppkafka::Configuration kafkaConfig;
-  //cppkafka::Producer kafkaProducer;
   void stateChangePublisher();
 public:
   Wafer();
