@@ -17,6 +17,22 @@ namespace MachineControl
         // hiberlite boilerplate start
         hiberlite::Database *mcDB = UoWFactory.GetDataBasePtr();
         // hiberlite boilerplate end
+
+        // Create the Kafka config
+        GSL::Dprintf(GSL::DEBUG, "Creating the Kafka config");
+        std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
+        cppkafka::ConfigurationOption machinecontrolConfigOption{"metadata.broker.list", "localhost:9092"};
+        kafkaConfigOptions.push_back(machinecontrolConfigOption);
+        kafkaConfigOptions.push_back({ "group.id", "machinecontrol" }); // Every microservice needs its own unique kafka group id
+        kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
+        
+        // Create a consumer instance
+        GSL::Dprintf(GSL::DEBUG, "Creating a kafka consumer instance");
+        kafkaConsumer = std::make_unique<cppkafka::Consumer>(*kafkaConfig);
+
+        // Create a producer instance
+        GSL::Dprintf(GSL::DEBUG, "Creating a kafka producer instance");
+        kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaConfig);
     }
 
     MachineControl::~MachineControl()
@@ -26,7 +42,7 @@ namespace MachineControl
 
     void MachineControl::LoadWaferOnChuck(int chuckNumber)
     {
-        lotWafers.emplace_back(std::make_shared<Wafer>(currentLot->GetId())); // Create a wafer and put it in the list
+        lotWafers.emplace_back(std::make_shared<Wafer>(currentLot->GetId(), kafkaProducer)); // Create a wafer and put it in the list
         std::shared_ptr<Wafer> currentWafer = lotWafers.back(); // Reference without copy
         currentLot->AddWafer(currentWafer->GetId());
         scannerChucks[chuckNumber].LoadWafer(currentWafer->GetId());
@@ -332,18 +348,6 @@ namespace MachineControl
 
     void MachineControl::eventListenerThreadHandler()
     {
-        // Create the Kafka config
-        GSL::Dprintf(GSL::DEBUG, "Creating the Kafka config");
-        std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
-        cppkafka::ConfigurationOption machinecontrolConfigOption{"metadata.broker.list", "localhost:9092"};
-        kafkaConfigOptions.push_back(machinecontrolConfigOption);
-        kafkaConfigOptions.push_back({ "group.id", "machinecontrol" }); // Every microservice needs its own unique kafka group id
-        kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
-        
-        // Create a consumer instance
-        GSL::Dprintf(GSL::DEBUG, "Creating a consumer instance");
-        kafkaConsumer = std::make_unique<cppkafka::Consumer>(*kafkaConfig);
-
         // Subscribe to topics
         std::vector<std::string> machineControlTopics;
         machineControlTopics.push_back("levelingTopic");

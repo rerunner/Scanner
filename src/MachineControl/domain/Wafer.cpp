@@ -8,23 +8,13 @@ using json = nlohmann::json;
 Wafer::Wafer() : AggregateRootBase()
 {
     state = "Loaded";
-
-    //! Create the Kafka config
-    std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
-    cppkafka::ConfigurationOption waferConfigOption{"metadata.broker.list", "localhost:9092"};
-    kafkaConfigOptions.push_back(waferConfigOption);
-    kafkaConfig = cppkafka::Configuration{kafkaConfigOptions};
 }
 
-Wafer::Wafer(Uuid lotId) : AggregateRootBase()
+Wafer::Wafer(Uuid lotId, std::shared_ptr<cppkafka::Producer> newkafkaProducer) : AggregateRootBase()
 {
     parentId_ = lotId; parentLot_ = lotId; state = "Loaded";
 
-    //! Create the Kafka config
-    std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
-    cppkafka::ConfigurationOption waferConfigOption{"metadata.broker.list", "localhost:9092"};
-    kafkaConfigOptions.push_back(waferConfigOption);
-    kafkaConfig = cppkafka::Configuration{kafkaConfigOptions};
+    kafkaProducer = newkafkaProducer;
 }
 
 void Wafer::stateChangePublisher()
@@ -40,10 +30,10 @@ void Wafer::stateChangePublisher()
     // serialize to CBOR
     std::vector<std::uint8_t> message = json::to_cbor(jMessage);
     cppkafka::Buffer bmess(message); // Make sure the kafka message is using the cbor binary format and not a string
-    cppkafka::Producer kafkaProducer(kafkaConfig); //! Create the Kafka producer
-    kafkaProducer.produce(cppkafka::MessageBuilder("waferStateTopic").partition(0).payload(bmess));
+    //cppkafka::Producer kafkaProducer(kafkaConfig); //! Create the Kafka producer
+    kafkaProducer->produce(cppkafka::MessageBuilder("waferStateTopic").partition(0).payload(bmess));
     
-    try {kafkaProducer.flush();}
+    try {kafkaProducer->flush();}
     catch (std::exception& e) {
         GSL::Dprintf(GSL::ERROR, "kafka flush failed with: ", e.what());
     }

@@ -106,6 +106,7 @@ namespace MachineControl
         // Kafka part
         std::unique_ptr<cppkafka::Configuration> kafkaConfig;
         std::unique_ptr<cppkafka::Consumer> kafkaConsumer;
+        std::shared_ptr<cppkafka::Producer> kafkaProducer;
         std::thread eventListenerThread;
         Station measureStation;
         Station exposeStation;
