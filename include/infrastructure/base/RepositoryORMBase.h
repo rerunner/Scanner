@@ -24,7 +24,7 @@ public:
     db = passedDb;
   }
 
-  ~RepositoryORMBase()
+  virtual ~RepositoryORMBase()
   {
     if (db)
     {

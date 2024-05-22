@@ -11,9 +11,9 @@ Lot::Lot() : AggregateRootBase()
     std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
     cppkafka::ConfigurationOption exposeConfigOption{"metadata.broker.list", "localhost:9092"};
     kafkaConfigOptions.push_back(exposeConfigOption);
-    kafkaConfig = new cppkafka::Configuration(cppkafka::Configuration{kafkaConfigOptions});
+    kafkaConfig = std::make_shared<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
     //! Create the Kafka producer
-    kafkaProducer = new cppkafka::Producer(*kafkaConfig);
+    kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaConfig);
 }
 
 void Lot::AddWafer(Uuid wId)
@@ -41,7 +41,10 @@ void Lot::stateChangePublisher()
     cppkafka::Buffer bmess(message); // Make sure the kafka message is using the cbor binary format and not a string
     kafkaProducer->produce(cppkafka::MessageBuilder("lotStateTopic").partition(0).payload(bmess));
     
-    kafkaProducer->flush(std::chrono::milliseconds(30000)); // 30s timeout
+    try {kafkaProducer->flush();}
+    catch (std::exception& e) {
+        GSL::Dprintf(GSL::ERROR, "kafka flush failed with: ", e.what());
+    }
 }
 
 // Boilerplate

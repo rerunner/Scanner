@@ -2,9 +2,6 @@
 #include <string_view> // C++17
 
 #include "MachineControl.hpp"
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -216,13 +213,18 @@ namespace MachineControl
                 measureStation.DoCommand();
                 // Do the command to leveling
                 GSL::Dprintf(GSL::DEBUG, "starting leveling measure heightmap command #", waferInLotNr, " with curl");
-                curlpp::Cleanup myCleanup; // RAII cleanup
                 curlpp::Easy levelingRequest;
                 std::ostringstream urlCommand;
                 urlCommand << "http://127.0.0.1:8003//measure/leveling/measure/" << wId->Get();
                 levelingRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
+                levelingRequest.setOpt(curlpp::Options::Timeout(0));// CURLOPT_TIMEOUT_MS, 20000L)
                 levelingRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
-                levelingRequest.perform();
+                try {levelingRequest.perform();}
+                 catch (std::exception& e) {
+                    measureStation.CommandHasCompleted(); //Give up and retry
+		        	GSL::Dprintf(GSL::ERROR, "curlpp perform failed: ", e.what());
+                    std::this_thread::sleep_for (std::chrono::seconds(10));
+		        }
                 // The command state is false until the event comes through kafka
             }
             else if (GetWaferState(*wId) == "Measured")
@@ -311,13 +313,18 @@ namespace MachineControl
             {
                 exposeStation.DoCommand();
                 GSL::Dprintf(GSL::DEBUG, "starting expose command #", waferInLotNr - 1, " with curl");
-                curlpp::Cleanup myCleanup; // RAII cleanup
                 curlpp::Easy exposeRequest;
                 std::ostringstream urlCommand;
                 urlCommand << "http://127.0.0.1:8002/expose/expose/" << wId->Get();
                 exposeRequest.setOpt(curlpp::Options::Url(std::string(urlCommand.str())));
+                exposeRequest.setOpt(curlpp::Options::Timeout(0));// CURLOPT_TIMEOUT_MS, 20000L)
                 exposeRequest.setOpt(curlpp::Options::CustomRequest("PUT"));
-                exposeRequest.perform();
+                try {exposeRequest.perform();}
+                 catch (std::exception& e) {
+                    exposeStation.CommandHasCompleted(); //Give up and retry
+		        	GSL::Dprintf(GSL::ERROR, "curlpp perform failed: ", e.what());
+                    std::this_thread::sleep_for (std::chrono::seconds(10));
+		        }
                 // The command state is false until the event comes through kafka 
             }
         }
@@ -348,7 +355,7 @@ namespace MachineControl
         do
         {
             // Poll messages from Kafka brokers
-            cppkafka::Message record = kafkaConsumer->poll(std::chrono::milliseconds(100));
+            cppkafka::Message record = kafkaConsumer->poll(std::chrono::milliseconds(1000));
             
             if (record)
             {

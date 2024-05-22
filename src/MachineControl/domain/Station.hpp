@@ -77,7 +77,7 @@ class Station
         state = "Idle";
     }
     std::string const GetStationState(){return state;}
-    void DoCommand(){commandCompleted = false;}
+    void DoCommand(){if (commandCompleted) {commandCompleted = false;} else {GSL::Dprintf(GSL::FATAL, "Previous Command not yet completed!");}}
     void CommandHasCompleted(){commandCompleted = true;} // To Be Removed
     bool const GetCommandCompletedState(){return commandCompleted;}
 };

@@ -130,7 +130,7 @@ namespace Expose { namespace Application { namespace ExposeCommands {
         cppkafka::Buffer bmess(message); // Make sure the kafka message is using the cbor binary format and not a string
         kafkaProducer->produce(cppkafka::MessageBuilder("exposeTopic").partition(0).payload(bmess));
 
-        kafkaProducer->flush(std::chrono::milliseconds(30000)); // 30s timeout
+        //kafkaProducer->flush(std::chrono::milliseconds(30000)); // 30s timeout
        });
     }
 

@@ -73,7 +73,7 @@ public:
         repositoryType_ = REPOSITORY_TYPE;
     }
     
-    ~EntityRegister()
+    virtual ~EntityRegister()
     {
         Commit();
         db = nullptr;
@@ -220,7 +220,7 @@ public:
             OpenHiberlite();
         }
     }
-    ~UnitOfWorkFactory()
+    virtual ~UnitOfWorkFactory()
     {
         if (repositoryType_ == RepositoryType::ORM)
         {

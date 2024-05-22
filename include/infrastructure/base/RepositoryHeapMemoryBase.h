@@ -13,6 +13,8 @@ private:
 	inline static std::vector<RepositoryBaseType> entityVector;
   inline static std::mutex repMtx;
 public:
+  virtual ~RepositoryHeapMemoryBase(){}
+
   void Store(RepositoryBaseType entity)
   {
     std::scoped_lock lock{repMtx};
@@ -62,10 +64,8 @@ public:
 
     for (auto &iter:entityVector)
     {
-      GSL::Dprintf(GSL::INFO, "GetAllChildren -----> searching, found parent id = ", iter.GetParentId().Get());
       if (parentId.Get().compare(iter.GetParentId().Get()) == 0)
       {
-        GSL::Dprintf(GSL::INFO, "GetAllChildren -----> Parent match");
         vList.push_back(iter);
       }
     }

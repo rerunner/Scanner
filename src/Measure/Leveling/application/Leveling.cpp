@@ -68,7 +68,7 @@ namespace Leveling  { namespace Application
         do
         {
             // Poll messages from Kafka brokers
-            cppkafka::Message record = kafkaConsumer->poll(std::chrono::milliseconds(100));
+            cppkafka::Message record = kafkaConsumer->poll(std::chrono::milliseconds(1000));
             if (record)
             {
                 if (!record.get_error())

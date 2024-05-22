@@ -78,9 +78,9 @@ namespace GSL {
                 stream << "|";
             }
            
-            stream << std::setw(30) << std::left << theFileName << " |Pid:"  << std::setw(7) << std::left << thePid 
-                << " |ThreadId:" << std::setw(16) << std::left << theTid << " |@" 
-                << std::setw(30) << std::left << location.function_name() << " |line#"  << std::setw(6) << std::left << location.line() << "| ";
+            stream << std::setw(25) << std::left << theFileName << " |Pid:"  << std::setw(7) << std::left << thePid 
+                << " |Tid:" << std::setw(16) << std::left << theTid << " |@" 
+                << std::setw(25) << std::left << location.function_name() << " |line#"  << std::setw(6) << std::left << location.line() << "| ";
 
             (stream << ... << std::forward<Args>(args)) << "\033[0m" << std::endl;
 

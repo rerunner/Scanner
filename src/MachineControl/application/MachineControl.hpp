@@ -9,6 +9,10 @@
 #include "domain/Station.hpp"
 #include "FiniteStateMachine.hpp"
 
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
+
 #include <cppkafka/cppkafka.h>
 
 #include "GenLogger.hpp"
@@ -96,6 +100,7 @@ namespace MachineControl
     class MachineControl
     {
     private:
+        curlpp::Cleanup myCleanup; // RAII cleanup
         unitofwork::UnitOfWorkFactory UoWFactory;
         machinecontrol_state_machine machineControlStateMachine;
         // Kafka part
