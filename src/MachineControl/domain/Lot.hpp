@@ -136,11 +136,13 @@ private:
   //Boilerplate end
 
   // Kafka part
-  cppkafka::Configuration kafkaConfig;
+  std::shared_ptr<cppkafka::Producer> kafkaProducer;
   void stateChangePublisher();
 public:
   Lot();
+  Lot(std::shared_ptr<cppkafka::Producer> newkafkaProducer);
   virtual ~Lot(){}
+
   void AddWafer(Uuid wId);
   void RemoveWafer(Uuid wId);
 

@@ -439,7 +439,7 @@ namespace MachineControl
 
         for (int lotNr = 0; lotNr<nrOfLots; lotNr++) // For all lots
         {
-            currentLot = std::make_shared<Lot>();
+            currentLot = std::make_shared<Lot>(kafkaProducer);
             executeCommandContext->RegisterNew(currentLot);
             do
             {

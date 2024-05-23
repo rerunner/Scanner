@@ -1,4 +1,5 @@
 #include "WaferHeightMap.hpp"
+#include "GenLogger.hpp"
 
 
 WaferHeightMap::WaferHeightMap(Uuid wId) : AggregateRootBase()
@@ -31,14 +32,12 @@ Uuid WaferHeightMap::GetWaferId()
 
 void WaferHeightMap::LogHeightMap() 
 { 
-#if 0
     for(Measurement measIter : measurements_)
     {
-        std::cout << "Heightmap Measurement X = " << measIter.GetPosition().GetX();
-        std::cout << ", Y = " << measIter.GetPosition().GetY();
-        std::cout << ", Z = " << measIter.GetZ() << std::endl;
+        GSL::Dprintf(GSL::INFO, "Heightmap Measurement X = ", measIter.GetPosition().GetX(), 
+                                ", Y = ", measIter.GetPosition().GetY(), 
+                                ", Z = ", measIter.GetZ());
     }
-#endif
 }
 
 // Boilerplate
