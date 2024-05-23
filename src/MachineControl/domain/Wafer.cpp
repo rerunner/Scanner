@@ -8,6 +8,19 @@ using json = nlohmann::json;
 Wafer::Wafer() : AggregateRootBase()
 {
     state = "Loaded";
+
+    // Create the Kafka config
+    std::unique_ptr<cppkafka::Configuration> kafkaConfig;
+    GSL::Dprintf(GSL::DEBUG, "Creating the Kafka config");
+    std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
+    cppkafka::ConfigurationOption waferConfigOption{"metadata.broker.list", "localhost:9092"};
+    kafkaConfigOptions.push_back(waferConfigOption);
+    kafkaConfigOptions.push_back({ "group.id", "machinecontrol" }); // Every microservice needs its own unique kafka group id
+    kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
+
+    // Create a producer instance
+    GSL::Dprintf(GSL::DEBUG, "Creating a kafka producer instance");
+    kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaConfig);
 }
 
 Wafer::Wafer(Uuid lotId, std::shared_ptr<cppkafka::Producer> newkafkaProducer) : AggregateRootBase()
