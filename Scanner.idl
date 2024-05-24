@@ -10,13 +10,13 @@ struct Position
 	double yPos;
 };
 
-struct Measurement
+struct MarkMeasurement
 {
 	Position xyPosition;
 	double zPos;
 };
 
-typedef sequence<Measurement,MAX_MEASUREMENT_STEPS> measurementsType;
+typedef sequence<MarkMeasurement,MAX_MEASUREMENT_STEPS> measurementsType;
 @topic 
 struct WaferHeightMap
 {

@@ -1,16 +1,15 @@
-#ifndef WAFERHEIGHTMAP_H
-#define WAFERHEIGHTMAP_H
+#pragma once
 
 #include <list>
 //#include "hiberlite.h"
 #include "domain/base/AggregateRootBase.hpp"
-#include "Measurement.hpp" //Value Object
+#include "MarkMeasurement.hpp"
 
 
 class WaferHeightMap : public AggregateRootBase
 {
 private:
-  std::list<Measurement> measurements_;
+  std::list<MarkMeasurement> measurements_;
   Uuid waferId_;
   
   //Boilerplate start
@@ -27,13 +26,11 @@ private:
 public:
   WaferHeightMap() : AggregateRootBase(){}
   WaferHeightMap(Uuid wId);
-  WaferHeightMap(Uuid wId, Measurement m);
+  WaferHeightMap(Uuid wId, MarkMeasurement m);
   virtual ~WaferHeightMap(){};
 
-  std::list<Measurement> GetHeightMap(void);
-  void AddMeasurement(Measurement m);
+  std::list<MarkMeasurement> GetHeightMap(void);
+  void AddMarkMeasurement(MarkMeasurement m);
   Uuid GetWaferId();
   void LogHeightMap();
 };
-
-#endif /* WAFERHEIGHTMAP_H */

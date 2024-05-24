@@ -1,12 +1,11 @@
-#ifndef MEASUREMENT_H
-#define MEASUREMENT_H
+#pragma once
 
 //#include "hiberlite.h"
 #include "domain/base/ValueObjectBase.hpp"
 #include "Position.hpp"
 
 
-class Measurement : public ValueObjectBase
+class MarkMeasurement : public ValueObjectBase
 {
 private:
   double z_;
@@ -23,13 +22,11 @@ private:
   //Boilerplate end
   
 public:
-  Measurement();
-  Measurement(Position position, double zvalue = 0.0);
+  MarkMeasurement();
+  MarkMeasurement(Position position, double zvalue = 0.0);
   
   bool operator==(const ValueObjectBase& other) const;
 
   Position GetPosition() const;
   double GetZ() const;
 };
-
-#endif //MEASUREMENT_H

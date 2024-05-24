@@ -87,7 +87,7 @@ add_executable(Leveling
 	${src}/include/Uuid.cpp
 	${src}/src/Measure/Leveling/application/main.cpp
 	${src}/src/Measure/Leveling/domain/Position.cpp
-	${src}/src/Measure/Leveling/domain/Measurement.cpp
+	${src}/src/Measure/Leveling/domain/MarkMeasurement.cpp
 	${src}/src/Measure/Leveling/domain/WaferHeightMap.cpp
 	${src}/src/Measure/Leveling/application/Leveling.cpp
 	${src}/src/Measure/Leveling/application/Runner.cpp
@@ -100,7 +100,7 @@ add_executable(Expose
 	${src}/include/Uuid.cpp
 	${src}/src/Expose/Expose/application/main.cpp
 	${src}/src/Measure/Leveling/domain/Position.cpp
-	${src}/src/Measure/Leveling/domain/Measurement.cpp
+	${src}/src/Measure/Leveling/domain/MarkMeasurement.cpp
 	${src}/src/Measure/Leveling/domain/WaferHeightMap.cpp
 	${src}/src/Expose/Expose/application/Expose.cpp
 	${src}/src/Expose/Expose/application/Runner.cpp

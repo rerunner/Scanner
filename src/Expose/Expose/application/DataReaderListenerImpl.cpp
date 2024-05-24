@@ -14,7 +14,7 @@
 
 #include <iostream>
 
-#include "domain/Measurement.hpp"
+#include "domain/MarkMeasurement.hpp"
 #include "GenLogger.hpp"
 
 
@@ -67,8 +67,8 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
       {
         Position myPosition(whm.measurements[i].xyPosition.xPos, whm.measurements[i].xyPosition.yPos);
         double myZpos = whm.measurements[i].zPos;
-        Measurement myMeas(myPosition, myZpos);
-        myHeightMap->AddMeasurement(myMeas);
+        MarkMeasurement myMeas(myPosition, myZpos);
+        myHeightMap->AddMarkMeasurement(myMeas);
       }
       whmContext->RegisterNew<WaferHeightMap>(myHeightMap);
       whmContext->Commit();

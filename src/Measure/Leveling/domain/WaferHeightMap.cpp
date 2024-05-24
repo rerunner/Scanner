@@ -8,19 +8,19 @@ WaferHeightMap::WaferHeightMap(Uuid wId) : AggregateRootBase()
     parentId_ = wId;
 };
 
-WaferHeightMap::WaferHeightMap(Uuid wId, Measurement m) : AggregateRootBase()
+WaferHeightMap::WaferHeightMap(Uuid wId, MarkMeasurement m) : AggregateRootBase()
 {
     waferId_ = wId;
     parentId_ = wId;
     measurements_.push_back(m); //First entry
 }
 
-std::list<Measurement> WaferHeightMap::GetHeightMap(void)
+std::list<MarkMeasurement> WaferHeightMap::GetHeightMap(void)
 {
     return measurements_;
 }
 
-void WaferHeightMap::AddMeasurement(Measurement m) 
+void WaferHeightMap::AddMarkMeasurement(MarkMeasurement m) 
 { 
     measurements_.push_back(m); 
 }
@@ -32,9 +32,9 @@ Uuid WaferHeightMap::GetWaferId()
 
 void WaferHeightMap::LogHeightMap() 
 { 
-    for(Measurement measIter : measurements_)
+    for(MarkMeasurement measIter : measurements_)
     {
-        GSL::Dprintf(GSL::INFO, "Heightmap Measurement X = ", measIter.GetPosition().GetX(), 
+        GSL::Dprintf(GSL::INFO, "Heightmap Mark Measurement X = ", measIter.GetPosition().GetX(), 
                                 ", Y = ", measIter.GetPosition().GetY(), 
                                 ", Z = ", measIter.GetZ());
     }
