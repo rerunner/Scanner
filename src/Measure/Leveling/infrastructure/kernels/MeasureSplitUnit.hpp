@@ -25,8 +25,10 @@ public:
     virtual raft::kstatus run()
     {
       GSL::Dprintf(GSL::DEBUG, "MeasureSplitUnit kernel run");
-      Position positionContainer;
-      input[ "inputPosition" ].pop( positionContainer ); // Receive position from input port
+
+      auto &input_port((this)->input["inputPosition"]);
+      auto &positionContainer(input_port.template peek<Position>());
+
       double randomZ = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
       
       MarkMeasurement measurementContainer_a{positionContainer, randomZ}; // Do Measurement
@@ -38,8 +40,9 @@ public:
       *c2 = *measurementContainer_b;
       output["outputMeasurement_a"].send();
       output["outputMeasurement_b"].send();
-      output["outputMeasurement_a"].deallocate();
-      output["outputMeasurement_b"].deallocate();
+      
+      input_port.recycle();
+
       return( raft::proceed );
     }
 
