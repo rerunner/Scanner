@@ -22,4 +22,3 @@ Todo: build decription
 
 # To Do
 - Add build description
-- Add more measure steps at leveling stage
