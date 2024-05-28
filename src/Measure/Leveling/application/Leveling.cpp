@@ -9,6 +9,8 @@
 // Streaming Kernel definitions
 #include "infrastructure/kernels/PositionSetUnit.hpp"
 #include "infrastructure/kernels/MeasureUnit.hpp"
+#include "infrastructure/kernels/MeasureSplitUnit.hpp"
+#include "infrastructure/kernels/MeasureJoinUnit.hpp"
 
 #include "dds/DCPS/Marked_Default_Qos.h"
 #include <dds/DCPS/Service_Participant.h> 
@@ -221,7 +223,9 @@ namespace Leveling  { namespace Application
       // Raft streaming start
       MarkMeasurement generatedMarkMeasurement;
       PositionSetUnit positionSetUnit;
-      MeasureUnit measureUnit;
+      MeasureSplitUnit Do_A; // Two output units
+      MeasureUnit Do_B("Do_B"), Do_C("Do_C"), Do_D("Do_D"), Do_E("Do_E");
+      MeasureJoinUnit Do_F; // Two input units
 
       using SinkLambda = raft::lambdak<MarkMeasurement>;
       SinkLambda sinkLambda(  1,/* input port */
@@ -231,13 +235,24 @@ namespace Leveling  { namespace Application
       {
         UNUSED( output );
         input[ "0" ].pop( generatedMarkMeasurement ); // Take the measurement from the input
+        
         waferHeightMap->AddMarkMeasurement(generatedMarkMeasurement); // And add it to the heightmap
+
         return( raft::proceed ); // Wait for the next measurement or stream end tag.
       });
-
+      
       raft::map m;
-      m += positionSetUnit >> measureUnit >> sinkLambda;
-      m.exe();
+      // Example graph
+      //                          ┌-------->Do_B----------┐
+      // positionSetUnit -->Do_A--|                       |-->Do_F-->SinkLambda
+      //                          └-->Do_C-->Do_D-->Do_E--┘
+      //
+      m += positionSetUnit >> Do_A;
+      m += Do_A ["outputMeasurement_a"] >> Do_B >> Do_F["input_a"];
+      m += Do_A ["outputMeasurement_b"] >> Do_C >> Do_D >> Do_E >> Do_F["input_b"];
+      m += Do_F >> sinkLambda;
+
+      m.exe(); // execute the graph
       //Raft streaming End
       
       context_->RegisterNew<WaferHeightMap>(waferHeightMap);

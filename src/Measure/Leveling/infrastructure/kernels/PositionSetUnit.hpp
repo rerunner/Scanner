@@ -22,7 +22,7 @@ public:
     double xpos = 0.0, ypos = 0.0;
     for (int i = 0; i < scanner::generated::MAX_MEASUREMENT_STEPS; i++)
     {
-      std::this_thread::sleep_for (std::chrono::microseconds(1)); // Imagine one positioning action to take a 1 microsecond.
+      std::this_thread::sleep_for (std::chrono::microseconds(1)); // Imagine one positioning action to take 1 microsecond.
       const Position out{xpos++, ypos++};
       output[ "outputPosition" ].push( out );
     }

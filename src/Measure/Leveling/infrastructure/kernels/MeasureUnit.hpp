@@ -3,29 +3,37 @@
 #include <raft>
 #include <raftio>
 
-#include "domain/Position.hpp"
 #include "domain/MarkMeasurement.hpp"
 
-//Measure unit measures the height for every input position
+//Measure unit operates on measurements
 class MeasureUnit : public raft::kernel
 {
+  private:
+  std::string name_;
 public:
-    MeasureUnit() : kernel()
+    MeasureUnit(std::string name = "") : kernel()
     {
-      input.addPort< Position >("inputPosition");
+      input.addPort< MarkMeasurement >("inputMeasurement");
       output.addPort< MarkMeasurement >( "outputMeasurement" );
+      name_ = name;
     }
 
     virtual ~MeasureUnit() = default;
 
     virtual raft::kstatus run()
     {
-      Position positionContainer;
-      input[ "inputPosition" ].pop( positionContainer ); // Receive position from input port
-      double randomZ = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
-      const MarkMeasurement measurementContainer{positionContainer, randomZ}; // Do Measurement
-      output[ "outputMeasurement" ].push( measurementContainer ); // Push measurement to output port
-      return( raft::proceed );
+      GSL::Dprintf(GSL::DEBUG, "MeasureUnit kernel named ", name_, " run");
+      auto &input_port((this)->input["inputMeasurement"]);
+      auto &a(input_port.template peek<MarkMeasurement>());
+
+      // FIXME How to pass the input memory to the output ?
+      auto c(output["outputMeasurement"].template allocate_s<MarkMeasurement>());
+      (*c) = a;
+      output["outputMeasurement"].send();
+      input_port.recycle();
+      //input_port.unpeek(); // We don't really need to unpeek here do we ?
+
+        return (raft::proceed);
     }
 
 private:
