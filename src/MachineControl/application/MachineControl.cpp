@@ -429,7 +429,40 @@ namespace MachineControl
     {
         machineControlStateMachine.on_state_transition(transition_to_Idle{});
         eventListenerThread = std::thread(&MachineControl::eventListenerThreadHandler, this);
-        std::this_thread::sleep_for (std::chrono::seconds(5)); // Wait for leveling and expose to initialize. this needs to become an event
+        
+        bool levelingAlive = true;
+        do {
+            // Is leveling alive?
+            levelingAlive = true;
+            GSL::Dprintf(GSL::INFO, "Hello Leveling?");
+            curlpp::options::Url myUrl(std::string("http://127.0.0.1:8003/measure/leveling/hello"));
+            curlpp::Easy myRequest;
+            myRequest.setOpt(myUrl);
+
+            try {myRequest.perform();}
+                catch (std::exception& e) {
+                GSL::Dprintf(GSL::ERROR, "Hello Leveling Failed: ", e.what());
+                levelingAlive = false;
+                std::this_thread::sleep_for (std::chrono::seconds(5)); // Wait for leveling to initialize. 
+            }
+        } while (!levelingAlive);
+
+        bool exposeAlive = true;
+        do {
+            // Is leveling alive?
+            exposeAlive = true;
+            GSL::Dprintf(GSL::INFO, "Hello Expose?");
+            curlpp::options::Url myUrl(std::string("http://127.0.0.1:8002/expose/hello"));
+            curlpp::Easy myRequest;
+            myRequest.setOpt(myUrl);
+
+            try {myRequest.perform();}
+                catch (std::exception& e) {
+                GSL::Dprintf(GSL::ERROR, "Hello Expose Failed: ", e.what());
+                exposeAlive = false;
+                std::this_thread::sleep_for (std::chrono::seconds(5)); // Wait for leveling to initialize. 
+            }
+        } while (!exposeAlive);
     }
 
     void MachineControl::Execute(int nrOfLots, int nrOfWafersInLot)

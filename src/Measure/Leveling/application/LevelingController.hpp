@@ -82,6 +82,13 @@ class LevelingController : public oatpp::web::server::api::ApiController
     }
   };
 
+  ENDPOINT_ASYNC("GET", "/measure/leveling/hello", Root /* Name of the Coroutine */) {
+    ENDPOINT_ASYNC_INIT(Root) ///< Generate constructor and default fields
+    Action act() override {
+      return _return(controller->createResponse(Status::CODE_200, "Hello from Leveling!"));
+    }
+  };
+
 #include OATPP_CODEGEN_END(ApiController) //<-- codegen End
 
 };
