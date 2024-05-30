@@ -15,7 +15,6 @@ Wafer::Wafer() : AggregateRootBase()
     std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
     cppkafka::ConfigurationOption waferConfigOption{"metadata.broker.list", "localhost:9092"};
     kafkaConfigOptions.push_back(waferConfigOption);
-    kafkaConfigOptions.push_back({ "group.id", "machinecontrol" }); // Every microservice needs its own unique kafka group id
     kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
 
     // Create a producer instance

@@ -104,7 +104,8 @@ namespace MachineControl
         unitofwork::UnitOfWorkFactory UoWFactory;
         machinecontrol_state_machine machineControlStateMachine;
         // Kafka part
-        std::unique_ptr<cppkafka::Configuration> kafkaConfig;
+        std::unique_ptr<cppkafka::Configuration> kafkaConsumerConfig;
+        std::unique_ptr<cppkafka::Configuration> kafkaProducerConfig;
         std::unique_ptr<cppkafka::Consumer> kafkaConsumer;
         std::shared_ptr<cppkafka::Producer> kafkaProducer;
         std::thread eventListenerThread;

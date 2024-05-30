@@ -19,7 +19,8 @@ namespace GSL {
         DEBUG    = 0x00000010, 
         WARNING  = 0x00000100, 
         ERROR    = 0x00001000,
-        FATAL    = 0x00010000
+        FATAL    = 0x00010000,
+        VERBOSE  = 0x00100000
     };
 
     extern unsigned int ACTIVE_MESSAGES;
@@ -61,27 +62,29 @@ namespace GSL {
                 break;
             }
 
+            if (GSL::VERBOSE & ACTIVE_MESSAGES)
             {
-                using namespace std::chrono;
-                // get current time
-                auto now = system_clock::now();
-                // get number of milliseconds for the current second
-                // (remainder after division into seconds)
-                auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
-                // convert to std::time_t in order to convert to std::tm (broken time)
-                auto timer = system_clock::to_time_t(now);
-                // convert to broken time
-                std::tm bt = *std::localtime(&timer);
-                // Print
-                stream << "|" << std::put_time(&bt, "%H:%M:%S"); // HH:MM:SS
-                stream << '.' << std::setw(3) << ms.count();
-                stream << "|";
+                {
+                    using namespace std::chrono;
+                    // get current time
+                    auto now = system_clock::now();
+                    // get number of milliseconds for the current second
+                    // (remainder after division into seconds)
+                    auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+                    // convert to std::time_t in order to convert to std::tm (broken time)
+                    auto timer = system_clock::to_time_t(now);
+                    // convert to broken time
+                    std::tm bt = *std::localtime(&timer);
+                    // Print
+                    stream << "|" << std::put_time(&bt, "%H:%M:%S"); // HH:MM:SS
+                    stream << '.' << std::setw(3) << ms.count();
+                    stream << "|";
+                }
+            
+                stream << std::setw(25) << std::left << theFileName << " |Pid:"  << std::setw(7) << std::left << thePid 
+                    << " |Tid:" << std::setw(16) << std::left << theTid << " |@" 
+                    << std::setw(25) << std::left << location.function_name() << " |line#"  << std::setw(6) << std::left << location.line() << "| ";
             }
-           
-            stream << std::setw(25) << std::left << theFileName << " |Pid:"  << std::setw(7) << std::left << thePid 
-                << " |Tid:" << std::setw(16) << std::left << theTid << " |@" 
-                << std::setw(25) << std::left << location.function_name() << " |line#"  << std::setw(6) << std::left << location.line() << "| ";
-
             (stream << ... << std::forward<Args>(args)) << "\033[0m" << std::endl;
 
             std::cout << stream.str();

@@ -57,8 +57,8 @@ namespace Expose { namespace Application
         // Create the Kafka config
         GSL::Dprintf(GSL::DEBUG, "Creating the Kafka config");
         std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
-        cppkafka::ConfigurationOption machinecontrolConfigOption{"metadata.broker.list", "localhost:9092"};
-        kafkaConfigOptions.push_back(machinecontrolConfigOption);
+        cppkafka::ConfigurationOption exposeConfigOption{"metadata.broker.list", "localhost:9092"};
+        kafkaConfigOptions.push_back(exposeConfigOption);
         kafkaConfigOptions.push_back({ "group.id", "expose" }); // Every microservice needs its own unique kafka group id
         kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
         
@@ -160,7 +160,6 @@ namespace Expose { namespace Application
         //! Get QoS to use for the topic, could also use TOPIC_QOS_DEFAULT instead
         DDS::TopicQos expose_topic_qos;
         participant->get_default_topic_qos(expose_topic_qos);
-        //expose_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
         expose_topic_qos.reliability.kind = DDS::ReliabilityQosPolicyKind::RELIABLE_RELIABILITY_QOS;
 
         //! Create a topic for the WaferHeightMap type...

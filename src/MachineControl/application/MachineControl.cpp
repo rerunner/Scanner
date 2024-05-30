@@ -19,20 +19,27 @@ namespace MachineControl
         // hiberlite boilerplate end
 
         // Create the Kafka config
-        GSL::Dprintf(GSL::DEBUG, "Creating the Kafka config");
-        std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
-        cppkafka::ConfigurationOption machinecontrolConfigOption{"metadata.broker.list", "localhost:9092"};
-        kafkaConfigOptions.push_back(machinecontrolConfigOption);
-        kafkaConfigOptions.push_back({ "group.id", "machinecontrol" }); // Every microservice needs its own unique kafka group id
-        kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
+        GSL::Dprintf(GSL::DEBUG, "Creating the Kafka consumer config");
+        std::vector<cppkafka::ConfigurationOption> kafkaConsumerConfigOptions;
+        cppkafka::ConfigurationOption machinecontrolConsumerConfigOption{"metadata.broker.list", "localhost:9092"};
+        kafkaConsumerConfigOptions.push_back(machinecontrolConsumerConfigOption);
+        kafkaConsumerConfigOptions.push_back({ "group.id", "machinecontrol" }); // Every microservice needs its own unique kafka group id
+        kafkaConsumerConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConsumerConfigOptions});
         
         // Create a consumer instance
         GSL::Dprintf(GSL::DEBUG, "Creating a kafka consumer instance");
-        kafkaConsumer = std::make_unique<cppkafka::Consumer>(*kafkaConfig);
+        kafkaConsumer = std::make_unique<cppkafka::Consumer>(*kafkaConsumerConfig);
+
+        // Create the Kafka config
+        GSL::Dprintf(GSL::DEBUG, "Creating the Kafka producer config");
+        std::vector<cppkafka::ConfigurationOption> kafkaProducerConfigOptions;
+        cppkafka::ConfigurationOption machinecontrolProducerConfigOption{"metadata.broker.list", "localhost:9092"};
+        kafkaProducerConfigOptions.push_back(machinecontrolProducerConfigOption);
+        kafkaProducerConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaProducerConfigOptions});
 
         // Create a producer instance
         GSL::Dprintf(GSL::DEBUG, "Creating a kafka producer instance");
-        kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaConfig);
+        kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaProducerConfig);
     }
 
     MachineControl::~MachineControl()

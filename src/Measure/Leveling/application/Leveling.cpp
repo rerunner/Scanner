@@ -53,8 +53,8 @@ namespace Leveling  { namespace Application
         // Create the Kafka config
         GSL::Dprintf(GSL::DEBUG, "Creating the Kafka config");
         std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
-        cppkafka::ConfigurationOption machinecontrolConfigOption{"metadata.broker.list", "localhost:9092"};
-        kafkaConfigOptions.push_back(machinecontrolConfigOption);
+        cppkafka::ConfigurationOption LevelingConfigOption{"metadata.broker.list", "localhost:9092"};
+        kafkaConfigOptions.push_back(LevelingConfigOption);
         kafkaConfigOptions.push_back({ "group.id", "leveling" }); // Every microservice needs its own unique kafka group id
         kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
         
@@ -146,9 +146,8 @@ namespace Leveling  { namespace Application
         // Get QoS to use for the topic, could also use TOPIC_QOS_DEFAULT instead
         DDS::TopicQos leveling_topic_qos;
         participant.get()->ptr()->get_default_topic_qos(leveling_topic_qos);
-        //leveling_topic_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
         leveling_topic_qos.reliability.kind = DDS::ReliabilityQosPolicyKind::RELIABLE_RELIABILITY_QOS;
-        leveling_topic_qos.reliability.max_blocking_time.sec = 1; // one second
+        leveling_topic_qos.reliability.max_blocking_time.sec = 10; 
         leveling_topic_qos.reliability.max_blocking_time.nanosec = 0; 
 
         // Create a topic for the WaferHeightMap type...
@@ -167,7 +166,7 @@ namespace Leveling  { namespace Application
         pub->get_default_datawriter_qos (leveling_dr_qos);
         //leveling_dr_qos.durability.kind = DDS::DurabilityQosPolicyKind::TRANSIENT_LOCAL_DURABILITY_QOS;
         leveling_dr_qos.reliability.kind = DDS::ReliabilityQosPolicyKind::RELIABLE_RELIABILITY_QOS;
-        leveling_dr_qos.reliability.max_blocking_time.sec = 1; // one second
+        leveling_dr_qos.reliability.max_blocking_time.sec = 10;
         leveling_dr_qos.reliability.max_blocking_time.nanosec = 0; 
 
         // Create a DataWriter for the WaferHeightMap topic

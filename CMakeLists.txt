@@ -48,7 +48,7 @@ set(dst "${CMAKE_CURRENT_BINARY_DIR}")
 set(all_targets Scanner)
 
 #Some files need to be moved into the temporary destination folder
-foreach(file Scanner.idl rtps.ini run_test.pl)
+foreach(file Scanner.idl rtps.ini run_all.sh)
 	configure_file(${src}/${file} ${dst}/${file} COPYONLY)
 endforeach()
 
