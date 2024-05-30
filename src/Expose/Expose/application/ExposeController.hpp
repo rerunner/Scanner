@@ -85,7 +85,7 @@ class ExposeController : public oatpp::web::server::api::ApiController
   ENDPOINT_ASYNC("GET", "/expose/hello", Root /* Name of the Coroutine */) {
     ENDPOINT_ASYNC_INIT(Root) ///< Generate constructor and default fields
     Action act() override {
-      return _return(controller->createResponse(Status::CODE_200, "Hello from Expose!"));
+      return _return(controller->createResponse(Status::CODE_200, "Hello from Expose!\n"));
     }
   };
 
