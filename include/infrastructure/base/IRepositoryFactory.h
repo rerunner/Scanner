@@ -5,7 +5,9 @@
 enum RepositoryType
 {
   HeapRepository,
-  ORM
+  ORM,
+  ODM,
+  FFS
 };
 
 template <typename T>

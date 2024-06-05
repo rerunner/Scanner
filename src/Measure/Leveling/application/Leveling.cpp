@@ -79,11 +79,12 @@ namespace Leveling  { namespace Application
                     GSL::Dprintf(GSL::DEBUG, "Processing NewWaferState message for Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
                     if (j_message["State"] == "Unloaded")
                     {
-                        GSL::Dprintf(GSL::DEBUG, "Can delete heightmap data associated with Wafer ID ", j_message["Id"]);
+                        std::string wIdstr = j_message["Id"];
+                        Uuid targetId(wIdstr);
+                        GSL::Dprintf(GSL::DEBUG, "Can delete heightmap data associated with Wafer ID ", targetId.Get());
                         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
                         auto repository = repositoryFactory->GetRepository(REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
                         auto whmList = repository->GetAll();
-                        Uuid targetId(j_message["Id"]);
                         for (auto &iter:whmList)
                         {
                           GSL::Dprintf(GSL::DEBUG, "Searching WaferHeightMap List, found Wafer Id = ", iter.GetWaferId().Get());

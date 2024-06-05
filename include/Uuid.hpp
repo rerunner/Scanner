@@ -7,6 +7,10 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "domain/base/ValueObjectBase.hpp"
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 class Uuid
 {
 private:
@@ -30,4 +34,7 @@ public:
   virtual bool operator==(const Uuid& other) const {return (uuid_ == other.Get());}
   bool operator!=(const Uuid& other) const {return !(*this == other);}
   const std::string Get() const;
+
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(Uuid, uuid_)
 };

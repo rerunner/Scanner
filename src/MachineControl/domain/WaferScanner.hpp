@@ -3,6 +3,7 @@
 
 #include <list>
 #include "hiberlite.h"
+#include <nlohmann/json.hpp>
 #include "domain/base/AggregateRootBase.hpp"
 
 class WaferScanner : public AggregateRootBase
@@ -21,6 +22,8 @@ private:
 public:
   WaferScanner() : AggregateRootBase(){};
 
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(WaferScanner, id_, parentId_)
 };
 
 // Boilerplate

@@ -4,6 +4,7 @@
 #include <list>
 #include <cppkafka/cppkafka.h>
 #include "hiberlite.h"
+#include <nlohmann/json.hpp>
 #include "domain/base/AggregateRootBase.hpp"
 #include "FiniteStateMachine.hpp"
 #include "FiniteStateMachine.hpp"
@@ -166,6 +167,9 @@ public:
     state = "Unloaded";
     stateChangePublisher();
   }
+
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(Lot, id_, parentId_, waferIds_)
 };
 
 #endif

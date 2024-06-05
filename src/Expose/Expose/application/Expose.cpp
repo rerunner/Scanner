@@ -84,10 +84,12 @@ namespace Expose { namespace Application
                     GSL::Dprintf(GSL::DEBUG, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
                     if (j_message["State"] == "Unloaded")
                     {
-                        GSL::Dprintf(GSL::DEBUG, "Received request to DELETE heightmap for Wafer ID ", j_message["Id"]);
+                        std::string wIdstr = j_message["Id"];
+                        Uuid waferID(wIdstr);
+                        GSL::Dprintf(GSL::DEBUG, "Received request to DELETE heightmap for Wafer ID ", waferID.Get());
                         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
                         auto repository = repositoryFactory->GetRepository(REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
-                        Uuid waferID(j_message["Id"]);
+                        //Uuid waferID(j_message["Id"]);
                         auto whmList = repository->GetAllChildren(waferID); //Fetch all heightmaps in the database and find the one with the correct wafer id
                         GSL::Dprintf(GSL::DEBUG, "Searched for waferheightmap to delete. found number = ", whmList.size());
                         for (int posInList = 0; posInList < whmList.size(); posInList++)
@@ -208,7 +210,7 @@ namespace Expose { namespace Application
 
     void Expose::exposeWafer(Uuid waferID)
     {
-        GSL::Dprintf(GSL::DEBUG, "exposeWafer starts with wafer Id = ", waferID.Get());
+        GSL::Dprintf(GSL::INFO, "exposeWafer called for wafer Id = ", waferID.Get());
 
         // Read the stored heightmap
         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();

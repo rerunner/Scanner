@@ -17,11 +17,14 @@
 #include "IRepositoryBase.h"
 #include "RepositoryFactory.h" // ?
 #include "RepositoryORMBase.h"
+#include "RepositoryODMBase.h"
+#include "RepositoryFFSBase.h"
 #include "GenLogger.hpp"
 #include "domain/WaferHeightMap.hpp"
 
 //#define REPOSITORY_TYPE RepositoryType::HeapRepository
-#define REPOSITORY_TYPE RepositoryType::ORM
+//#define REPOSITORY_TYPE RepositoryType::ORM
+#define REPOSITORY_TYPE RepositoryType::FFS
 
 namespace unitofwork {
 

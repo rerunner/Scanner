@@ -1,9 +1,9 @@
 #pragma once
 
 //#include "hiberlite.h"
+#include <nlohmann/json.hpp>
 #include "domain/base/ValueObjectBase.hpp"
 #include "Position.hpp"
-
 
 class MarkMeasurement : public ValueObjectBase
 {
@@ -29,4 +29,7 @@ public:
 
   Position GetPosition() const;
   double GetZ() const;
+
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(MarkMeasurement, z_, position_)
 };

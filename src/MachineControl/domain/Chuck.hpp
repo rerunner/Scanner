@@ -3,6 +3,7 @@
 #include <list>
 #include <cppkafka/cppkafka.h>
 #include "hiberlite.h"
+#include <nlohmann/json.hpp>
 #include "domain/base/AggregateRootBase.hpp"
 #include "domain/Station.hpp"
 #include "FiniteStateMachine.hpp"
@@ -151,4 +152,7 @@ public:
   void LoadWafer(Uuid wId);
   void UnloadWafer();
   void SetReadyForSwap();
+
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(Chuck, id_, parentId_)
 };

@@ -2,6 +2,7 @@
 
 #include <list>
 #include "hiberlite.h"
+#include <nlohmann/json.hpp>
 #include "domain/base/AggregateRootBase.hpp"
 
 class Exposure : public AggregateRootBase
@@ -22,6 +23,9 @@ private:
 public:
   Exposure(float p = 0.0) : AggregateRootBase(){myPrediction = p;};
   float GetPrediction(){return myPrediction;}
+
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(Exposure, id_, parentId_, myPrediction)
 };
 
 // Boilerplate

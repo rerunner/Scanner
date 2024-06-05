@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "Uuid.hpp"
 
 template <typename T>
 class IRepositoryBase

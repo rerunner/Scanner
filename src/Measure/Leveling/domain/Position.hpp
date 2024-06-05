@@ -2,6 +2,7 @@
 #define POSITION_H
 
 #include "hiberlite.h"
+#include <nlohmann/json.hpp>
 #include "domain/base/ValueObjectBase.hpp"
 
 class Position : public ValueObjectBase
@@ -27,6 +28,9 @@ public:
 
   double GetX() const;
   double GetY() const;
+
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(Position, x_, y_)
 };
 
 #endif // POSITION_H

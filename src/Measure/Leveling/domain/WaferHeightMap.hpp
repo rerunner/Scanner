@@ -2,6 +2,7 @@
 
 #include <list>
 //#include "hiberlite.h"
+#include <nlohmann/json.hpp>
 #include "domain/base/AggregateRootBase.hpp"
 #include "MarkMeasurement.hpp"
 
@@ -33,4 +34,7 @@ public:
   void AddMarkMeasurement(MarkMeasurement m);
   Uuid GetWaferId();
   void LogHeightMap();
+
+  //JSON boilerplate
+  NLOHMANN_DEFINE_TYPE_INTRUSIVE(WaferHeightMap, id_, parentId_, measurements_, waferId_)
 };
