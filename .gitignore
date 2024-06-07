@@ -3,6 +3,7 @@ src-gen/
 
 # Generated Build files
 build/
+libs/
 
 # Generated vscode files
 .vscode/

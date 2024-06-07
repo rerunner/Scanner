@@ -10,6 +10,7 @@
 #include <fstream>
 #include <cstdio>
 #include <nlohmann/json.hpp>
+#include <raven_cpp_client.h> // Problems with clang, gcc ok
 #include "IRepositoryBase.h"
 #include "GenLogger.hpp"
 
@@ -20,90 +21,57 @@ class RepositoryODMBase : public IRepositoryBase<RepositoryBaseType>
 {
 private:
   inline static std::mutex repMtx;
-
-  std::string DBProcessName()
-  {
-    std::string totalProcessName = program_invocation_name; // Linux specific
-    std::size_t processNamePos = totalProcessName.find_last_of("/\\");
-    std::string justProcessName = totalProcessName.substr(processNamePos+1);
-    return justProcessName;
-  }
+  std::shared_ptr<ravendb::client::documents::DocumentStore> doc_store;
 public:
+  RepositoryODMBase(std::shared_ptr<ravendb::client::documents::DocumentStore> passedDocStore)
+  {
+    doc_store = passedDocStore;
+  }
   virtual ~RepositoryODMBase(){}
   
   void Store(RepositoryBaseType entity)
   {
     std::scoped_lock lock{repMtx};
-    json jEntity = entity;
-    std::string entityName = typeid(RepositoryBaseType).name();
-    entityName.erase(0, 2); // Remove numbers
-    std::ostringstream constructedFileName;
-    constructedFileName << DBProcessName() << "_" << entityName << "_";
-    constructedFileName << entity.GetId().Get();
-    std::ofstream myfile;
-    myfile.open (constructedFileName.str().c_str());
-    myfile << jEntity.dump();
-    myfile.close();
+    auto entity_record = std::make_shared<RepositoryBaseType>(entity);
+    auto session = doc_store->open_session();
+    session.store(entity_record);
+    session.save_changes(); //Commits the record to the database
   }
 	
   void Delete(RepositoryBaseType entity)
   {
     std::scoped_lock lock{repMtx};
-    std::string entityName = typeid(RepositoryBaseType).name();
-    entityName.erase(0, 2); // Remove numbers
-    std::ostringstream constructedFileName;
-    constructedFileName << DBProcessName() << "_" << entityName << "_";
-    constructedFileName << entity.GetId().Get();
-    std::remove(constructedFileName.str().c_str());
+    auto entity_record = std::make_shared<RepositoryBaseType>(entity);
+    auto session = doc_store->open_session();
+    session.delete_document(entity_record);
+    session.save_changes(); //Commits the record to the database
   }
 	
   RepositoryBaseType Get(Uuid requestedId)
   {
     std::scoped_lock lock{repMtx};
-    std::string entityName = typeid(RepositoryBaseType).name();
-    entityName.erase(0, 2); // Remove numbers
-    std::ostringstream constructedFileName;
-    constructedFileName << DBProcessName() << "_" << entityName << "_";
-    constructedFileName << requestedId.Get();
+    auto session = doc_store->open_session();
+    //Load a document by its id
+    std::shared_ptr<RepositoryBaseType> entity = session.load<RepositoryBaseType>(requestedId.Get());
 
-    std::ifstream f(constructedFileName.str().c_str());
-    json data = json::parse(f);
-
-    auto entity = data.template get<RepositoryBaseType>();
-
-    return entity;
+    return *entity;
   }
 
   std::vector<RepositoryBaseType> GetAll()
   {
     std::scoped_lock lock{repMtx};
-    std::vector<std::string> strList;
     std::vector<RepositoryBaseType> vList;
 
-    std::string entityName = typeid(RepositoryBaseType).name();
-    entityName.erase(0, 2); // Remove numbers
+    // Setup the query
+    auto session = doc_store->open_session();
+    auto query = session.query<RepositoryBaseType>();
 
-    std::string path = ".";
-    // Make list of all files created for this entity type
-    for (const auto & entry : std::filesystem::directory_iterator(path))
-    {
-        //std::cout << entry.path() << std::endl;
-        std::string entryName = entry.path();
-        if (entryName.find(entityName))
-        {
-            strList.push_back(entry.path());
-        }
-    }
-    // Read all files in the resulting list
-    // Convert json to entity and add to list
-    for (const auto & iterFileName : strList)
-    {
-        std::string entryName = iterFileName;
-        std::ifstream f(entryName.c_str());
-        json data = json::parse(f);
-        auto entity = data.template get<RepositoryBaseType>();
-        vList.push_back(entity);
-    }
+    // TODO 
+    
+    //for (auto &iter:allEntities)
+    //{
+    //  vList.push_back(*iter);
+    //}
 
     return vList;
   }

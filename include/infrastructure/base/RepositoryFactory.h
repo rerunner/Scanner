@@ -14,7 +14,7 @@ private:
 	RepositoryORMBase<T> *ormRep;
 	RepositoryODMBase<T> *odmRep;
 	RepositoryFFSBase<T> *ffsRep;
-
+	std::shared_ptr<ravendb::client::documents::DocumentStore> doc_store;
 public:
 	IRepositoryBase<T> *GetRepository(RepositoryType repository, hiberlite::Database *db = nullptr)
 	{
@@ -29,7 +29,11 @@ public:
 			return ormRep;
 			break;
 		case RepositoryType::ODM:
-			odmRep =  new RepositoryODMBase<T>();
+			doc_store = ravendb::client::documents::DocumentStore::create();
+			doc_store->set_urls({ "http://127.0.0.1:8080" }); // port 8080
+			doc_store->set_database("Scanner");
+			doc_store->initialize();
+			odmRep =  new RepositoryODMBase<T>(doc_store);
 			return odmRep;
 			break;
 		case RepositoryType::FFS:
