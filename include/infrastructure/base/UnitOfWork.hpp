@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <memory>
 #include <unordered_set>
-#include <boost/any.hpp>
+#include <any>
 #include "Uuid.hpp"
 #include "IRepositoryFactory.h"
 #include "IRepositoryBase.h"
@@ -24,7 +24,8 @@
 
 //#define REPOSITORY_TYPE RepositoryType::HeapRepository
 //#define REPOSITORY_TYPE RepositoryType::ORM
-#define REPOSITORY_TYPE RepositoryType::FFS
+//#define REPOSITORY_TYPE RepositoryType::FFS
+#define REPOSITORY_TYPE RepositoryType::ODM
 
 namespace unitofwork {
 
@@ -43,7 +44,8 @@ class EntityRegister
 {
     std::shared_ptr<EntityType> entityInstance;
     RegistryTypeEnum registryType;
-    hiberlite::Database *db;
+    //hiberlite::Database *db;
+    std::any db;
     inline static std::mutex mtx;
     RepositoryType repositoryType_;
 
@@ -65,10 +67,10 @@ class EntityRegister
             default:
                 GSL::Dprintf(GSL::ERROR, "Commiter has no known RegistryType");
                 break;
-        }
+        }  
     }
 public:
-    EntityRegister(std::shared_ptr<EntityType> newEnt, RegistryTypeEnum newRegistryType, hiberlite::Database *passedDb)
+    EntityRegister(std::shared_ptr<EntityType> newEnt, RegistryTypeEnum newRegistryType, std::any passedDb)
     {
         entityInstance = newEnt;
         registryType = newRegistryType;
@@ -91,14 +93,14 @@ class UnitOfWork
 private:
     Uuid _context;
     Dict repositories_;
-    std::list<boost::any> _newEntities;
-    std::list<boost::any> _updatedEntities;
-    std::list<boost::any> _deletedEntities;
-    hiberlite::Database *db;
+    std::list<std::any> _newEntities;
+    std::list<std::any> _updatedEntities;
+    std::list<std::any> _deletedEntities;
+    std::any db;
     RepositoryType repositoryType_;
 
 public:
-    UnitOfWork(hiberlite::Database *passedDb)
+    UnitOfWork(std::any passedDb)
     {
         db = passedDb;
         repositoryType_ = REPOSITORY_TYPE;
@@ -113,8 +115,9 @@ public:
     {
         if (repositoryType_ == RepositoryType::ORM)
         {
+            auto db2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(db);
             try {
-                db->registerBeanClass<EntityType>();
+                db2->registerBeanClass<EntityType>();
             }
             catch (std::exception& e) {
                 GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
@@ -123,6 +126,7 @@ public:
 
         EntityRegisterPtr<EntityType> myNewEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterNew, db);
         _newEntities.push_back(std::move(myNewEntityPtr)); //Register
+        
     }
 
     template <typename EntityType>
@@ -130,8 +134,9 @@ public:
     { 
         if (repositoryType_ == RepositoryType::ORM)
         {
+            auto db2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(db);
             try {
-                db->registerBeanClass<EntityType>();
+                db2->registerBeanClass<EntityType>();
             }
             catch (std::exception& e) {
                 GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
@@ -139,6 +144,7 @@ public:
         }
         EntityRegisterPtr<EntityType> myUpdatedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDirty, db);
         _updatedEntities.push_back(std::move(myUpdatedEntityPtr)); //Register
+        
         GSL::Dprintf(GSL::DEBUG, "EXIT");
     }
 
@@ -147,8 +153,9 @@ public:
     { 
         if (repositoryType_ == RepositoryType::ORM)
         {
+            auto db2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(db);
             try {
-                db->registerBeanClass<EntityType>();
+                db2->registerBeanClass<EntityType>();
             }
             catch (std::exception& e) {
                 GSL::Dprintf(GSL::DEBUG, "didn't register beanclass: ", e.what());
@@ -156,8 +163,7 @@ public:
         }
 		
         EntityRegisterPtr<EntityType> myDeletedEntityPtr = std::make_shared<EntityRegister<EntityType>>(entPtr, RegistryTypeEnum::RegisterDeleted, db);
-        _updatedEntities.push_back(std::move(myDeletedEntityPtr)); //Register
-        GSL::Dprintf(GSL::DEBUG, "EXIT");
+        _deletedEntities.push_back(std::move(myDeletedEntityPtr)); //Register
     }
     
     void Commit()
@@ -167,8 +173,9 @@ public:
         // Committing changed or new objects happens in the destructor of list of changed entities (at destruction of this UoW instance)
         if (repositoryType_ == RepositoryType::ORM)
         {
+            auto db2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(db);
             try {
-                db->createModel();
+                db2->createModel();
             }
             catch (std::exception& e) {
                 GSL::Dprintf(GSL::DEBUG, "didn't create the tables: ", e.what());
@@ -193,26 +200,42 @@ public:
 class UnitOfWorkFactory
 {
 private:
-    hiberlite::Database *db;
+    std::any db;
     RepositoryType repositoryType_;
+    std::any doc_store;
+    std::any hiberDb;
+
+    void OpenRavenDB()
+    {
+        doc_store = ravendb::client::documents::DocumentStore::create();
+        auto doc_store2 = std::any_cast<std::shared_ptr<ravendb::client::documents::DocumentStore>>(doc_store);
+        doc_store2->set_urls({ "http://127.0.0.1:8080" }); // port 8080
+
+        std::string totalProcessName = program_invocation_name; // Linux specific
+		std::size_t processNamePos = totalProcessName.find_last_of("/\\");
+		std::string justProcessName = totalProcessName.substr(processNamePos+1);
+		std::ostringstream databaseName;
+		databaseName << justProcessName << "DB";
+        doc_store2->set_database(databaseName.str());
+        //doc_store2->set_database("Scanner");
+        doc_store2->initialize();
+    }
+
     void OpenHiberlite()
 	{
-		db = new hiberlite::Database;
+		hiberDb = std::make_shared<hiberlite::Database>();
+        auto hiberDb2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(hiberDb);
 		std::string totalProcessName = program_invocation_name; // Linux specific
 		std::size_t processNamePos = totalProcessName.find_last_of("/\\");
 		std::string justProcessName = totalProcessName.substr(processNamePos+1);
 		std::ostringstream databaseName;
 		databaseName << justProcessName << "Database.db";
-		GSL::Dprintf(GSL::DEBUG, "Opening ", databaseName.str());
-		//db->open(databaseName.str());
-        db->open(":memory:");
+        hiberDb2->open(":memory:"); // open(databaseName.str());
 	}
     void CloseHiberlite()
 	{
-		GSL::Dprintf(GSL::DEBUG, "Closing database");
-		db->close();
-		delete db;
-		db = nullptr;
+        auto hiberDb2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(hiberDb);
+		hiberDb2->close();
 	}
 public:
     UnitOfWorkFactory()
@@ -221,6 +244,10 @@ public:
         if (repositoryType_ == RepositoryType::ORM)
         {
             OpenHiberlite();
+        }
+        else if (repositoryType_ == RepositoryType::ODM)
+        {
+            OpenRavenDB();   
         }
     }
     virtual ~UnitOfWorkFactory()
@@ -233,11 +260,28 @@ public:
 
     std::unique_ptr<UnitOfWork> GetNewUnitOfWork()
 	{
-        return std::make_unique<UnitOfWork>(db);
+        if (repositoryType_ == RepositoryType::ODM)
+        {
+            auto doc_store2 = std::any_cast<std::shared_ptr<ravendb::client::documents::DocumentStore>>(doc_store);
+            return std::make_unique<UnitOfWork>(doc_store2);
+        }
+        else
+        {
+            auto hiberDb2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(hiberDb);
+            return std::make_unique<UnitOfWork>(hiberDb2);
+        }
 	}
-    hiberlite::Database *GetDataBasePtr()
+
+    std::any GetDataBasePtr()
     {
-        return db;
+        if (repositoryType_ == RepositoryType::ODM)
+        {
+            return doc_store;
+        }
+        else
+        {
+            return hiberDb;
+        }
     }
 };
 

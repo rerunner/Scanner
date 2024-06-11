@@ -15,11 +15,12 @@ template <typename RepositoryBaseType>
 class RepositoryORMBase : public IRepositoryBase<RepositoryBaseType>
 {
 private:
-  hiberlite::Database *db;
+  //hiberlite::Database *db;
+  std::shared_ptr<hiberlite::Database> db;
   inline static std::mutex repMtx;
 public:
   //Constructor receives DB
-  RepositoryORMBase(hiberlite::Database *passedDb)
+  RepositoryORMBase(std::shared_ptr<hiberlite::Database> passedDb)
   {
     db = passedDb;
   }

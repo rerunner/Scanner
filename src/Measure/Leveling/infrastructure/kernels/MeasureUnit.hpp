@@ -22,7 +22,6 @@ public:
 
     virtual raft::kstatus run()
     {
-      GSL::Dprintf(GSL::DEBUG, "MeasureUnit kernel named ", name_, " run");
       auto &input_port((this)->input["inputMeasurement"]);
       auto &a(input_port.template peek<MarkMeasurement>());
 

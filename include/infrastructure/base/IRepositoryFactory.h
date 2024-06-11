@@ -1,5 +1,7 @@
 #pragma once
 
+#include <any>
+#include <raven_cpp_client.h> // Problems with clang, gcc ok
 #include "IRepositoryBase.h"
 
 enum RepositoryType
@@ -15,5 +17,5 @@ class IRepositoryFactory
 {
 public:
   virtual ~IRepositoryFactory(){}
-  virtual IRepositoryBase<T>* GetRepository(RepositoryType repository, hiberlite::Database *db) = 0;
+  virtual IRepositoryBase<T>* GetRepository(RepositoryType repository, std::any db) = 0;
 };

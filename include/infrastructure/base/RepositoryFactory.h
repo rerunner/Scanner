@@ -14,31 +14,44 @@ private:
 	RepositoryORMBase<T> *ormRep;
 	RepositoryODMBase<T> *odmRep;
 	RepositoryFFSBase<T> *ffsRep;
-	std::shared_ptr<ravendb::client::documents::DocumentStore> doc_store;
+	//std::shared_ptr<ravendb::client::documents::DocumentStore> doc_store;
+	//std::shared_ptr<hiberlite::Database> hiberDb;
 public:
-	IRepositoryBase<T> *GetRepository(RepositoryType repository, hiberlite::Database *db = nullptr)
+	IRepositoryBase<T> *GetRepository(RepositoryType repository, std::any db = nullptr)
 	{
+		GSL::Dprintf(GSL::DEBUG, " RespositoryFactory GetRepository enter with db type = ", db.type().name());
 		switch (repository)
 		{
 		case RepositoryType::HeapRepository:
-			heapRep = new RepositoryHeapMemoryBase<T>();
+			if (!heapRep)
+			{
+				heapRep = new RepositoryHeapMemoryBase<T>();
+			}
 			return heapRep;
 			break;
 		case RepositoryType::ORM:
-			ormRep =  new RepositoryORMBase<T>(db);
+			if (!ormRep){
+				GSL::Dprintf(GSL::DEBUG, " RespositoryFactory creating hiberlite RepositoryORMBase");
+				auto hiberDb = std::any_cast<std::shared_ptr<hiberlite::Database>>(db);
+				ormRep =  new RepositoryORMBase<T>(hiberDb);
+			}
 			return ormRep;
 			break;
-		case RepositoryType::ODM:
-			doc_store = ravendb::client::documents::DocumentStore::create();
-			doc_store->set_urls({ "http://127.0.0.1:8080" }); // port 8080
-			doc_store->set_database("Scanner");
-			doc_store->initialize();
-			odmRep =  new RepositoryODMBase<T>(doc_store);
-			return odmRep;
-			break;
 		case RepositoryType::FFS:
-			ffsRep =  new RepositoryFFSBase<T>();
+			if (!ffsRep)
+			{
+				ffsRep =  new RepositoryFFSBase<T>();
+			}
 			return ffsRep;
+			break;
+		case RepositoryType::ODM:
+			GSL::Dprintf(GSL::DEBUG, " RespositoryFactory creating ravendb RepositoryODMBase");
+			if (!odmRep)
+			{
+				auto doc_store = std::any_cast<std::shared_ptr<ravendb::client::documents::DocumentStore>>(db);
+				odmRep = new RepositoryODMBase<T>(doc_store);
+			}
+			return odmRep;
 			break;
 		default:
 			return 0;
@@ -47,9 +60,9 @@ public:
 	}
 	virtual ~RepositoryFactory()
 	{
-		if (ormRep) {delete ormRep;	}
-		if (odmRep) {delete odmRep;	}
-		if (ffsRep) {delete ffsRep;	}
-		if (heapRep) {delete heapRep;}
+		if (ormRep) {delete ormRep;	ormRep = nullptr;}
+		if (odmRep) {delete odmRep;	odmRep = nullptr;}
+		if (ffsRep) {delete ffsRep;	ffsRep = nullptr;}
+		if (heapRep) {delete heapRep; heapRep = nullptr;}
 	};
 };

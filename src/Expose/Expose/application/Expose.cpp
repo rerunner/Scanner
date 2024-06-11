@@ -211,7 +211,6 @@ namespace Expose { namespace Application
     void Expose::exposeWafer(Uuid waferID)
     {
         GSL::Dprintf(GSL::INFO, "exposeWafer called for wafer Id = ", waferID.Get());
-
         // Read the stored heightmap
         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
         auto repository = repositoryFactory->GetRepository(REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());

@@ -14,10 +14,6 @@ namespace MachineControl
         scannerChucks[0].SetStation(StationEnumType::MeasureStation);
         scannerChucks[1].SetStation(StationEnumType::ExposeStation);
 
-        // hiberlite boilerplate start
-        hiberlite::Database *mcDB = UoWFactory.GetDataBasePtr();
-        // hiberlite boilerplate end
-
         // Create the Kafka config
         GSL::Dprintf(GSL::DEBUG, "Creating the Kafka consumer config");
         std::vector<cppkafka::ConfigurationOption> kafkaConsumerConfigOptions;

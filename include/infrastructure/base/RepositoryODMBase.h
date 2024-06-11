@@ -34,16 +34,16 @@ public:
     std::scoped_lock lock{repMtx};
     auto entity_record = std::make_shared<RepositoryBaseType>(entity);
     auto session = doc_store->open_session();
-    session.store(entity_record);
+    
+    session.store(entity_record, entity.GetId().Get());
     session.save_changes(); //Commits the record to the database
   }
 	
   void Delete(RepositoryBaseType entity)
   {
     std::scoped_lock lock{repMtx};
-    auto entity_record = std::make_shared<RepositoryBaseType>(entity);
-    auto session = doc_store->open_session();
-    session.delete_document(entity_record);
+    auto session = doc_store->open_session();   
+    session.delete_document(entity.GetId().Get());
     session.save_changes(); //Commits the record to the database
   }
 	
@@ -53,7 +53,6 @@ public:
     auto session = doc_store->open_session();
     //Load a document by its id
     std::shared_ptr<RepositoryBaseType> entity = session.load<RepositoryBaseType>(requestedId.Get());
-
     return *entity;
   }
 
@@ -64,34 +63,44 @@ public:
 
     // Setup the query
     auto session = doc_store->open_session();
-    auto query = session.query<RepositoryBaseType>();
+    std::vector<std::shared_ptr<RepositoryBaseType>> query = session.query<RepositoryBaseType>()->to_list();
+    session.save_changes();
 
-    // TODO 
-    
-    //for (auto &iter:allEntities)
-    //{
-    //  vList.push_back(*iter);
-    //}
-
+    if (query.size() > 0)
+    {
+      for (auto &iter:query)
+      {
+        vList.push_back(*iter);
+      }
+    }
     return vList;
   }
 
   std::vector<RepositoryBaseType> GetAllChildren(Uuid parentId)
   {
     std::scoped_lock lock{repMtx};
+    
     std::vector<RepositoryBaseType> vList;
-    std::vector<RepositoryBaseType> finalList;
+    
+    // Setup the query
+    auto session = doc_store->open_session();
 
-    vList = GetAll();
+    std::ostringstream aggregation_rql_query;
+    json jparentId = parentId;
 
-    for (auto &iter:vList)
+		aggregation_rql_query << "from '@all_docs' where parentId_ = '" << jparentId.dump() << "'";
+    auto query = session.advanced().raw_query<RepositoryBaseType>(aggregation_rql_query.str())->to_list();
+
+    session.save_changes();
+
+    if (query.size() > 0)
     {
-      if (parentId.Get().compare(iter.GetParentId().Get()) == 0)
+      for (auto &iter:query)
       {
-        finalList.push_back(iter);
+        vList.push_back(*iter);
       }
-    }    
+    }
+    return vList;
 
-    return finalList;
   }
 };

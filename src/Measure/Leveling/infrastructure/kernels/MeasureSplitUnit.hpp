@@ -24,8 +24,6 @@ public:
 
     virtual raft::kstatus run()
     {
-      GSL::Dprintf(GSL::DEBUG, "MeasureSplitUnit kernel run");
-
       auto &input_port((this)->input["inputPosition"]);
       auto &positionContainer(input_port.template peek<Position>());
 
