@@ -10,6 +10,15 @@ Uuid::Uuid (std::string withUuid_)
 uuid_ = withUuid_;
 }
 
+bool Uuid::operator==(const ValueObjectBase& other) const
+{
+    if (const Uuid* otherUuid = dynamic_cast<const Uuid*>(&other))
+    {
+        return (uuid_ == otherUuid->Get());
+    }
+    return false;
+}
+
 const std::string Uuid::Get() const
 {
 return uuid_;

@@ -11,7 +11,7 @@
 
 using json = nlohmann::json;
 
-class Uuid
+class Uuid : public ValueObjectBase
 {
 private:
   std::string uuid_;
@@ -31,8 +31,7 @@ private:
 public:
   Uuid ();
   Uuid (std::string withUuid_);
-  virtual bool operator==(const Uuid& other) const {return (uuid_ == other.Get());}
-  bool operator!=(const Uuid& other) const {return !(*this == other);}
+  virtual bool operator==(const ValueObjectBase& other) const override;
   const std::string Get() const;
 
   //JSON boilerplate
