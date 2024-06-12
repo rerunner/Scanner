@@ -61,9 +61,14 @@ public:
     std::scoped_lock lock{repMtx};
     std::vector<RepositoryBaseType> vList;
 
+    GSL::Dprintf(GSL::INFO, "GetAll() ENTER");
+
     // Setup the query
     auto session = doc_store->open_session();
-    std::vector<std::shared_ptr<RepositoryBaseType>> query = session.query<RepositoryBaseType>()->to_list();
+    std::ostringstream aggregation_rql_query;
+    //Find all documents containing a parentId_ with matching uuid string
+		aggregation_rql_query << "from '@all_docs'";
+    auto query = session.advanced().raw_query<RepositoryBaseType>(aggregation_rql_query.str())->to_list();
     session.save_changes();
 
     if (query.size() > 0)
@@ -72,6 +77,9 @@ public:
       {
         vList.push_back(*iter);
       }
+    }
+    {
+      GSL::Dprintf(GSL::WARNING, "GetAll() found 0 items!");
     }
     return vList;
   }
@@ -79,18 +87,15 @@ public:
   std::vector<RepositoryBaseType> GetAllChildren(Uuid parentId)
   {
     std::scoped_lock lock{repMtx};
-    
     std::vector<RepositoryBaseType> vList;
     
     // Setup the query
     auto session = doc_store->open_session();
-
     std::ostringstream aggregation_rql_query;
-    json jparentId = parentId;
-
-		aggregation_rql_query << "from '@all_docs' where parentId_ = '" << jparentId.dump() << "'";
+    //Find all documents containing a parentId_ with matching uuid string
+		aggregation_rql_query << "from '@all_docs' where parentId_.uuid_ == '" << parentId.Get() << "'";
+    GSL::Dprintf(GSL::INFO, "GetAllChildren query will be ", aggregation_rql_query.str());
     auto query = session.advanced().raw_query<RepositoryBaseType>(aggregation_rql_query.str())->to_list();
-
     session.save_changes();
 
     if (query.size() > 0)
@@ -100,7 +105,10 @@ public:
         vList.push_back(*iter);
       }
     }
+    else
+    {
+      GSL::Dprintf(GSL::WARNING, "Query ", aggregation_rql_query.str(), " found ", query.size(), " items!");
+    }
     return vList;
-
   }
 };
