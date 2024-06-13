@@ -161,11 +161,11 @@ OPENDDS_TARGET_SOURCES(Leveling
 
 #/usr/lib/x86_64-linux-gnu/libxxhash.a
 
-target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include")
+target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository/usr/local/include" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include")
 target_link_libraries(Scanner Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES} ${CURLPP_LDFLAGS})
 
-target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Expose" "${src}/src/Expose/Expose" "${src}/src/MachineControl" "${src}/src/Measure/Leveling" "${src}/include")
+target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository/usr/local/include" "${src}/src" "${src}/src/Expose" "${src}/src/Expose/Expose" "${src}/src/MachineControl" "${src}/src/Measure/Leveling" "${src}/include")
 target_link_libraries(Expose Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
 
-target_include_directories(Leveling PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/src" "${src}/src/Measure" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include")
+target_include_directories(Leveling PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository/usr/local/include" "${src}/src" "${src}/src/Measure" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include")
 target_link_libraries(Leveling Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})

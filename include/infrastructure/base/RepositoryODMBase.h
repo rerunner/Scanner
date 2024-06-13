@@ -94,7 +94,7 @@ public:
     std::ostringstream aggregation_rql_query;
     //Find all documents containing a parentId_ with matching uuid string
 		aggregation_rql_query << "from '@all_docs' where parentId_.uuid_ == '" << parentId.Get() << "'";
-    GSL::Dprintf(GSL::INFO, "GetAllChildren query will be ", aggregation_rql_query.str());
+    GSL::Dprintf(GSL::DEBUG, "GetAllChildren query will be ", aggregation_rql_query.str());
     auto query = session.advanced().raw_query<RepositoryBaseType>(aggregation_rql_query.str())->to_list();
     session.save_changes();
 
