@@ -23,9 +23,9 @@
 #include "domain/WaferHeightMap.hpp"
 
 //#define REPOSITORY_TYPE RepositoryType::HeapRepository
-//#define REPOSITORY_TYPE RepositoryType::ORM
+#define REPOSITORY_TYPE RepositoryType::ORM
 //#define REPOSITORY_TYPE RepositoryType::FFS
-#define REPOSITORY_TYPE RepositoryType::ODM
+//#define REPOSITORY_TYPE RepositoryType::ODM
 
 namespace unitofwork {
 
@@ -265,10 +265,14 @@ public:
             auto doc_store2 = std::any_cast<std::shared_ptr<ravendb::client::documents::DocumentStore>>(doc_store);
             return std::make_unique<UnitOfWork>(doc_store2);
         }
-        else
+        else if (repositoryType_ == RepositoryType::ORM)
         {
             auto hiberDb2 = std::any_cast<std::shared_ptr<hiberlite::Database>>(hiberDb);
             return std::make_unique<UnitOfWork>(hiberDb2);
+        }
+        else
+        {
+            return std::make_unique<UnitOfWork>(nullptr);
         }
 	}
 
@@ -280,7 +284,7 @@ public:
         }
         else
         {
-            return hiberDb;
+            return hiberDb; // will be equal to nullptr for non-ORM
         }
     }
 };

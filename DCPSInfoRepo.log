@@ -1,0 +1,10 @@
+TAO (22320|22320) - TAO_Time_Policy_Manager: loaded time policy strategy 'TAO_SYSTEM_TIME_POLICY'
+TAO (22320|22320) - Default_Resource_Factory - codeset manager=0x5601c4682a40
+TAO (22320|22320) - Codeset_Manager_i::init_ccs, Loaded Codeset translator <UTF8_Latin1_Factory>, ncs = 00010001 tcs = 05010001
+TAO (22320|22320) - UTF16_BOM_Translator: forceBE 0
+TAO (22320|22320) - Loaded default protocol <IIOP_Factory>
+TAO (22320|22320) - Created new ORB <>
+TAO (22320|22320) - IIOP_Acceptor::open_i, listening on: <Andromeda:38953>
+TAO (22320|22320) - IIOP_Acceptor::open_i, listening on: <Andromeda:38953>
+TAO (22320|22320) - TAO_Unique_Id_Strategy::bind_using_user_id: type=IDL:OpenDDS/DCPS/DCPSInfo:1.0, id=0x496e666f526570
+TAO (22320|22320) - Stub::base_profiles, acquired profile lock this = 0xc46cfbc0
