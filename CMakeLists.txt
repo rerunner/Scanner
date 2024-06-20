@@ -1,8 +1,11 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required(VERSION 3.28)
 
 project(Scanner VERSION 1.0
 	DESCRIPTION "Lithography Scanner project"
 	LANGUAGES CXX)
+
+# Set the version of C++ for the project
+set(CMAKE_CXX_STANDARD 20)
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING
@@ -111,9 +114,16 @@ else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
+# Create the Uuid library
+add_library(Uuid)
+target_include_directories(Uuid PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${src}/Verdi/include")
+target_sources(Uuid
+  PUBLIC
+	${src}/Verdi/include/Uuid.cpp
+)
+
 # Scanner target
 add_executable(Scanner
-	${src}/include/Uuid.cpp
 	${src}/src/MachineControl/domain/Wafer.cpp
 	${src}/src/MachineControl/domain/Lot.cpp
 	${src}/src/MachineControl/domain/Chuck.cpp
@@ -123,7 +133,6 @@ add_executable(Scanner
 
 # Scanner target
 add_executable(Leveling
-	${src}/include/Uuid.cpp
 	${src}/src/Measure/Leveling/application/main.cpp
 	${src}/src/Measure/Leveling/domain/Position.cpp
 	${src}/src/Measure/Leveling/domain/MarkMeasurement.cpp
@@ -135,8 +144,7 @@ add_executable(Leveling
 	${src}/src/MachineControl/domain/Lot.cpp
 )
 
-add_executable(Expose 
-	${src}/include/Uuid.cpp
+add_executable(Expose
 	${src}/src/Expose/Expose/application/main.cpp
 	${src}/src/Measure/Leveling/domain/Position.cpp
 	${src}/src/Measure/Leveling/domain/MarkMeasurement.cpp
@@ -161,11 +169,11 @@ OPENDDS_TARGET_SOURCES(Leveling
 
 #/usr/lib/x86_64-linux-gnu/libxxhash.a
 
-target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include")
-target_link_libraries(Scanner Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES} ${CURLPP_LDFLAGS})
+target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include" "${src}/Verdi/include")
+target_link_libraries(Scanner Uuid Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES} ${CURLPP_LDFLAGS})
 
-target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Expose" "${src}/src/Expose/Expose" "${src}/src/MachineControl" "${src}/src/Measure/Leveling" "${src}/include")
-target_link_libraries(Expose Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
+target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Expose" "${src}/src/Expose/Expose" "${src}/src/MachineControl" "${src}/src/Measure/Leveling" "${src}/include" "${src}/Verdi/include")
+target_link_libraries(Expose Uuid Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
 
-target_include_directories(Leveling PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Measure" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include")
-target_link_libraries(Leveling Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
+target_include_directories(Leveling PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Measure" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include" "${src}/Verdi/include")
+target_link_libraries(Leveling Uuid Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})

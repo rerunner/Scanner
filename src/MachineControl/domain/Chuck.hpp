@@ -7,7 +7,6 @@
 #include "domain/base/AggregateRootBase.hpp"
 #include "domain/Station.hpp"
 #include "FiniteStateMachine.hpp"
-#include "Uuid.hpp"
 #include "GenLogger.hpp"
 
 namespace chuckState {

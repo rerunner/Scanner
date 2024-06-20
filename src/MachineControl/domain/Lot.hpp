@@ -8,7 +8,6 @@
 #include "domain/base/AggregateRootBase.hpp"
 #include "FiniteStateMachine.hpp"
 #include "FiniteStateMachine.hpp"
-#include "Uuid.hpp"
 #include "GenLogger.hpp"
 
 namespace lotState {

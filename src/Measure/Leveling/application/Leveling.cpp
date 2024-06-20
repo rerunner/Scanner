@@ -83,7 +83,7 @@ namespace Leveling  { namespace Application
                         Uuid targetId(wIdstr);
                         GSL::Dprintf(GSL::DEBUG, "Can delete heightmap data associated with Wafer ID ", targetId.Get());
                         std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
-                        auto repository = repositoryFactory->GetRepository(REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
+                        auto repository = repositoryFactory->GetRepository(RepositoryTypeBase::REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
                         auto whmList = repository->GetAllChildren(targetId);
                         for (auto &iter:whmList)
                         {

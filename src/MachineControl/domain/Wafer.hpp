@@ -7,7 +7,6 @@
 #include <nlohmann/json.hpp>
 #include "domain/base/AggregateRootBase.hpp"
 #include "FiniteStateMachine.hpp"
-#include "Uuid.hpp"
 #include "GenLogger.hpp"
 
 // Life of a Wafer: Loaded -> Prealigned -> Measured -> Approved for expose side -> exposed -> Unloaded

@@ -21,6 +21,7 @@
 #include "Leveling/application/Leveling.hpp"
 
 unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::WARNING | GSL::INFO;
+RepositoryType RepositoryTypeBase::REPOSITORY_TYPE = RepositoryType::ORM;
 
 void run() {
   /* Register Components in scope of run() method */

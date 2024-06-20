@@ -1,0 +1,3 @@
+[submodule "Verdi"]
+	path = Verdi
+	url = https://github.com/rerunner/Verdi.git
