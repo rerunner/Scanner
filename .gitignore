@@ -47,3 +47,6 @@ libs/
 # DDS repositories
 *.ior
 
+# DDS log files
+*.log
+
