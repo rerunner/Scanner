@@ -1,5 +1,5 @@
 # Description
-Todo: build decription
+[Domain Driven Lithography 2-stage Wafer Scanner](https://github.com/rerunner/Scanner/wiki)
 
 # Dependencies
 - [c++20 compiler](https://clang.llvm.org/)
