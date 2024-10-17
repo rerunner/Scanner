@@ -6,8 +6,8 @@
 #include "oatpp/web/server/HttpRouter.hpp"
 #include "oatpp/network/virtual_/server/ConnectionProvider.hpp"
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
-#include "oatpp/parser/json/mapping/ObjectMapper.hpp"
-#include "oatpp/core/macro/component.hpp"
+#include "oatpp/json/ObjectMapper.hpp"
+#include "oatpp/macro/component.hpp"
 
 namespace Leveling{
     namespace Application{
@@ -56,7 +56,9 @@ namespace Leveling{
             //Create ObjectMapper component to serialize/deserialize DTOs in Controller's API
             OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::data::mapping::ObjectMapper>, apiObjectMapper)(Qualifiers::SERVICE_LEVELING, [] 
             {
-                return oatpp::parser::json::mapping::ObjectMapper::createShared();
+		auto mapper = std::make_shared<oatpp::json::ObjectMapper>();
+		return mapper;
+                //return oatpp::json::ObjectMapper::createShared();
             }());
         };
     }

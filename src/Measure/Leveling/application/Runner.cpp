@@ -35,14 +35,14 @@ void Runner::run(std::list<std::thread>& acceptingThreads) {
   acceptingThreads.push_back(std::thread([router, connectionHandler]{
     OATPP_COMPONENT(std::shared_ptr<oatpp::network::ServerConnectionProvider>, connectionProvider, Qualifiers::SERVICE_LEVELING);
     oatpp::network::Server server(connectionProvider, connectionHandler);
-    OATPP_LOGI("measure-service", "server is listening on port '%s'", (const char*)connectionProvider->getProperty("port").getData());
+    OATPP_LOGi("measure-service", "server is listening on port '%s'", (const char*)connectionProvider->getProperty("port").getData());
     server.run();
   }));
 
   acceptingThreads.push_back(std::thread([router, connectionHandler]{
     OATPP_COMPONENT(std::shared_ptr<oatpp::network::ServerConnectionProvider>, connectionProvider, Qualifiers::SERVICE_LEVELING_VH);
     oatpp::network::Server server(connectionProvider, connectionHandler);
-    OATPP_LOGI("leveling-service", "server is listening on virtual interface '%s'", (const char*)connectionProvider->getProperty("host").getData());
+    OATPP_LOGi("leveling-service", "server is listening on virtual interface '%s'", (const char*)connectionProvider->getProperty("host").getData());
     server.run();
   }));
 

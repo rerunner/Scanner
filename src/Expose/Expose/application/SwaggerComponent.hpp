@@ -4,7 +4,7 @@
 
 #include "oatpp-swagger/Model.hpp"
 #include "oatpp-swagger/Resources.hpp"
-#include "oatpp/core/macro/component.hpp"
+#include "oatpp/macro/component.hpp"
 
 namespace Expose { namespace Application {
 
@@ -40,7 +40,7 @@ public:
    */
   OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::swagger::Resources>, swaggerResources)(Qualifiers::SERVICE_EXPOSE, [] {
     // Correct full path to oatpp-swagger/res folder specified in cmake !!!
-    return oatpp::swagger::Resources::streamResources(OATPP_SWAGGER_RES_PATH);
+    return oatpp::swagger::Resources::loadResources(OATPP_SWAGGER_RES_PATH,true);
   }());
 
 };

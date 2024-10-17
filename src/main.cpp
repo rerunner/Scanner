@@ -10,7 +10,7 @@
 #include "GenLogger.hpp"
 
 unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::WARNING | GSL::INFO;
-RepositoryType RepositoryTypeBase::REPOSITORY_TYPE = RepositoryType::ORM;
+RepositoryType RepositoryTypeBase::REPOSITORY_TYPE = RepositoryType::HMM;
 
 int main(int argc, char** argv)
 {

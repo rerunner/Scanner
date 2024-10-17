@@ -4,12 +4,11 @@
 #include "oatpp/web/server/api/ApiController.hpp"
 #include "oatpp/network/Server.hpp"
 #include "oatpp/network/ConnectionHandler.hpp"
-#include "oatpp/parser/json/mapping/ObjectMapper.hpp"
+#include "oatpp/json/ObjectMapper.hpp"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 #include "oatpp/web/server/HttpRouter.hpp"
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
-#include "oatpp/parser/json/mapping/ObjectMapper.hpp"
-#include "oatpp/core/macro/component.hpp"
+#include "oatpp/macro/component.hpp"
 
 #include <iostream>
 #include <thread>         // std::this_thread::sleep_for
@@ -45,9 +44,9 @@ int main(int argc, const char * argv[])
 {
   GSL::Dprintf(GSL::INFO, "Expose application");
 
-  oatpp::base::Environment::init();
+  oatpp::Environment::init();
   run();
-  oatpp::base::Environment::destroy();
+  oatpp::Environment::destroy();
   
   return 0;
 }
