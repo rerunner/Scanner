@@ -13,6 +13,7 @@
 - [OpenDDS](https://github.com/OpenDDS/OpenDDS)
 - [RaftLib](https://github.com/rerunner/RaftLib)
 - [nlohmann/json](https://github.com/nlohmann/json)
+- [xtd](https://github.com/gammasoft71/xtd)
 
 # Nice to have
 - [context-mapper](https://contextmapper.org/)
