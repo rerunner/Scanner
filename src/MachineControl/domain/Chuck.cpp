@@ -1,5 +1,7 @@
 #include "Chuck.hpp"
 
+using namespace Verdi;
+
 void Chuck::LoadWafer(Uuid wId)
 {
     holdingWaferId_ = std::make_unique<Uuid>(wId);

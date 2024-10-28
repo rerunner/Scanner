@@ -3,6 +3,7 @@
 #include "Wafer.hpp"
 
 using json = nlohmann::json;
+using namespace Verdi;
 
 
 Wafer::Wafer() : AggregateRootBase()

@@ -15,7 +15,7 @@
 #include "infrastructure/IWaferHeightMapRepository.hpp"
 #include "infrastructure/base/UnitOfWork.hpp"
 
-using namespace unitofwork;
+using namespace Verdi::unitofwork;
 
 namespace Leveling  { namespace Application
 {
@@ -50,9 +50,9 @@ namespace Leveling  { namespace Application
     Leveling();
     virtual ~Leveling();
 
-    void dummyMethod(Uuid waferId){}
+    void dummyMethod(Verdi::Uuid waferId){}
 
-    Uuid measureWafer(Uuid waferId); // returns the measured waferheightmap ID of the wafer
+    Verdi::Uuid measureWafer(Verdi::Uuid waferId); // returns the measured waferheightmap ID of the wafer
   };
 }}
 

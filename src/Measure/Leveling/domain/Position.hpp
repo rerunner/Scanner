@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 #include "domain/base/ValueObjectBase.hpp"
 
-class Position : public ValueObjectBase
+class Position : public Verdi::ValueObjectBase
 {
 private:
   double x_;

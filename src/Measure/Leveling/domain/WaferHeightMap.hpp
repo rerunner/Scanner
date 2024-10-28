@@ -7,11 +7,11 @@
 #include "MarkMeasurement.hpp"
 
 
-class WaferHeightMap : public AggregateRootBase
+class WaferHeightMap : public Verdi::AggregateRootBase
 {
 private:
   std::list<MarkMeasurement> measurements_;
-  Uuid waferId_;
+  Verdi::Uuid waferId_;
   
   //Boilerplate start
   friend class hiberlite::access;
@@ -26,13 +26,13 @@ private:
   //Boilerplate end
 public:
   WaferHeightMap() : AggregateRootBase(){}
-  WaferHeightMap(Uuid wId);
-  WaferHeightMap(Uuid wId, MarkMeasurement m);
+  WaferHeightMap(Verdi::Uuid wId);
+  WaferHeightMap(Verdi::Uuid wId, MarkMeasurement m);
   virtual ~WaferHeightMap(){};
 
   std::list<MarkMeasurement> GetHeightMap(void);
   void AddMarkMeasurement(MarkMeasurement m);
-  Uuid GetWaferId();
+  Verdi::Uuid GetWaferId();
   void LogHeightMap();
 
   //JSON boilerplate

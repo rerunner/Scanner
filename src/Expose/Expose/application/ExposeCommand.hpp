@@ -24,12 +24,12 @@ using json = nlohmann::json;
 namespace Expose { namespace Application { namespace ExposeCommands {
   struct DummyMethod 
   {
-    Uuid waferId;
+      Verdi::Uuid waferId;
   };
 
   struct ExposeWafer 
   {
-    Uuid waferId;
+      Verdi::Uuid waferId;
   };
 
   using Command = std::variant<DummyMethod, ExposeWafer>;
@@ -58,8 +58,8 @@ namespace Expose { namespace Application { namespace ExposeCommands {
                                                    thread_cnt(4), // Depth
                                                    threads_(thread_cnt)
     {
-      GSL::Dprintf(GSL::DEBUG, "Creating dispatch queue: ", name_.c_str());
-      GSL::Dprintf(GSL::DEBUG, "Dispatch threads: ", thread_cnt);
+      Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Creating dispatch queue: ", name_.c_str());
+      Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Dispatch threads: ", thread_cnt);
 
       //! Create the Kafka config
       std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
@@ -79,8 +79,8 @@ namespace Expose { namespace Application { namespace ExposeCommands {
     /// @brief 
     ~CommandExecutor()
     {
-      GSL::Dprintf(GSL::DEBUG, "CommandExecutor destructor");
-      GSL::Dprintf(GSL::DEBUG, "Destroying dispatch threads...");
+      Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "CommandExecutor destructor");
+      Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Destroying dispatch threads...");
 
       // Signal to dispatch threads that it's time to wrap up
       std::unique_lock<std::mutex> lock(lock_);
@@ -93,7 +93,7 @@ namespace Expose { namespace Application { namespace ExposeCommands {
       {
         if(threads_[i].joinable())
         {
-          GSL::Dprintf(GSL::DEBUG, "Destructor: Joining thread", i, "until completion");
+          Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Destructor: Joining thread", i, "until completion");
           threads_[i].join();
         }
       }
@@ -116,11 +116,11 @@ namespace Expose { namespace Application { namespace ExposeCommands {
     void operator()(const ExposeWafer& cmd)
     {
        dispatch([&] {
-        GSL::Dprintf(GSL::INFO, "Expose Expose command execution start for waferId = ", cmd.waferId.Get());
+        Verdi::GSL::Dprintf(Verdi::GSL::INFO, "Expose Expose command execution start for waferId = ", cmd.waferId.Get());
 
         expose_.exposeWafer(cmd.waferId);
 
-        GSL::Dprintf(GSL::DEBUG, "Expose Expose command execution completed, sending Kafka message");
+        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Expose Expose command execution completed, sending Kafka message");
         json jMessage;
         jMessage.emplace("Message", "CommandCompleted");
         jMessage.emplace("Command", "ExposeWafer");

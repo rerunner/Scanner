@@ -10,6 +10,8 @@
 #include "MachineControl/application/MachineControl.hpp"
 #include "GenLogger.hpp"
 
+using namespace Verdi;
+
 unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::WARNING | GSL::INFO;
 RepositoryType RepositoryTypeBase::REPOSITORY_TYPE = RepositoryType::HMM;
 
@@ -17,6 +19,8 @@ int main(int argc, char** argv)
 {
     int nrOfLots, nrOfWafersInLot;
     char *pLot, *pWafers;
+
+    GSL::Init();
 
     auto main_form = xtd::forms::form::create("Scanner Application");
     xtd::forms::button button1;

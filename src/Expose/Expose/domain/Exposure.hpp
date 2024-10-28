@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 #include "domain/base/AggregateRootBase.hpp"
 
-class Exposure : public AggregateRootBase
+class Exposure : public Verdi::AggregateRootBase
 {
 private:
   float myPrediction;

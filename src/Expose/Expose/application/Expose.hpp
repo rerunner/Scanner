@@ -25,7 +25,7 @@
 #include "DataReaderListenerImpl.h"
 #include "infrastructure/base/UnitOfWork.hpp"
 
-using namespace unitofwork;
+using namespace Verdi::unitofwork;
 
 namespace Expose { namespace Application
 {
@@ -52,8 +52,8 @@ namespace Expose { namespace Application
     public:
     Expose();
     ~Expose();
-    void dummyMethod(Uuid waferId){}
-    void exposeWafer(Uuid waferId); // expose the measured wafer identified with waferID
+    void dummyMethod(Verdi::Uuid waferId){}
+    void exposeWafer(Verdi::Uuid waferId); // expose the measured wafer identified with waferID
   };
 }}
 

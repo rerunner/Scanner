@@ -21,7 +21,7 @@
 #include "infrastructure/IWaferHeightMapRepository.hpp"
 #include "infrastructure/base/UnitOfWork.hpp"
 
-using namespace unitofwork;
+using namespace Verdi::unitofwork;
 
 class DataReaderListenerImpl : public virtual OpenDDS::DCPS::LocalObject<DDS::DataReaderListener>
 {

@@ -34,6 +34,7 @@
 #include "GenLogger.hpp"
 
 using json = nlohmann::json;
+using namespace Verdi;
 
 namespace Expose { namespace Application 
 {

@@ -1,6 +1,7 @@
 #include "WaferHeightMap.hpp"
 #include "GenLogger.hpp"
 
+using namespace Verdi;
 
 WaferHeightMap::WaferHeightMap(Uuid wId) : AggregateRootBase()
 {

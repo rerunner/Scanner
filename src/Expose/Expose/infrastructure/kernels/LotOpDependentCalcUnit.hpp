@@ -27,7 +27,7 @@ public:
       input[ "inputExposureData" ].pop( predictionContainer ); 
       const Exposure outputFFContainer{predictionContainer.GetPrediction()};
       output[ "outputLOPDepData" ].push( outputFFContainer );
-      GSL::Dprintf(GSL::DEBUG, "Raft kernel received waferheightmap ", whm->GetId().Get());
+      Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Raft kernel received waferheightmap ", whm->GetId().Get());
       return( raft::proceed );
     }
 

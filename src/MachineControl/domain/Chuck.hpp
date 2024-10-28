@@ -24,22 +24,22 @@ namespace chuckState {
   struct Loaded 
   {
     void on_update() const {
-    GSL::Dprintf(GSL::DEBUG, "we are running!");
+    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
-        GSL::Dprintf(GSL::DEBUG, "Leaving Loaded state with transition to Unloaded state");
+        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Loaded state with transition to Unloaded state");
         return {};
     }
 
     state_transition_to<ReadyForSwap> on_state_transition(const transition_to_ReadyForSwap&) const {
-        GSL::Dprintf(GSL::DEBUG, "Leaving Loaded state with transition to ReadyForSwap state");
+        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Loaded state with transition to ReadyForSwap state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Loaded state!");
+        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Loaded state!");
         return {};
     }
   };
@@ -47,22 +47,22 @@ namespace chuckState {
   struct ReadyForSwap
   {
     void on_update() const {
-    GSL::Dprintf(GSL::DEBUG, "we are running!");
+    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
-        GSL::Dprintf(GSL::DEBUG, "Leaving ReadyForSwap state with transition to Loaded state");
+        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving ReadyForSwap state with transition to Loaded state");
         return {};
     }
 
     state_transition_to<ReadyForUnloading> on_state_transition(const transition_to_ReadyForUnloading&) const {
-        GSL::Dprintf(GSL::DEBUG, "Leaving ReadyForSwap state with transition to ReadyForUnloading state");
+        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving ReadyForSwap state with transition to ReadyForUnloading state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in ReadyForSwap state!");
+        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in ReadyForSwap state!");
         return {};
     }
   };
@@ -70,17 +70,17 @@ namespace chuckState {
   struct ReadyForUnloading
   {
     void on_update() const {
-    GSL::Dprintf(GSL::DEBUG, "we are running!");
+    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
-        GSL::Dprintf(GSL::DEBUG, "Leaving ReadyForUnloading state with transition to Unloaded state");
+        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving ReadyForUnloading state with transition to Unloaded state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in ReadyForUnloading state!");
+        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in ReadyForUnloading state!");
         return {};
     }
   };
@@ -88,22 +88,22 @@ namespace chuckState {
   struct Unloaded
   {
     void on_update() const {
-    GSL::Dprintf(GSL::DEBUG, "we are running!");
+    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
-        GSL::Dprintf(GSL::DEBUG, "Leaving Unloaded state with transition to Loaded state");
+        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Unloaded state with transition to Loaded state");
         return {};
     }
 
     state_transition_to<ReadyForSwap> on_state_transition(const transition_to_ReadyForSwap&) const {
-        GSL::Dprintf(GSL::DEBUG, "Leaving Unloaded state with transition to ReadyForSwap state"); // Only for empty Expose station
+        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Unloaded state with transition to ReadyForSwap state"); // Only for empty Expose station
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Unloaded state!");
+        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Unloaded state!");
         return {};
     }
   };
@@ -115,11 +115,11 @@ using chuck_state_machine = state_machine<  chuckState::Unloaded,
                                             chuckState::ReadyForSwap,
                                             chuckState::ReadyForUnloading >;
 
-class Chuck : public AggregateRootBase
+class Chuck : public Verdi::AggregateRootBase
 {
 private:
   chuck_state_machine chuckStateMachine;
-  std::shared_ptr<Uuid> holdingWaferId_;
+    std::shared_ptr<Verdi::Uuid> holdingWaferId_;
   std::string state;
   StationEnumType atStation_;
 
@@ -140,15 +140,15 @@ private:
   //void stateChangePublisher();
 public:
   Chuck() : AggregateRootBase(){holdingWaferId_ = nullptr; state = "Unloaded";};
-  Chuck(Uuid waferId) : AggregateRootBase(){holdingWaferId_ = std::make_shared<Uuid>(waferId);atStation_ = StationEnumType::MeasureStation; LoadWafer(waferId);};
+  Chuck(Verdi::Uuid waferId) : AggregateRootBase(){holdingWaferId_ = std::make_shared<Verdi::Uuid>(waferId);atStation_ = StationEnumType::MeasureStation; LoadWafer(waferId);};
   virtual ~Chuck(){}
 
-  std::shared_ptr<Uuid> GetWaferId() const {return holdingWaferId_;}
+  std::shared_ptr<Verdi::Uuid> GetWaferId() const {return holdingWaferId_;}
   std::string GetCurrentState() const {return state;}
   const StationEnumType GetStation() const {return atStation_;}
   void SetStation(StationEnumType newStation){atStation_ = newStation;}
   void SwapStation();
-  void LoadWafer(Uuid wId);
+  void LoadWafer(Verdi::Uuid wId);
   void UnloadWafer();
   void SetReadyForSwap();
 

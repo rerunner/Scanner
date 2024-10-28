@@ -28,12 +28,12 @@ namespace LevelingCommands
 {
   struct DummyMethod 
   {
-    Uuid waferId;
+      Verdi::Uuid waferId;
   };
 
   struct MeasureWafer 
   {
-    Uuid waferId;
+      Verdi::Uuid waferId;
   };
 
   using Command = std::variant<DummyMethod, MeasureWafer>;
@@ -62,8 +62,8 @@ namespace LevelingCommands
                                                                  thread_cnt(4), // Depth
                                                                  threads_(thread_cnt)
     {
-      GSL::Dprintf(GSL::DEBUG, "Creating dispatch queue: ", name_.c_str());
-      GSL::Dprintf(GSL::DEBUG, "Dispatch threads: ", thread_cnt);
+      Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Creating dispatch queue: ", name_.c_str());
+      Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Dispatch threads: ", thread_cnt);
 
       //! Create the Kafka config
       std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
@@ -82,8 +82,8 @@ namespace LevelingCommands
     /// @brief 
     ~CommandExecutor()
     {
-      GSL::Dprintf(GSL::DEBUG, "CommandExecutor destructor");
-      GSL::Dprintf(GSL::DEBUG, "Destroying dispatch threads...");
+      Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "CommandExecutor destructor");
+      Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Destroying dispatch threads...");
 
       // Signal to dispatch threads that it's time to wrap up
       std::unique_lock<std::mutex> lock(lock_);
@@ -96,7 +96,7 @@ namespace LevelingCommands
       {
         if(threads_[i].joinable())
         {
-          GSL::Dprintf(GSL::DEBUG, "Destructor: Joining thread", i, "until completion");
+          Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Destructor: Joining thread", i, "until completion");
           threads_[i].join();
         }
       }
@@ -119,11 +119,11 @@ namespace LevelingCommands
     void operator()(const MeasureWafer& cmd)
     {
       dispatch([&] {
-        GSL::Dprintf(GSL::INFO, "Leveling MeasureWafer command execution started for waferId = ", cmd.waferId.Get());
+        Verdi::GSL::Dprintf(Verdi::GSL::INFO, "Leveling MeasureWafer command execution started for waferId = ", cmd.waferId.Get());
       
         leveling_.measureWafer(cmd.waferId);
 
-        GSL::Dprintf(GSL::DEBUG, "Leveling MeasureWafer command execution completed, sending Kafka message");
+        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leveling MeasureWafer command execution completed, sending Kafka message");
         json jMessage;
         jMessage.emplace("Message", "CommandCompleted");
         jMessage.emplace("Command", "MeasureWafer");

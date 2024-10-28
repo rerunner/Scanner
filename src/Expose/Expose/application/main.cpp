@@ -19,6 +19,8 @@
 #include "Expose/application/Runner.hpp"
 #include "Expose/application/Expose.hpp"
 
+using namespace Verdi;
+
 unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::WARNING | GSL::INFO;
 RepositoryType RepositoryTypeBase::REPOSITORY_TYPE = RepositoryType::ORM;
 
@@ -42,6 +44,8 @@ void run() {
 
 int main(int argc, const char * argv[]) 
 {
+  GSL::Init();
+    
   GSL::Dprintf(GSL::INFO, "Expose application");
 
   oatpp::Environment::init();

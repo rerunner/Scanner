@@ -6,4 +6,4 @@
 #include "domain/WaferHeightMap.hpp"
 
 
-class IWaferHeightMapRepository : public IRepositoryBase<WaferHeightMap> {};
+class IWaferHeightMapRepository : public Verdi::IRepositoryBase<WaferHeightMap> {};

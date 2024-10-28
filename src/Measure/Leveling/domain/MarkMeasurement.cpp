@@ -1,5 +1,7 @@
 #include "MarkMeasurement.hpp"
 
+using namespace Verdi;
+
 MarkMeasurement::MarkMeasurement() : ValueObjectBase() 
 {
 };

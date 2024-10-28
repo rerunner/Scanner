@@ -17,6 +17,7 @@
 #include "domain/MarkMeasurement.hpp"
 #include "GenLogger.hpp"
 
+using namespace Verdi;
 
 //DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &other) : whmContext(other.whmContext)
 DataReaderListenerImpl::DataReaderListenerImpl (const DataReaderListenerImpl &other) : whmContextFactory(other.whmContextFactory)

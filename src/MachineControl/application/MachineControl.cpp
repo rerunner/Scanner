@@ -6,6 +6,7 @@
 
 using json = nlohmann::json;
 using namespace curlpp::options;
+using namespace Verdi;
 
 namespace MachineControl
 {

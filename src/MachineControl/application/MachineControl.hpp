@@ -35,17 +35,17 @@ namespace MachineControl
         struct Error 
         { 
             void on_update() const {
-            GSL::Dprintf(GSL::DEBUG, "MC is running!");
+            Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "MC is running!");
             }
 
             state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                GSL::Dprintf(GSL::DEBUG, "Leaving Error state with transition to Idle state");
+                Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Error state with transition to Idle state");
                 return {};
             }
 
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Error state!");
+                Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Error state!");
                 return {};
             }
         };
@@ -53,37 +53,37 @@ namespace MachineControl
         { 
             // regular on update call 
             void on_update() const {
-                GSL::Dprintf(GSL::DEBUG, "still waiting");
+                Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "still waiting");
             }
 
             // specific transition to run, where we return the concrete state transition to Executing
             // to distinguish different state transitions, we use an empty function argument here
             state_transition_to<Executing> on_state_transition(const transition_to_Executing&) const{
-                GSL::Dprintf(GSL::DEBUG, "Leaving Idle state with transition to Executing state");
+                Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Idle state with transition to Executing state");
                 return {};
             }
 
             // a template function to indicate all non supported state transitions.
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Idle state!");
+                Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Idle state!");
                 return {};
             }
         };
         struct Executing 
         { 
             void on_update() const {
-            GSL::Dprintf(GSL::DEBUG, "Machine Control is running!");
+            Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Machine Control is running!");
             }
 
             state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                GSL::Dprintf(GSL::DEBUG, "Leaving Executing state with transition to Idle state");
+                Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Executing state with transition to Idle state");
                 return {};
             }
 
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Executing state!");
+                Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Executing state!");
                 return {};
             }
         };
@@ -101,7 +101,7 @@ namespace MachineControl
     {
     private:
         curlpp::Cleanup myCleanup; // RAII cleanup
-        unitofwork::UnitOfWorkFactory UoWFactory;
+        Verdi::unitofwork::UnitOfWorkFactory UoWFactory;
         machinecontrol_state_machine machineControlStateMachine;
         // Kafka part
         std::unique_ptr<cppkafka::Configuration> kafkaConsumerConfig;
@@ -113,11 +113,11 @@ namespace MachineControl
         Station exposeStation;
         std::shared_ptr<Lot> currentLot;
         std::list<std::shared_ptr<Wafer>> lotWafers;
-        std::unique_ptr<unitofwork::UnitOfWork> executeCommandContext;
+        std::unique_ptr<Verdi::unitofwork::UnitOfWork> executeCommandContext;
         Chuck scannerChucks[2];
         void LoadWaferOnChuck(int chuckNumber);
         void UnloadWaferFromChuck(int chuckNumber);
-        std::string GetWaferState(Uuid wId);
+        std::string GetWaferState(Verdi::Uuid wId);
         void SwapChucks();
         void ProcessChuck(int chuckNumber);
         void eventListenerThreadHandler();

@@ -5,7 +5,7 @@
 #include "domain/base/ValueObjectBase.hpp"
 #include "Position.hpp"
 
-class MarkMeasurement : public ValueObjectBase
+class MarkMeasurement : public Verdi::ValueObjectBase
 {
 private:
   double z_;

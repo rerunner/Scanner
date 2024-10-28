@@ -2,6 +2,7 @@
 #include "Lot.hpp"
 
 using json = nlohmann::json;
+using namespace Verdi;
 
 Lot::Lot() : AggregateRootBase()
 {

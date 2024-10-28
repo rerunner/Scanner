@@ -34,6 +34,7 @@
 #include "domain/WaferHeightMap.hpp"
 
 using json = nlohmann::json;
+using namespace Verdi;
 
 namespace Leveling  { namespace Application
 {

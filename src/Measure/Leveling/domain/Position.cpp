@@ -1,5 +1,7 @@
 #include "Position.hpp"
 
+using namespace Verdi;
+
 Position::Position(double x, double y) : x_(x), y_(y) 
 {
 }
