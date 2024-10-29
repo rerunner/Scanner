@@ -15,12 +15,22 @@ using namespace Verdi;
 unsigned int GSL::ACTIVE_MESSAGES = GSL::FATAL | GSL::ERROR | GSL::WARNING | GSL::INFO;
 RepositoryType RepositoryTypeBase::REPOSITORY_TYPE = RepositoryType::HMM;
 
+void executionTask(MachineControl::MachineControl *machineCTRL, int nrLots, int nrWafers)
+{
+        GSL::Dprintf(GSL::INFO, "Scanner application running for ", nrLots, " Lots, and ", nrWafers, " Wafers per Lot");
+        machineCTRL->Execute(nrLots, nrWafers); // Start Execution
+        GSL::Dprintf(GSL::INFO, "Scanner application finished execution");
+}
+
 int main(int argc, char** argv)
 {
     int nrOfLots, nrOfWafersInLot;
     char *pLot, *pWafers;
 
     GSL::Init();
+    
+    MachineControl::MachineControl machineCTRL; // Create machine control
+    machineCTRL.Initialize(); // Initialize
 
     auto main_form = xtd::forms::form::create("Scanner Application");
     xtd::forms::button button1;
@@ -73,23 +83,10 @@ int main(int argc, char** argv)
             // No error
             nrOfWafersInLot = convWafers;
         }
-        
-        GSL::Dprintf(GSL::INFO, "Scanner application running for ", nrOfLots, " Lots, and ", nrOfWafersInLot, " Wafers per Lot");
-        MachineControl::MachineControl machineCTRL; // Create machine control
-        machineCTRL.Initialize(); // Initialize
-        machineCTRL.Execute(nrOfLots, nrOfWafersInLot); // Start Execution
+        std::thread(executionTask, &machineCTRL, nrOfLots, nrOfWafersInLot).detach();
     };
-       
-    xtd::forms::application::run(main_form);
     
-#if 0
-    GSL::Dprintf(GSL::INFO, "Scanner application running for ", nrOfLots, " Lots, and ", nrOfWafersInLot, " Wafers per Lot");
-
-    MachineControl::MachineControl machineCTRL; // Create machine control
-    machineCTRL.Initialize(); // Initialize
-    machineCTRL.Execute(nrOfLots, nrOfWafersInLot); // Start Execution
-#endif
-
+    xtd::forms::application::run(main_form);
 #if 1
     //Sleep forever
     for (;;) 

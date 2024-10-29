@@ -490,6 +490,8 @@ namespace MachineControl
             GSL::Dprintf(GSL::INFO, "Lot ", lotNr, " finished.");
             executeCommandContext->Commit();
         } // end for all lots
+        GSL::Dprintf(GSL::INFO, "MachineControl Execute command finished, moving to Idle state");
         machineControlStateMachine.on_state_transition(transition_to_Idle{});
+        GSL::Dprintf(GSL::INFO, "MachineControl in Idle state, command exit.");
     }
 }
