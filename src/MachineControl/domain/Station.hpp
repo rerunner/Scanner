@@ -20,17 +20,17 @@ namespace stationState {
   struct Idle
   {
     void on_update() const {
-    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Processing> on_state_transition(const transition_to_Processing&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Idle state with transition to Processing state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Idle state with transition to Processing state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Idle state!");
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Idle state!");
         return {};
     }
   };
@@ -38,17 +38,17 @@ namespace stationState {
   struct Processing
   {
     void on_update() const {
-    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Processsing state with transition to Idle state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Processsing state with transition to Idle state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Processing state!");
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Processing state!");
         return {};
     }
   }; 
@@ -76,7 +76,7 @@ class Station
         state = "Idle";
     }
     std::string const GetStationState(){return state;}
-    void DoCommand(){if (commandCompleted) {commandCompleted = false;} else {Verdi::GSL::Dprintf(Verdi::GSL::FATAL, "Previous Command not yet completed!");}}
+    void DoCommand(){if (commandCompleted) {commandCompleted = false;} else {GSL::Dprintf(GSL::FATAL, "Previous Command not yet completed!");}}
     void CommandHasCompleted(){commandCompleted = true;} // To Be Removed
     bool const GetCommandCompletedState(){return commandCompleted;}
 };

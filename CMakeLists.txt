@@ -48,6 +48,18 @@ include_directories(${CMAKE_INCLUDE_PATH})
 link_directories(${CMAKE_LIBRARY_PATH})
 ## END RAVENRB
 
+## START GSL
+#fetch GSL library from its repo
+include(FetchContent)
+
+FetchContent_Declare(GSL
+  GIT_REPOSITORY https://github.com/rerunner/GSL.git
+  GIT_TAG        main
+  )
+
+# make available
+FetchContent_MakeAvailable(GSL)
+## END GSL
 
 find_package(OpenDDS)
 find_package(oatpp)
@@ -119,15 +131,10 @@ endif (DOXYGEN_FOUND)
 add_library(Verdi)
 target_include_directories(Verdi PUBLIC "/usr/local/include" "/usr/include/hiberlite" 
         "${src}/Verdi/include"
-        "${src}/Verdi/include/gsl"
-        "${src}/Verdi/include/gsl/disruptor"
 )
 target_sources(Verdi
   PUBLIC
         ${src}/Verdi/src/Uuid.cpp 
-        ${src}/Verdi/src/gsl/GenLogger.cpp
-        ${src}/Verdi/src/gsl/disruptor/ring_buffer_on_shmem.cpp
-        ${src}/Verdi/src/gsl/disruptor/shared_mem_manager.cpp
 )
 
 # Scanner target
@@ -177,11 +184,11 @@ OPENDDS_TARGET_SOURCES(Leveling
 
 #/usr/lib/x86_64-linux-gnu/libxxhash.a
 
-target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include" "${src}/Verdi/include" "${src}/Verdi/include/gsl")
-target_link_libraries(Scanner Verdi Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash xtd ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES} ${CURLPP_LDFLAGS})
+target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include" "${src}/Verdi/include" "${GSL_SOURCE_DIR}/include")
+target_link_libraries(Scanner Verdi GSL Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash xtd ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES} ${CURLPP_LDFLAGS})
 
-target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Expose" "${src}/src/Expose/Expose" "${src}/src/MachineControl" "${src}/src/Measure/Leveling" "${src}/include" "${src}/Verdi/include"  "${src}/Verdi/include/gsl")
-target_link_libraries(Expose Verdi Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
+target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Expose" "${src}/src/Expose/Expose" "${src}/src/MachineControl" "${src}/src/Measure/Leveling" "${src}/include" "${src}/Verdi/include" "${GSL_SOURCE_DIR}/include")
+target_link_libraries(Expose Verdi GSL Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
 
-target_include_directories(Leveling PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Measure" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include" "${src}/Verdi/include"  "${src}/Verdi/include/gsl")
-target_link_libraries(Leveling Verdi Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
+target_include_directories(Leveling PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/src" "${src}/src/Measure" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include" "${src}/Verdi/include" "${GSL_SOURCE_DIR}/include")
+target_link_libraries(Leveling Verdi GSL Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})

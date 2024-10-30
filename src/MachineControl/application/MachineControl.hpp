@@ -35,17 +35,17 @@ namespace MachineControl
         struct Error 
         { 
             void on_update() const {
-            Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "MC is running!");
+            GSL::Dprintf(GSL::DEBUG, "MC is running!");
             }
 
             state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Error state with transition to Idle state");
+                GSL::Dprintf(GSL::DEBUG, "Leaving Error state with transition to Idle state");
                 return {};
             }
 
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Error state!");
+                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Error state!");
                 return {};
             }
         };
@@ -53,37 +53,37 @@ namespace MachineControl
         { 
             // regular on update call 
             void on_update() const {
-                Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "still waiting");
+                GSL::Dprintf(GSL::DEBUG, "still waiting");
             }
 
             // specific transition to run, where we return the concrete state transition to Executing
             // to distinguish different state transitions, we use an empty function argument here
             state_transition_to<Executing> on_state_transition(const transition_to_Executing&) const{
-                Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Idle state with transition to Executing state");
+                GSL::Dprintf(GSL::DEBUG, "Leaving Idle state with transition to Executing state");
                 return {};
             }
 
             // a template function to indicate all non supported state transitions.
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Idle state!");
+                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Idle state!");
                 return {};
             }
         };
         struct Executing 
         { 
             void on_update() const {
-            Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Machine Control is running!");
+            GSL::Dprintf(GSL::DEBUG, "Machine Control is running!");
             }
 
             state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Executing state with transition to Idle state");
+                GSL::Dprintf(GSL::DEBUG, "Leaving Executing state with transition to Idle state");
                 return {};
             }
 
             template<typename Transition>
             invalid_state_transition on_state_transition(const Transition&) const {
-                Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Executing state!");
+                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Executing state!");
                 return {};
             }
         };

@@ -27,85 +27,85 @@ namespace lotState {
   struct Loaded 
   {
     void on_update() const {
-    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Started> on_state_transition(const transition_to_Started&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Loaded state with transition to Started state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Loaded state with transition to Started state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Loaded state!");
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Loaded state!");
         return {};
     }
   };
   struct Started
   {
     void on_update() const {
-    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Finished> on_state_transition(const transition_to_Finished&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Prealigned state with transition to Finished state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Prealigned state with transition to Finished state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Started state!");
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Started state!");
         return {};
     }
   };
   struct Finished
   {
     void on_update() const {
-    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Measured state with transition to Unloaded state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Measured state with transition to Unloaded state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Finished state!");
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Finished state!");
         return {};
     }
   };
   struct Rejected
   { // Dummy for now
     void on_update() const {
-    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Rejected state with transition to Unloaded state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Rejected state with transition to Unloaded state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Rejected state!");
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Rejected state!");
         return {};
     }
   };
   struct Unloaded
   {
     void on_update() const {
-    Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "we are running!");
+    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
     state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::DEBUG, "Leaving Unloaded state with transition to Loaded state");
+        GSL::Dprintf(GSL::DEBUG, "Leaving Unloaded state with transition to Loaded state");
         return {};
     }
 
     template<typename Transition>
     invalid_state_transition on_state_transition(const Transition&) const {
-        Verdi::GSL::Dprintf(Verdi::GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Unloaded state!");
+        GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Unloaded state!");
         return {};
     }
   };
