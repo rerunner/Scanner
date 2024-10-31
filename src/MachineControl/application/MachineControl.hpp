@@ -38,13 +38,13 @@ namespace MachineControl
             GSL::Dprintf(GSL::DEBUG, "MC is running!");
             }
 
-            state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
+	    GSL::state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
                 GSL::Dprintf(GSL::DEBUG, "Leaving Error state with transition to Idle state");
                 return {};
             }
 
             template<typename Transition>
-            invalid_state_transition on_state_transition(const Transition&) const {
+            GSL::invalid_state_transition on_state_transition(const Transition&) const {
                 GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Error state!");
                 return {};
             }
@@ -58,14 +58,14 @@ namespace MachineControl
 
             // specific transition to run, where we return the concrete state transition to Executing
             // to distinguish different state transitions, we use an empty function argument here
-            state_transition_to<Executing> on_state_transition(const transition_to_Executing&) const{
+	    GSL::state_transition_to<Executing> on_state_transition(const transition_to_Executing&) const{
                 GSL::Dprintf(GSL::DEBUG, "Leaving Idle state with transition to Executing state");
                 return {};
             }
 
             // a template function to indicate all non supported state transitions.
             template<typename Transition>
-            invalid_state_transition on_state_transition(const Transition&) const {
+            GSL::invalid_state_transition on_state_transition(const Transition&) const {
                 GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Idle state!");
                 return {};
             }
@@ -76,13 +76,13 @@ namespace MachineControl
             GSL::Dprintf(GSL::DEBUG, "Machine Control is running!");
             }
 
-            state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
+	    GSL::state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
                 GSL::Dprintf(GSL::DEBUG, "Leaving Executing state with transition to Idle state");
                 return {};
             }
 
             template<typename Transition>
-            invalid_state_transition on_state_transition(const Transition&) const {
+            GSL::invalid_state_transition on_state_transition(const Transition&) const {
                 GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Executing state!");
                 return {};
             }
@@ -91,7 +91,7 @@ namespace MachineControl
 
     // the alias for our state machine with state idle and run
     // the statemachin is initialized with idle
-    using machinecontrol_state_machine = state_machine<state::Error, state::Idle, state::Executing>;
+    using machinecontrol_state_machine = GSL::state_machine<state::Error, state::Idle, state::Executing>;
     // Statemachine end
     
     ////////////////////

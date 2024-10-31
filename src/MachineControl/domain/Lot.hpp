@@ -30,13 +30,13 @@ namespace lotState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Started> on_state_transition(const transition_to_Started&) const {
+    GSL::state_transition_to<Started> on_state_transition(const transition_to_Started&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Loaded state with transition to Started state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Loaded state!");
         return {};
     }
@@ -47,13 +47,13 @@ namespace lotState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Finished> on_state_transition(const transition_to_Finished&) const {
+    GSL::state_transition_to<Finished> on_state_transition(const transition_to_Finished&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Prealigned state with transition to Finished state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Started state!");
         return {};
     }
@@ -64,13 +64,13 @@ namespace lotState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
+    GSL::state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Measured state with transition to Unloaded state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Finished state!");
         return {};
     }
@@ -81,13 +81,13 @@ namespace lotState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
+    GSL::state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Rejected state with transition to Unloaded state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Rejected state!");
         return {};
     }
@@ -98,24 +98,24 @@ namespace lotState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
+    GSL::state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Unloaded state with transition to Loaded state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Unloaded state!");
         return {};
     }
   };
 }
 
-using lot_state_machine = state_machine<  lotState::Loaded, 
-                                          lotState::Started, 
-                                          lotState::Finished,
-                                          lotState::Unloaded,
-                                          lotState::Rejected >;
+using lot_state_machine = GSL::state_machine<  lotState::Loaded, 
+                                               lotState::Started, 
+                                               lotState::Finished,
+                                               lotState::Unloaded,
+                                               lotState::Rejected >;
 
 class Lot : public Verdi::AggregateRootBase
 {

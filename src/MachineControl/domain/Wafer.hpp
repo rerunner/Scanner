@@ -34,13 +34,13 @@ namespace waferState {
 	    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Prealigned> on_state_transition(const transition_to_Prealigned&) const {
+    GSL::state_transition_to<Prealigned> on_state_transition(const transition_to_Prealigned&) const {
 	    GSL::Dprintf(GSL::DEBUG, "Leaving Loaded state with transition to Prealigned state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
 	    GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Loaded state!");
         return {};
     }
@@ -51,13 +51,13 @@ namespace waferState {
 	    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Measured> on_state_transition(const transition_to_Measured&) const {
+    GSL::state_transition_to<Measured> on_state_transition(const transition_to_Measured&) const {
 	    GSL::Dprintf(GSL::DEBUG, "Leaving Prealigned state with transition to Measured state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
 	    GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Prealigned state!");
         return {};
     }
@@ -68,13 +68,13 @@ namespace waferState {
         GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<ApprovedForExpose> on_state_transition(const transition_to_ApprovedForExpose&) const {
+    GSL::state_transition_to<ApprovedForExpose> on_state_transition(const transition_to_ApprovedForExpose&) const {
 	    GSL::Dprintf(GSL::DEBUG, "Leaving Measured state with transition to ApprovedForExpose state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
 	    GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Measured state!");
         return {};
     }
@@ -85,13 +85,13 @@ namespace waferState {
 	    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Exposed> on_state_transition(const transition_to_Exposed&) const {
+    GSL::state_transition_to<Exposed> on_state_transition(const transition_to_Exposed&) const {
 	    GSL::Dprintf(GSL::DEBUG, "Leaving ApprovedForExpose state with transition to Exposed state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
 	    GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in ApprovedForExpose state!");
         return {};
     }
@@ -102,13 +102,13 @@ namespace waferState {
 	    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
+    GSL::state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
 	    GSL::Dprintf(GSL::DEBUG, "Leaving Exposed state with transition to Unloaded state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
 	    GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Exposed state!");
         return {};
     }
@@ -119,13 +119,13 @@ namespace waferState {
 	    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
+    GSL::state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
 	    GSL::Dprintf(GSL::DEBUG, "Leaving Unloaded state with transition to Loaded state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
 	    GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Unloaded state!");
         return {};
     }
@@ -136,26 +136,26 @@ namespace waferState {
 	    GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
+    GSL::state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
 	    GSL::Dprintf(GSL::DEBUG, "Leaving Rejected state with transition to Unloaded state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
 	    GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Rejected state!");
         return {};
     }
   };
 }
 
-using wafer_state_machine = state_machine<  waferState::Loaded, 
-                                            waferState::Prealigned, 
-                                            waferState::Measured,
-                                            waferState::ApprovedForExpose,
-                                            waferState::Exposed,
-                                            waferState::Unloaded,
-                                            waferState::Rejected >;
+using wafer_state_machine = GSL::state_machine<  waferState::Loaded, 
+                                                 waferState::Prealigned, 
+                                                 waferState::Measured,
+                                                 waferState::ApprovedForExpose,
+                                                 waferState::Exposed,
+                                                 waferState::Unloaded,
+                                                 waferState::Rejected >;
 
 class Wafer : public std::enable_shared_from_this<Wafer> , public Verdi::AggregateRootBase
 {

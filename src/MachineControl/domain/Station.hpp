@@ -23,13 +23,13 @@ namespace stationState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Processing> on_state_transition(const transition_to_Processing&) const {
+    GSL::state_transition_to<Processing> on_state_transition(const transition_to_Processing&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Idle state with transition to Processing state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Idle state!");
         return {};
     }
@@ -41,21 +41,21 @@ namespace stationState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
+    GSL::state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Processsing state with transition to Idle state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Processing state!");
         return {};
     }
   }; 
 }
 
-using station_state_machine = state_machine<  stationState::Idle, 
-                                              stationState::Processing >;
+using station_state_machine = GSL::state_machine<  stationState::Idle, 
+                                                   stationState::Processing >;
 
 class Station
 {

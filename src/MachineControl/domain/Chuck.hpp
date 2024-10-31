@@ -27,18 +27,18 @@ namespace chuckState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
+    GSL::state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Loaded state with transition to Unloaded state");
         return {};
     }
 
-    state_transition_to<ReadyForSwap> on_state_transition(const transition_to_ReadyForSwap&) const {
+    GSL::state_transition_to<ReadyForSwap> on_state_transition(const transition_to_ReadyForSwap&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Loaded state with transition to ReadyForSwap state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Loaded state!");
         return {};
     }
@@ -50,18 +50,18 @@ namespace chuckState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
+    GSL::state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving ReadyForSwap state with transition to Loaded state");
         return {};
     }
 
-    state_transition_to<ReadyForUnloading> on_state_transition(const transition_to_ReadyForUnloading&) const {
+    GSL::state_transition_to<ReadyForUnloading> on_state_transition(const transition_to_ReadyForUnloading&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving ReadyForSwap state with transition to ReadyForUnloading state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in ReadyForSwap state!");
         return {};
     }
@@ -73,13 +73,13 @@ namespace chuckState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
+    GSL::state_transition_to<Unloaded> on_state_transition(const transition_to_Unloaded&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving ReadyForUnloading state with transition to Unloaded state");
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in ReadyForUnloading state!");
         return {};
     }
@@ -91,18 +91,18 @@ namespace chuckState {
     GSL::Dprintf(GSL::DEBUG, "we are running!");
     }
 
-    state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
+    GSL::state_transition_to<Loaded> on_state_transition(const transition_to_Loaded&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Unloaded state with transition to Loaded state");
         return {};
     }
 
-    state_transition_to<ReadyForSwap> on_state_transition(const transition_to_ReadyForSwap&) const {
+    GSL::state_transition_to<ReadyForSwap> on_state_transition(const transition_to_ReadyForSwap&) const {
         GSL::Dprintf(GSL::DEBUG, "Leaving Unloaded state with transition to ReadyForSwap state"); // Only for empty Expose station
         return {};
     }
 
     template<typename Transition>
-    invalid_state_transition on_state_transition(const Transition&) const {
+    GSL::invalid_state_transition on_state_transition(const Transition&) const {
         GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Unloaded state!");
         return {};
     }
@@ -110,10 +110,10 @@ namespace chuckState {
   
 }
 
-using chuck_state_machine = state_machine<  chuckState::Unloaded,
-                                            chuckState::Loaded, 
-                                            chuckState::ReadyForSwap,
-                                            chuckState::ReadyForUnloading >;
+using chuck_state_machine = GSL::state_machine<  chuckState::Unloaded,
+                                                 chuckState::Loaded, 
+                                                 chuckState::ReadyForSwap,
+                                                 chuckState::ReadyForUnloading >;
 
 class Chuck : public Verdi::AggregateRootBase
 {
