@@ -63,23 +63,23 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 	implementationTechnology = "C++"
 
 	Aggregate Lot {
+		ValueObject Uuid {
+			string id;
+		}
+
 		Entity Lot {
 			aggregateRoot
 
 			- Uuid id_
 			- List<Uuid> waferIds_
 
-			def @Uuid GetLotId();
+			def Uuid GetLotId();
 			Repository LotRepository {
 	                 @Lot find(@Uuid lotId) throws LotNotFoundException;
 	                 List<@Lot> findAll;
 	                 store(@Lot lot);
 	                 @Uuid nextLotId();
 				}
-		}
-
-		ValueObject Uuid {
-			string id;
 		}
 	}
 
