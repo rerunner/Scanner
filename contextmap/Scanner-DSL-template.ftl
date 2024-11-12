@@ -41,12 +41,27 @@ namespace ${bc.name} {
         <#list entity.references as reference>
         <#if reference.collectionType?has_content && reference.collectionType.name() == "LIST">
         std::list<${reference.domainObjectType.name}> ${reference.name}; // ${reference.collectionType.name()}
+        <#assign jsonBoilerPlate = entity.references?map(e -> e.name)>
         <#else>
         ${reference.domainObjectType.name} ${reference.name}; // ${reference.collectionType.name()}
         <#assign jsonBoilerPlate = entity.references?map(e -> e.name)>
         </#if>
         <#assign allJsonBoilerPlate = jsonBoilerPlate>
         </#list>
+        <#if allJsonBoilerPlate?has_content>
+        // Hiberlite boilerplate start
+        friend class hiberlite::access;
+        template < class Archive >
+        void hibernate(Archive & ar)
+        {
+            ar & HIBERLITE_NVP(id_); // From Base class
+            ar & HIBERLITE_NVP(parentId_); // From Base class
+            <#list allJsonBoilerPlate as jbp>
+	        ar & HIBERLITE_NVP(${jbp}_);
+            </#list>
+        }
+        // Hiberlite boilerplate end
+        </#if>
     public:
         <@attrOpsMacro.renderDomainObjectOperationsAndAttributes entity />
         

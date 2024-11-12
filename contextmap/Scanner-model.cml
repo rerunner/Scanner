@@ -70,7 +70,6 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 		Entity Lot {
 			aggregateRoot
 
-			- Uuid id_
 			- List<Uuid> waferIds_
 
 			def Uuid GetLotId();
@@ -94,9 +93,13 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 		Entity Wafer {
 			aggregateRoot
 
-			- Uuid waferId
+			- WaferId waferId
 
-			def @Uuid GetWaferId();
+			def @WaferId GetWaferId();
+		}
+
+		ValueObject WaferId {
+			string id
 		}
 	}
 }
