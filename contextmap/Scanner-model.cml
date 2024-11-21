@@ -5,7 +5,6 @@ ContextMap ScannerWaferStageContextMap {
 	contains MachineControlContext
 
 	/* Measure */	
-	contains MeasureManagementContext
 	contains StageAlignmentContext /* Horizontal & Vertical Stage Align measure the Reference Point */
 	contains WaferAlignmentContext /* Determines the wafer coordinate system by measuring the wafer alignment marks */
 	contains LevelingContext /* Leveling, measurement of the wafer heigh map (height differences due to wafer wobble/warping) */
@@ -25,7 +24,6 @@ ContextMap ScannerWaferStageContextMap {
 	 * However, it still shares code with the measuring application (LevelingContext).
 	 * Thus, they are in a 'Shared-Kernel' relationship.
 	 */
-	MachineControlContext [SK]<->[SK] MeasureManagementContext
 	MachineControlContext [SK]<->[SK] StageAlignmentContext
 	MachineControlContext [SK]<->[SK] LevelingContext
 	MachineControlContext [SK]<->[SK] WaferAlignmentContext
@@ -67,12 +65,16 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 			string id;
 		}
 
+		enum LotStates {
+    		aggregateLifecycle
+    		Loaded, Started, Finished, Unloaded, Rejected
+  		}
+
 		Entity Lot {
 			aggregateRoot
 
 			- List<Uuid> waferIds_
 
-			def Uuid GetLotId();
 			def void AddWafer(@Uuid wId);
     		def void RemoveWafer(@Uuid wId);
 			Repository LotRepository {
@@ -81,6 +83,12 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 	                 store(@Lot lot);
 	                 @Uuid nextLotId();
 				}
+		}
+
+		Entity DummyTest {
+ 			gap
+			belongsTo Lot
+    		string name
 		}
 	}
 
@@ -92,14 +100,6 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 	Aggregate Wafer {
 		Entity Wafer {
 			aggregateRoot
-
-			- WaferId waferId
-
-			def @WaferId GetWaferId();
-		}
-
-		ValueObject WaferId {
-			string id
 		}
 	}
 }
@@ -229,23 +229,6 @@ BoundedContext WaferAlignmentContext implements MeasureDomain {
 }
 
 
-/* The Measure heightmap application context. 
- */
-BoundedContext MeasureManagementContext implements MeasureDomain {
-
-	Application MeasureManagementApplicationLayer {
-		Command MeasureWafer {
-			- WaferId waferIdToMeasure;
-		}
-
-		//CQRS events
-		Event MeasureWaferCompleted {
-			- WaferId waferIdToMeasure
-      		Date timestamp
-		}
-	}
-}
-
 BoundedContext LevelingContext implements MeasureDomain {
 	type = SYSTEM
 	domainVisionStatement = "Leveling measures any point of a wafer and records its height (z-axis)."
@@ -256,29 +239,22 @@ BoundedContext LevelingContext implements MeasureDomain {
 		Entity WaferHeightMap {
 			aggregateRoot
 			
-			- WaferHeightMapId waferHeightMapId
 			- private List<Measurement> measurementsList
 
-			def void WaferHeightMap(@WaferId waferId); // Constructor with WaferID as foreign key to a different aggregate root "Wafer"
-			def void WaferHeightMap(@WaferId waferId, @Measurement firstMeasurement); // Constructor with initial measurement
+			def void WaferHeightMap(@Uuid waferId); // Constructor with WaferID as foreign key to a different aggregate root "Wafer"
+			def void WaferHeightMap(@Uuid waferId, @Measurement firstMeasurement); // Constructor with initial measurement
 
 			def @WaferHeightMap GetWaferHeightMap(); // Return the whole heightmap for the wafer
-
-			def @WaferId GetWaferId(); // Return the wafer Id of the heightmap
 			
 			def private void AddMeasurement(@Measurement measurement); // Add one measurement to measurementsList that make the heightmap
 			// Note: The wafer heightmap is a list of measurements at different points, It does not control the actual sensors.			
 
 			Repository WaferHeightMapRepository {
-					@WaferHeightMap find(@WaferHeightMapId waferHeightMapId) throws WaferHeightMapNotFoundException;
+					@WaferHeightMap find(@Uuid waferHeightMapId) throws WaferHeightMapNotFoundException;
 					List<@WaferHeightMap> findAll;
 					store(@WaferHeightMap heightMap);
-					@WaferHeightMapId nextWaferHeightMapId();
+					@Uuid nextWaferHeightMapId();
 			}
-		}
-
-		ValueObject WaferHeightMapId {
-			string id;
 		}
 		
 		ValueObject Measurement {
@@ -313,12 +289,12 @@ BoundedContext ExposeManagement implements ExposeDomain {
 
 	Application ExposeManagementApplicationLayer {
 		Command ExposeWafer {
-			- WaferId waferIdToExpose;
+			- Uuid waferIdToExpose;
 		}
 
 		//CQRS events
 		Event ExposeWaferCompleted {
-			- WaferId waferIdToExpose
+			- Uuid waferIdToExpose
       		Date timestamp
 		}
 	}
@@ -362,18 +338,14 @@ BoundedContext ExposeContext implements ExposeDomain {
 		Entity Image {
 			aggregateRoot
 			
-			- ImageId imageId
+			- Uuid imageId
 			
 			Repository ImageRepository {
-				@Image find(@ImageId imageId) throws ImageNotFoundException;
+				@Image find(@Uuid imageId) throws ImageNotFoundException;
 				List<@Image> findAll;
 				store(@Image image);
-				@ImageId nextImageId();
+				@Uuid nextImageId();
 			}
-		}
-
-		ValueObject ImageId {
-			string id
 		}
 	}
 }

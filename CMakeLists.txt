@@ -15,6 +15,10 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 option(BUILD_DOC "Build documentation" ON)
 
+execute_process (
+	COMMAND bash -c "pushd ../contextmap/;cm generate -g generic -f generatedDomainModels.hpp -i ./Scanner-model.cml -t ./Scanner-DSL-template.ftl;popd;mv ../contextmap/generatedDomainModels.hpp ../include-gen/"
+)
+
 ## START RAVENRB
 set (RAVENCPP_SRC "${PROJECT_SOURCE_DIR}/libs/RavenDB" CACHE INTERNAL "RAVENCPP_SRC")
 

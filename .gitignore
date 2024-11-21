@@ -1,5 +1,6 @@
 # Generated Model files
 src-gen/
+include-gen/
 
 # Generated Build files
 build/
