@@ -93,9 +93,32 @@ namespace ${bc.name} {
         // Hiberlite boilerplate end
         </#if>
     public:
+        ${entity.name}();
+        <#if entity.aggregateRoot>
+        ${entity.name}(std::shared_ptr<cppkafka::Producer> newkafkaProducer);
+        </#if>
+        virtual ~${entity.name}(){}
         Uuid Get${entity.name}Id(void){return id_;} // Id inherited from base class
         <@attrOpsMacro.renderDomainObjectOperationsAndAttributes entity />
-        
+
+        <#if entity.aggregateRoot>
+        std::string GetCurrentState() const {return state;}
+        <#if enums?has_content>
+        <#list enums as enum>
+        <#if enum.isDefinesAggregateLifecycle()>
+        // Aggregate lifecycle state changes for ${enum.name}
+        <#list enum.getValues() as enumVal>
+        void ${enumVal.name}()
+        {
+            ${agg.name?lower_case}StateMachine.on_state_transition(${agg.name?lower_case}State::transition_to_${enumVal.name}{});
+            state = "${enumVal.name}";
+            stateChangePublisher();
+        }
+        </#list> 
+        </#if>
+        </#list>
+        </#if>
+        </#if>
         // RavenDB & FFS boilerplate start
         <#if allJsonBoilerPlate?has_content>
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(${entity.name}, ${allJsonBoilerPlate?join(", ")})
