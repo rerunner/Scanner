@@ -98,6 +98,11 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 	 * After processing the state can be: Processed, rejected, aborted, lost, stopped, skipped.
 	 */
 	Aggregate Wafer {
+		enum WaferStates {
+    		aggregateLifecycle
+    		Loaded, Prealigned, Measured, ApprovedForExpose, Exposed, Unloaded, Rejected
+  		}
+
 		Entity Wafer {
 			aggregateRoot
 		}
