@@ -54,6 +54,15 @@ namespace ${bc.name} {
 <#list enum.getValues() as enumVal>
                                 ${agg.name?lower_case}State::${enumVal.name}<#if enumVal?has_next>,<#else>></#if>
 </#list> 
+<#else>
+
+    // found non-aggregate lifecycle enum ${enum.name}
+    enum  ${enum.name}
+    {
+    <#list enum.getValues() as enumVal>
+        ${enumVal.name}<#if enumVal?has_next>,<#else></#if>
+    </#list> 
+    }
 </#if>
 </#list>
 </#if>

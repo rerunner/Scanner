@@ -105,6 +105,46 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 
 		Entity Wafer {
 			aggregateRoot
+
+			def @Uuid GetLotId();
+		}
+	}
+
+	Aggregate Station {
+		enum StationStates {
+    		aggregateLifecycle
+    		Idle, Processing
+  		}
+
+		enum StationEnumType {
+			MeasureStation, ExposeStation
+		}
+
+		Entity Station {
+			aggregateRoot
+
+  			def void DoCommand();
+  			def void CommandHasCompleted();
+  			def void GetCommandCompletedState();
+		}
+	}
+
+	Aggregate Chuck {
+		enum ChuckStates {
+    		aggregateLifecycle
+    		Unloaded, Loaded, ReadyForSwap, ReadyForUnloading
+  		}
+
+		Entity Chuck {
+			aggregateRoot
+
+			def @Uuid GetLotId();
+			def StationEnumType GetStation();
+  			def void SetStation(StationEnumType newStation);
+  			def void SwapStation();
+  			def void LoadWafer(@Uuid wId);
+  			def void UnloadWafer();
+  			def void SetReadyForSwap();
 		}
 	}
 }
