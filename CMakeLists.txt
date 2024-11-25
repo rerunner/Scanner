@@ -16,7 +16,9 @@ endif(NOT CMAKE_BUILD_TYPE)
 option(BUILD_DOC "Build documentation" ON)
 
 execute_process (
-	COMMAND bash -c "pushd ../contextmap/;cm generate -g generic -f generatedDomainModels.hpp -i ./Scanner-model.cml -t ./Scanner-DSL-template.ftl;popd;mv ../contextmap/generatedDomainModels.hpp ../include-gen/"
+	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/contextmap/;sed '2d;3d' Scanner-model.cml > tempoModel1.cml;cm generate -g generic -f ../include-gen/generatedMCBoundedContextClasses.hpp -i ./tempoModel1.cml -t ./Scanner-DSL-template.ftl;rm ./tempoModel1.cml;popd"
+	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/contextmap/;sed '1d;3d' Scanner-model.cml > tempoModel2.cml;cm generate -g generic -f ../include-gen/generatedMeasureBoundedContextClasses.hpp -i ./tempoModel2.cml -t ./Scanner-DSL-template.ftl;rm ./tempoModel2.cml;popd"
+	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/contextmap/;sed '1d;2d' Scanner-model.cml > tempoModel3.cml;cm generate -g generic -f ../include-gen/generatedExposeBoundedContextClasses.hpp -i ./tempoModel3.cml -t ./Scanner-DSL-template.ftl;rm ./tempoModel3.cml;popd"
 )
 
 ## START RAVENRB

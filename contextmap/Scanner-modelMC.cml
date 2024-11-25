@@ -1,0 +1,99 @@
+/*******************************************/
+/* Machine Control Domain bounded contexts */
+/*******************************************/
+BoundedContext MachineControlContext implements MachineControlDomain {
+	type = SYSTEM
+	domainVisionStatement = "Controls the wafer measure and expose processes."
+	responsibilities = "MachineControl, Recipes"
+	implementationTechnology = "C++"
+
+	Aggregate Lot {
+		ValueObject Uuid {
+			string id;
+		}
+
+		enum LotStates {
+    		aggregateLifecycle
+    		Loaded, Started, Finished, Unloaded, Rejected
+  		}
+
+		Entity Lot {
+			aggregateRoot
+
+			- List<Uuid> waferIds_
+
+			def void AddWafer(@Uuid wId);
+    		def void RemoveWafer(@Uuid wId);
+			Repository LotRepository {
+	                 @Lot find(@Uuid lotId) throws LotNotFoundException;
+	                 List<@Lot> findAll;
+	                 store(@Lot lot);
+	                 @Uuid nextLotId();
+				}
+		}
+
+		Entity DummyTest {
+ 			gap
+			belongsTo Lot
+    		string name
+		}
+	}
+
+	/* Life of a Wafer: Wafer goes through a set of states:
+	 * Wafer in Machine -> Prealigned -> Measured -> Approved for expose side -> exposed -> Unloaded
+	 * Can be rejected at multiple points.
+	 * After processing the state can be: Processed, rejected, aborted, lost, stopped, skipped.
+	 */
+	Aggregate Wafer {
+		enum WaferStates {
+    		aggregateLifecycle
+    		Loaded, Prealigned, Measured, ApprovedForExpose, Exposed, Unloaded, Rejected
+  		}
+
+		Entity Wafer {
+			aggregateRoot
+
+			def @Uuid GetLotId();
+		}
+	}
+
+	Aggregate Station {
+		enum StationStates {
+    		aggregateLifecycle
+    		Idle, Processing
+  		}
+
+		enum StationEnumType {
+			MeasureStation, ExposeStation
+		}
+
+		Entity Station {
+			aggregateRoot
+
+  			def void DoCommand();
+  			def void CommandHasCompleted();
+  			def bool GetCommandCompletedState();
+		}
+	}
+
+	Aggregate Chuck {
+		enum ChuckStates {
+    		aggregateLifecycle
+    		Unloaded, Loaded, ReadyForSwap, ReadyForUnloading
+  		}
+
+		Entity Chuck {
+			aggregateRoot
+
+			def @Uuid GetLotId();
+			def StationEnumType GetStation();
+  			def void SetStation(StationEnumType newStation);
+  			def void SwapStation();
+  			def void LoadWafer(@Uuid wId);
+  			def void UnloadWafer();
+  			def void SetReadyForSwap();
+		}
+	}
+}
+
+

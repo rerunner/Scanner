@@ -1,0 +1,69 @@
+/********************************/
+/* Expose side bounded contexts */
+/********************************/
+/* The Expose application context. 
+ */
+BoundedContext ExposeManagement implements ExposeDomain {
+
+	Application ExposeManagementApplicationLayer {
+		Command ExposeWafer {
+			- Uuid waferIdToExpose;
+		}
+
+		//CQRS events
+		Event ExposeWaferCompleted {
+			- Uuid waferIdToExpose
+      		Date timestamp
+		}
+	}
+}
+
+
+BoundedContext ReticleAlignContext implements ExposeDomain {
+	type = SYSTEM
+	domainVisionStatement = "Aligns the image to be printed to the reference point on the Position Module (Using the alignment sensor)."
+	responsibilities = "ImageAlignment"
+	implementationTechnology = "C++"
+
+	Aggregate ImageAlignment {
+		Entity ImageAlignment {
+			aggregateRoot
+			
+			- ImageAlignmentId imageAlignmentId
+			
+			Repository ImageAlignmentRepository {
+				@ImageAlignment find(@ImageAlignmentId imageAlignmentId) throws ImageAlignmentNotFoundException;
+				List<@ImageAlignment> findAll;
+				store(@ImageAlignment imageAlignment);
+				@ImageAlignmentId nextImageAlignmentId();
+			}
+		}
+
+		ValueObject ImageAlignmentId {
+			string id
+		}
+	}
+}
+
+
+BoundedContext ExposeContext implements ExposeDomain {
+	type = SYSTEM
+	domainVisionStatement = "Exposes/Prints images on the wafer."
+	responsibilities = "Exposures"
+	implementationTechnology = "C++"
+
+	Aggregate Image {
+		Entity Image {
+			aggregateRoot
+			
+			Uuid imageId
+			
+			Repository ImageRepository {
+				@Image find(@Uuid imageId) throws ImageNotFoundException;
+				List<@Image> findAll;
+				store(@Image image);
+				@Uuid nextImageId();
+			}
+		}
+	}
+}
