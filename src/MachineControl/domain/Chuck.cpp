@@ -1,13 +1,16 @@
 #include "Chuck.hpp"
 
-using namespace Verdi;
+namespace MachineControlContext {
+
+std::shared_ptr<Uuid> Chuck::GetWaferId() 
+{   return holdingWaferId_;
+}
 
 void Chuck::LoadWafer(Uuid wId)
 {
     holdingWaferId_ = std::make_unique<Uuid>(wId);
     chuckStateMachine.on_state_transition(chuckState::transition_to_Loaded{});
     state = "Loaded";
-    //stateChangePublisher();
 }
 
 void Chuck::UnloadWafer()
@@ -15,14 +18,12 @@ void Chuck::UnloadWafer()
     holdingWaferId_ = nullptr;
     chuckStateMachine.on_state_transition(chuckState::transition_to_Unloaded{});
     state = "Unloaded";
-    //stateChangePublisher();
 }
 
 void Chuck::SetReadyForSwap()
 {
     chuckStateMachine.on_state_transition(chuckState::transition_to_ReadyForSwap{});
     state = "ReadyForSwap";
-    //stateChangePublisher();
 }
 
 void Chuck::SwapStation()
@@ -48,5 +49,7 @@ void Chuck::SwapStation()
     }
 }
 
+} // namespace MachineControlContext 
+
 // Boilerplate
-HIBERLITE_EXPORT_CLASS(Chuck)
+HIBERLITE_EXPORT_CLASS(MachineControlContext::Chuck)

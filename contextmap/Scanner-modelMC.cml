@@ -31,12 +31,6 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 	                 @Uuid nextLotId();
 				}
 		}
-
-		Entity DummyTest {
- 			gap
-			belongsTo Lot
-    		string name
-		}
 	}
 
 	/* Life of a Wafer: Wafer goes through a set of states:
@@ -47,12 +41,13 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 	Aggregate Wafer {
 		enum WaferStates {
     		aggregateLifecycle
-    		Loaded, Prealigned, Measured, ApprovedForExpose, Exposed, Unloaded, Rejected
+    		Loaded, PreAligned, Measured, ApprovedForExpose, Exposed, Unloaded, Rejected
   		}
 
 		Entity Wafer {
 			aggregateRoot
-
+			- Uuid parentLot_;
+			
 			def @Uuid GetLotId();
 		}
 	}
@@ -69,10 +64,11 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 
 		Entity Station {
 			aggregateRoot
+			boolean commandCompleted;
 
   			def void DoCommand();
   			def void CommandHasCompleted();
-  			def bool GetCommandCompletedState();
+  			def boolean GetCommandCompletedState();
 		}
 	}
 
@@ -84,10 +80,12 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 
 		Entity Chuck {
 			aggregateRoot
+			StationEnumType atStation_;
+			- Uuid holdingWaferId_;
 
-			def @Uuid GetLotId();
+			def @Uuid GetWaferId();
 			def StationEnumType GetStation();
-  			def void SetStation(StationEnumType newStation);
+  			def void SetStation(@StationEnumType newStation);
   			def void SwapStation();
   			def void LoadWafer(@Uuid wId);
   			def void UnloadWafer();

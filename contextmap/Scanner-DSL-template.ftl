@@ -3,12 +3,15 @@
 // using contextMapper version <#if contextMapperVersion?has_content>${contextMapperVersion}<#else>unknown</#if>
 
 #include <list>
-#include "domain/base/AggregateRootBase.hpp"
-#include "domain/base/ValueObjectBase.hpp"
-#include "hiberlite.h"
 #include <nlohmann/json.hpp>
 #include <cppkafka/cppkafka.h>
+#include "hiberlite.h"
+#include "domain/base/AggregateRootBase.hpp"
+#include "domain/base/ValueObjectBase.hpp"
 #include "FiniteStateMachine.hpp"
+#include "GenLogger.hpp"
+
+#define boolean bool /* for now */
 
 <#import "domain-object-attribute-and-operation-tables.ftl" as attrOpsMacro>
 
@@ -35,6 +38,10 @@
 // is of type ${bc.type}
 // and is responsible for ${bc.responsibilities?join(", ")}
 namespace ${bc.name} {
+    using namespace Verdi;
+    using json = nlohmann::json;
+    using namespace std;
+
 <#if enums?has_content>
 <#list enums as enum>
 <#if enum.isDefinesAggregateLifecycle()>
@@ -46,13 +53,14 @@ namespace ${bc.name} {
 
         // specific supported state transition types
     <#list enum.getValues() as enumVal>
-        struct transition_to_${enumVal.name};
+        struct transition_to_${enumVal.name}{};
     </#list>
+        #include "domain/${agg.name}StateTransitions.cpp" // include manual written statetransition rules
     } // namespace ${agg.name?lower_case}State
 
     using ${agg.name?lower_case}_state_machine = GSL::state_machine<
 <#list enum.getValues() as enumVal>
-                                ${agg.name?lower_case}State::${enumVal.name}<#if enumVal?has_next>,<#else>></#if>
+                                ${agg.name?lower_case}State::${enumVal.name}<#if enumVal?has_next>,<#else>>;</#if>
 </#list> 
 <#else>
 
@@ -62,14 +70,14 @@ namespace ${bc.name} {
     <#list enum.getValues() as enumVal>
         ${enumVal.name}<#if enumVal?has_next>,<#else></#if>
     </#list> 
-    }
+    };
 </#if>
 </#list>
 </#if>
 <#list entities as entity>
 
     <#if entity.aggregateRoot>
-    class ${entity.name} : public Verdi::AggregateRootBase 
+    class ${entity.name} : public std::enable_shared_from_this<${entity.name}> , public Verdi::AggregateRootBase
     {
     private:
         <#if enums?has_content>
@@ -112,24 +120,23 @@ namespace ${bc.name} {
         std::list<${reference.domainObjectType.name}> ${reference.name}; // ${reference.collectionType.name()}
         <#assign jsonBoilerPlate = entity.references?map(e -> e.name)>
         <#else>
-        ${reference.domainObjectType.name} ${reference.name}; // ${reference.collectionType.name()}
-        <#assign jsonBoilerPlate = entity.references?map(e -> e.name)>
+        std::shared_ptr<${reference.domainObjectType.name}> ${reference.name}; // ${reference.collectionType.name()}
         </#if>
         <#assign allJsonBoilerPlate = jsonBoilerPlate>
         </#list>
-        <#if allJsonBoilerPlate?has_content>
         // Hiberlite boilerplate start
         friend class hiberlite::access;
         template < class Archive >
         void hibernate(Archive & ar)
         {   ar & HIBERLITE_NVP(id_); // From Base class
             ar & HIBERLITE_NVP(parentId_); // From Base class
-            <#list allJsonBoilerPlate as jbp>
-	        ar & HIBERLITE_NVP(${jbp}_);
+            <#if jsonBoilerPlate?has_content>
+            <#list jsonBoilerPlate as jbp>
+	        ar & HIBERLITE_NVP(${jbp});
             </#list>
+            </#if>
         }
         // Hiberlite boilerplate end
-        </#if>
     public:
         <#if entity.aggregateRoot>
         <#if enums?has_content>
@@ -152,6 +159,19 @@ namespace ${bc.name} {
         ${entity.name}(std::shared_ptr<cppkafka::Producer> newkafkaProducer)
         {   state = "${enumVal[0].name}"; // First declared state is initial state
             kafkaProducer = newkafkaProducer;
+        }
+        ${entity.name}(Uuid parentId, std::shared_ptr<cppkafka::Producer> newkafkaProducer)
+        {   parentId_ = parentId; 
+            <#list entity.references as reference>
+            <#if reference.name == "parentLot_">
+            parentLot_ = std::make_shared<Uuid>(parentId);
+            </#if>
+            </#list>
+            state = "${enumVal[0].name}"; // First declared state is initial state
+            kafkaProducer = newkafkaProducer;
+        }
+        std::shared_ptr<${entity.name}> get${entity.name}() 
+        {   return shared_from_this(); 
         }
         std::string GetCurrentState() const {return state;}
         </#if>
@@ -176,8 +196,10 @@ namespace ${bc.name} {
         <@attrOpsMacro.renderDomainObjectOperationsAndAttributes entity />
         virtual ~${entity.name}(){}
         // RavenDB & FFS boilerplate start
-        <#if allJsonBoilerPlate?has_content>
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(${entity.name}, ${allJsonBoilerPlate?join(", ")})
+        <#if jsonBoilerPlate?has_content>
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(${entity.name}, id_, parentId_, ${jsonBoilerPlate?join(", ")})
+        <#else>
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(${entity.name}, id_, parentId_)
 	    </#if>
         // RavenDB & FFS boilerplate end
     };
@@ -188,7 +210,9 @@ namespace ${bc.name} {
 <#assign allValueobjectNames = allValueobjectNames + valueobjectNames>
 <#if valueobjects?has_content>
 <#list valueobjects as valueobject>
-
+    <#if valueobject.name == "Uuid">
+    // Uuid class is not generated, instead included from Verdi
+    <#else>
     class ${valueobject.name} : public Verdi::ValueObjectBase 
     {
     private:
@@ -197,6 +221,7 @@ namespace ${bc.name} {
         </#list>
     public:
     };
+    </#if>
 </#list> 
 </#if>
 

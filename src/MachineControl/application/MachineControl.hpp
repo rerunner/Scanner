@@ -18,6 +18,8 @@
 #include "GenLogger.hpp"
 #include "infrastructure/base/UnitOfWork.hpp"
 
+using namespace MachineControlContext;
+
 namespace MachineControl
 {
     // specific state transition types we support

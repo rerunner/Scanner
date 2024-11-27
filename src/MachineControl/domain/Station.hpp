@@ -1,5 +1,8 @@
 #pragma once
 
+#if 1
+#include "generatedMCBoundedContextClasses.hpp"
+#else
 #include "FiniteStateMachine.hpp"
 #include "GenLogger.hpp"
 
@@ -80,3 +83,4 @@ class Station
     void CommandHasCompleted(){commandCompleted = true;} // To Be Removed
     bool const GetCommandCompletedState(){return commandCompleted;}
 };
+#endif
