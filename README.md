@@ -4,6 +4,7 @@
 ![image](https://github.com/user-attachments/assets/6ef9f04c-f25c-4c14-b552-a07720dd49ed)
 
 # Dependencies
+- [context-mapper](https://contextmapper.org/)
 - [Verdi - Versatile Data Infrastructure](https://github.com/rerunner/Verdi)
 - [cppkafka](https://github.com/rerunner/cppkafka)
 - [curlpp](https://github.com/rerunner/curlpp)
@@ -18,7 +19,6 @@
 - [xtd](https://github.com/gammasoft71/xtd)
 
 # Nice to have
-- [context-mapper](https://contextmapper.org/)
 - [Doxygen](https://www.doxygen.nl/)
 
 # To Do
