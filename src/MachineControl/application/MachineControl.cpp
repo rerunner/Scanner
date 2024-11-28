@@ -163,7 +163,7 @@ namespace MachineControl
         int chuckNumber = (scannerChucks[0].GetStation() == StationEnumType::MeasureStation)? 0 : 1;
 
         // What is the measure station doing?
-        if (measureStation.GetStationState() == "Processing")
+        if (measureStation.GetCurrentState() == "Processing")
         {
             if (scannerChucks[chuckNumber].GetCurrentState() == "Loaded")
             {
@@ -171,7 +171,7 @@ namespace MachineControl
                 {
                     // Move to Idle
                     GSL::Dprintf(GSL::DEBUG, "MeasureStation is Processing and moving to Idle");
-                    measureStation.ReturnToIdle();
+                    measureStation.Idle();
                 }
                 else
                 {
@@ -183,16 +183,16 @@ namespace MachineControl
             {
                 // UnloadWafer
                 // Return to Idle
-                measureStation.ReturnToIdle();
+                measureStation.Idle();
             }
         }
-        else if (measureStation.GetStationState() == "Idle")
+        else if (measureStation.GetCurrentState() == "Idle")
         {
             if ((scannerChucks[chuckNumber].GetCurrentState() == "Loaded") && (GetWaferState(*(scannerChucks[chuckNumber].GetWaferId())) == "Loaded"))
             {
                 // Move to Processing
                 GSL::Dprintf(GSL::DEBUG, "MeasureStation is Idle and moving to Processing");
-                measureStation.ProcessWafer();
+                measureStation.Processing();
             }
             else 
             {  
@@ -283,13 +283,13 @@ namespace MachineControl
         int chuckNumber = (scannerChucks[0].GetStation() == StationEnumType::ExposeStation)? 0 : 1;
 
         // What is the expose station doing?
-        if (exposeStation.GetStationState() == "Processing")
+        if (exposeStation.GetCurrentState() == "Processing")
         {
             if (GetWaferState(*(scannerChucks[chuckNumber].GetWaferId())) == "Exposed")
             {
                 // Move to Idle
                 GSL::Dprintf(GSL::DEBUG, "ExposeStation is moving from Processing to Idle");
-                exposeStation.ReturnToIdle();
+                exposeStation.Idle();
             }
             else
             {
@@ -297,13 +297,13 @@ namespace MachineControl
                 ProcessWaferAtExposeStation();
             }
         }
-        else if (exposeStation.GetStationState() == "Idle")
+        else if (exposeStation.GetCurrentState() == "Idle")
         {
             if ((scannerChucks[chuckNumber].GetCurrentState() == "Loaded") && (GetWaferState(*(scannerChucks[chuckNumber].GetWaferId())) == "ApprovedForExpose"))
             {
                 // Move to Processing
                 GSL::Dprintf(GSL::DEBUG, "ExposeStation is Idle and moving to Processing");
-                exposeStation.ProcessWafer();
+                exposeStation.Processing();
             }
             else 
             {
