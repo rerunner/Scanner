@@ -1,11 +1,12 @@
 #include "Position.hpp"
 
-using namespace Verdi;
+namespace LevelingContext {
 
 Position::Position(double x, double y) : x_(x), y_(y) 
 {
 }
 
+/* 
 bool Position::operator==(const ValueObjectBase& other) const
 {
     if (const Position* otherPosition = dynamic_cast<const Position*>(&other))
@@ -14,6 +15,7 @@ bool Position::operator==(const ValueObjectBase& other) const
     }
     return false;
 }
+*/
 
 double Position::GetX() const 
 {
@@ -24,6 +26,8 @@ double Position::GetY() const
 {
     return y_;
 }
+
+} // namespace LevelingContext
 
 // Boilerplate
 HIBERLITE_EXPORT_CLASS(Position)

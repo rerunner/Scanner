@@ -1,6 +1,10 @@
-#ifndef POSITION_H
-#define POSITION_H
+#pragma once
 
+#if 1
+
+#include "generatedMeasureBoundedContextClasses.hpp"
+
+#else
 #include "hiberlite.h"
 #include <nlohmann/json.hpp>
 #include "domain/base/ValueObjectBase.hpp"
@@ -33,4 +37,4 @@ public:
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(Position, x_, y_)
 };
 
-#endif // POSITION_H
+#endif //test

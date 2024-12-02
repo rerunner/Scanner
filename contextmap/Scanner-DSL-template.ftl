@@ -42,6 +42,7 @@ namespace ${bc.name} {
     using json = nlohmann::json;
     using namespace std;
 
+<#-- Enum class and StateMachine code generation -->
 <#if enums?has_content>
 <#list enums as enum>
 <#if enum.isDefinesAggregateLifecycle()>
@@ -74,6 +75,7 @@ namespace ${bc.name} {
 </#if>
 </#list>
 </#if>
+<#-- Entity class code generation -->
 <#list entities as entity>
 
     <#if entity.aggregateRoot>
@@ -206,6 +208,7 @@ namespace ${bc.name} {
 
 </#list> 
 </#if>
+<#-- ValueObject class code generation -->
 <#assign valueobjectNames = valueobjects?map(e -> e.name)>
 <#assign allValueobjectNames = allValueobjectNames + valueobjectNames>
 <#if valueobjects?has_content>
@@ -216,10 +219,45 @@ namespace ${bc.name} {
     class ${valueobject.name} : public Verdi::ValueObjectBase 
     {
     private:
+        // attributes
         <#list valueobject.attributes as attribute>
-	    ${attribute.type} ${attribute.name};
+        ${attribute.type} ${attribute.name};
         </#list>
+        // references
+        <#assign allJsonBoilerPlate = [] />
+        <#assign jsonBoilerPlate = [] />
+        <#list valueobject.references as reference>
+        <#if reference.collectionType?has_content && reference.collectionType.name() == "LIST">
+        std::list<${reference.domainObjectType.name}> ${reference.name}; // ${reference.collectionType.name()}
+        <#assign jsonBoilerPlate = valueobject.references?map(e -> e.name)>
+        <#else>
+        std::shared_ptr<${reference.domainObjectType.name}> ${reference.name}; // ${reference.collectionType.name()}
+        <#assign jsonBoilerPlate = valueobject.references?map(e -> e.name)>
+        </#if>
+        <#assign allJsonBoilerPlate = jsonBoilerPlate>
+        </#list>
+        // Hiberlite boilerplate start
+        friend class hiberlite::access;
+        template < class Archive >
+        void hibernate(Archive & ar)
+        {   
+            <#list valueobject.attributes as attribute>
+            ar & HIBERLITE_NVP(${attribute.name});
+            </#list>
+            <#if jsonBoilerPlate?has_content>
+            <#list jsonBoilerPlate as jbp>
+	        ar & HIBERLITE_NVP(${jbp});
+            </#list>
+            </#if>
+        }
+        // Hiberlite boilerplate end
     public:
+        <#-- Call method declaration generator -->
+        <@attrOpsMacro.renderDomainObjectOperationsAndAttributes valueobject />
+        virtual ~${valueobject.name}(){}
+        // RavenDB & FFS boilerplate start
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(${valueobject.name}<#list valueobject.attributes as attribute>,${attribute.name}</#list><#if jsonBoilerPlate?has_content><#list jsonBoilerPlate as jbp>,${jbp}</#list></#if>)
+        // RavenDB & FFS boilerplate end
     };
     </#if>
 </#list> 

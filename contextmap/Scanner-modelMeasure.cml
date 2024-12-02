@@ -151,7 +151,7 @@ BoundedContext LevelingContext implements MeasureDomain {
 		}
 		
 		ValueObject Measurement {
-			- Position position_
+			Position position_
 			double z_
 
 			def Measurement(@Position position, double z); 
