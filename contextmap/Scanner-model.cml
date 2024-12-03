@@ -9,17 +9,17 @@ ContextMap ScannerWaferStageContextMap {
 	contains MachineControlContext
 
 	/* Measure */	
-	contains StageAlignmentContext /* Horizontal & Vertical Stage Align measure the Reference Point */
-	contains WaferAlignmentContext /* Determines the wafer coordinate system by measuring the wafer alignment marks */
+	//contains StageAlignmentContext /* Horizontal & Vertical Stage Align measure the Reference Point */
+	//contains WaferAlignmentContext /* Determines the wafer coordinate system by measuring the wafer alignment marks */
 	contains LevelingContext /* Leveling, measurement of the wafer heigh map (height differences due to wafer wobble/warping) */
 	
 	/* Wafer Swap */
 	//contains WaferSwapContext /* Swapping the position module, including the wafer, between measure and expose stages */
 
 	/* Expose */
-	contains ExposeManagement
-	contains ReticleAlignContext /* The reticle contains the image (the integrated circuit pattern) to be printed and is
-								  * aligned to the reference point on the Position Module (Using the alignment sensor) */
+	//contains ExposeManagement
+	//contains ReticleAlignContext /* The reticle contains the image (the integrated circuit pattern) to be printed and is
+	//							  * aligned to the reference point on the Position Module (Using the alignment sensor) */
 	contains ExposeContext /* Exposure of the wafer, using the heighmap for vertical beam focus correction */
 	/* After exposure the position module is moved back to measure and finally unloaded */
 	
@@ -28,14 +28,14 @@ ContextMap ScannerWaferStageContextMap {
 	 * However, it still shares code with the measuring application (LevelingContext).
 	 * Thus, they are in a 'Shared-Kernel' relationship.
 	 */
-	MachineControlContext [SK]<->[SK] StageAlignmentContext
+	//MachineControlContext [SK]<->[SK] StageAlignmentContext
 	MachineControlContext [SK]<->[SK] LevelingContext
-	MachineControlContext [SK]<->[SK] WaferAlignmentContext
-	MachineControlContext [SK]<->[SK] ExposeManagement
+	//MachineControlContext [SK]<->[SK] WaferAlignmentContext
+	//MachineControlContext [SK]<->[SK] ExposeManagement
 	MachineControlContext [SK]<->[SK] ExposeContext
 	LevelingContext [U,S]->[D,C] ExposeContext
 	LevelingContext [U,S]->[D,C] MachineControlContext
-	ExposeContext [SK]<->[SK] ReticleAlignContext
+	//ExposeContext [SK]<->[SK] ReticleAlignContext
 	ExposeContext [U,S]->[D,C] MachineControlContext
 }
 

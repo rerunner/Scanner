@@ -1,5 +1,11 @@
 #pragma once
 
+#if 1
+
+#include "generatedMeasureBoundedContextClasses.hpp"
+
+#else
+
 #include <list>
 //#include "hiberlite.h"
 #include <nlohmann/json.hpp>
@@ -38,3 +44,4 @@ public:
   //JSON boilerplate
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(WaferHeightMap, id_, parentId_, measurements_, waferId_)
 };
+#endif //test

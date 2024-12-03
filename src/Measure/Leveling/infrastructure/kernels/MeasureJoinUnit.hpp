@@ -11,8 +11,8 @@ class MeasureJoinUnit : public raft::kernel
 public:
     MeasureJoinUnit() : kernel()
     {
-      input.addPort< MarkMeasurement >("input_a", "input_b");
-      output.addPort< MarkMeasurement >( "outputMeasurement" );
+      input.addPort< LevelingContext::MarkMeasurement >("input_a", "input_b");
+      output.addPort< LevelingContext::MarkMeasurement >( "outputMeasurement" );
     }
 
     virtual ~MeasureJoinUnit() = default;
@@ -20,15 +20,15 @@ public:
     virtual raft::kstatus run()
     {
       auto &input_port_a((this)->input["input_a"]);
-      auto &container_a(input_port_a.template peek<MarkMeasurement>());
+      auto &container_a(input_port_a.template peek<LevelingContext::MarkMeasurement>());
       auto &input_port_b((this)->input["input_b"]);
-      auto &container_b(input_port_b.template peek<MarkMeasurement>());
+      auto &container_b(input_port_b.template peek<LevelingContext::MarkMeasurement>());
 
-      Position finalPosition(container_a.GetPosition().GetX(), container_b.GetPosition().GetY());
+      LevelingContext::Position finalPosition(container_a.GetPosition().GetX(), container_b.GetPosition().GetY());
       double finalZ = (container_a.GetZ() + container_b.GetZ()) / 2.0;
 
-      auto c(output["outputMeasurement"].template allocate_s<MarkMeasurement>());
-      MarkMeasurement measurementContainer(finalPosition, finalZ);
+      auto c(output["outputMeasurement"].template allocate_s<LevelingContext::MarkMeasurement>());
+      LevelingContext::MarkMeasurement measurementContainer(finalPosition, finalZ);
       *c = measurementContainer;
       output["outputMeasurement"].send();
       input_port_a.recycle();

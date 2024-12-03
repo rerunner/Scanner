@@ -1,5 +1,8 @@
 #pragma once
 
+#if 1
+#include "generatedMeasureBoundedContextClasses.hpp"
+#else
 //#include "hiberlite.h"
 #include <nlohmann/json.hpp>
 #include "domain/base/ValueObjectBase.hpp"
@@ -33,3 +36,4 @@ public:
   //JSON boilerplate
   NLOHMANN_DEFINE_TYPE_INTRUSIVE(MarkMeasurement, z_, position_)
 };
+#endif

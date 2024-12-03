@@ -63,15 +63,15 @@ void DataReaderListenerImpl::on_data_available(DDS::DataReader_ptr reader)
       oss << whm.waferID; // Is there a better way from TAO managed string to std::string?
       std::string waferUuidString = oss.str();
       Uuid waferUuid(waferUuidString);
-      std::shared_ptr<WaferHeightMap> myHeightMap = std::make_shared<WaferHeightMap>(waferUuid);
+      std::shared_ptr<LevelingContext::WaferHeightMap> myHeightMap = std::make_shared<LevelingContext::WaferHeightMap>(waferUuid);
       for (int i = 0; i < scanner::generated::MAX_MEASUREMENT_STEPS ; i++)
       {
-        Position myPosition(whm.measurements[i].xyPosition.xPos, whm.measurements[i].xyPosition.yPos);
+        LevelingContext::Position myPosition(whm.measurements[i].xyPosition.xPos, whm.measurements[i].xyPosition.yPos);
         double myZpos = whm.measurements[i].zPos;
-        MarkMeasurement myMeas(myPosition, myZpos);
+        LevelingContext::MarkMeasurement myMeas(myPosition, myZpos);
         myHeightMap->AddMarkMeasurement(myMeas);
       }
-      whmContext->RegisterNew<WaferHeightMap>(myHeightMap);
+      whmContext->RegisterNew<LevelingContext::WaferHeightMap>(myHeightMap);
       whmContext->Commit();
     }
     else if (status == DDS::RETCODE_NO_DATA)

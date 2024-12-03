@@ -44,7 +44,7 @@ namespace Leveling  { namespace Application
 
     // Methods
     void SetupDataWriter(); 
-    DDS::ReturnCode_t Publish(std::shared_ptr<WaferHeightMap> waferHeightMap);
+    DDS::ReturnCode_t Publish(std::shared_ptr<LevelingContext::WaferHeightMap> waferHeightMap);
 
     public:
     Leveling();

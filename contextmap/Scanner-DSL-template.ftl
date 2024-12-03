@@ -3,6 +3,7 @@
 // using contextMapper version <#if contextMapperVersion?has_content>${contextMapperVersion}<#else>unknown</#if>
 
 #include <list>
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <cppkafka/cppkafka.h>
 #include "hiberlite.h"
@@ -74,6 +75,62 @@ namespace ${bc.name} {
     };
 </#if>
 </#list>
+</#if>
+<#-- ValueObject class code generation -->
+<#assign valueobjectNames = valueobjects?map(e -> e.name)>
+<#assign allValueobjectNames = allValueobjectNames + valueobjectNames>
+<#if valueobjects?has_content>
+<#list valueobjects as valueobject>
+    <#if valueobject.name == "Uuid">
+    // Uuid class is not generated, instead included from Verdi
+    <#else>
+    class ${valueobject.name} : public Verdi::ValueObjectBase 
+    {
+    private:
+        // attributes
+        <#list valueobject.attributes as attribute>
+        ${attribute.type} ${attribute.name};
+        </#list>
+        // references
+        <#assign allJsonBoilerPlate = [] />
+        <#assign jsonBoilerPlate = [] />
+        <#list valueobject.references as reference>
+        <#if reference.collectionType?has_content && reference.collectionType.name() == "LIST">
+        std::list<${reference.domainObjectType.name}> ${reference.name}; // ${reference.collectionType.name()}
+        <#assign jsonBoilerPlate = valueobject.references?map(e -> e.name)>
+        <#else>
+        std::shared_ptr<${reference.domainObjectType.name}> ${reference.name}; // ${reference.collectionType.name()}
+        <#assign jsonBoilerPlate = valueobject.references?map(e -> e.name)>
+        </#if>
+        <#assign allJsonBoilerPlate = jsonBoilerPlate>
+        </#list>
+        // Hiberlite boilerplate start
+        friend class hiberlite::access;
+        template < class Archive >
+        void hibernate(Archive & ar)
+        {   
+            <#list valueobject.attributes as attribute>
+            ar & HIBERLITE_NVP(${attribute.name});
+            </#list>
+            <#if jsonBoilerPlate?has_content>
+            <#list jsonBoilerPlate as jbp>
+	        ar & HIBERLITE_NVP(${jbp});
+            </#list>
+            </#if>
+        }
+        // Hiberlite boilerplate end
+    public:
+        ${valueobject.name}(){}
+        <#-- Call method declaration generator -->
+        <@attrOpsMacro.renderDomainObjectOperationsAndAttributes valueobject />
+        virtual ~${valueobject.name}(){}
+        bool operator==(const ValueObjectBase& other) const override;
+        // RavenDB & FFS boilerplate start
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(${valueobject.name}<#list valueobject.attributes as attribute>,${attribute.name}</#list><#if jsonBoilerPlate?has_content><#list jsonBoilerPlate as jbp>,${jbp}</#list></#if>)
+        // RavenDB & FFS boilerplate end
+    };
+    </#if>
+</#list> 
 </#if>
 <#-- Entity class code generation -->
 <#list entities as entity>
@@ -158,6 +215,25 @@ namespace ${bc.name} {
             GSL::Dprintf(GSL::DEBUG, "Creating a kafka producer instance");
             kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaConfig);
         }
+        ${entity.name}(Uuid parentId)
+        {   parentId_ = parentId; 
+            <#list entity.references as reference>
+            <#if reference.name == "parentLot_">
+            parentLot_ = std::make_shared<Uuid>(parentId);
+            </#if>
+            </#list>
+            state = "${enumVal[0].name}"; // First declared state is initial state
+            // Create the Kafka config
+            std::unique_ptr<cppkafka::Configuration> kafkaConfig;
+            GSL::Dprintf(GSL::DEBUG, "Creating the Kafka config");
+            std::vector<cppkafka::ConfigurationOption> kafkaConfigOptions;
+            cppkafka::ConfigurationOption ${agg.name?lower_case}ConfigOption{"metadata.broker.list", "localhost:9092"};
+            kafkaConfigOptions.push_back(${agg.name?lower_case}ConfigOption);
+            kafkaConfig = std::make_unique<cppkafka::Configuration>(cppkafka::Configuration{kafkaConfigOptions});
+            // Create a Kafka producer instance
+            GSL::Dprintf(GSL::DEBUG, "Creating a kafka producer instance");
+            kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaConfig);
+        }
         ${entity.name}(std::shared_ptr<cppkafka::Producer> newkafkaProducer)
         {   state = "${enumVal[0].name}"; // First declared state is initial state
             kafkaProducer = newkafkaProducer;
@@ -191,7 +267,16 @@ namespace ${bc.name} {
         </#if>
         </#list>
         <#else>
+        <#-- Stateless Entity constructor class code generation -->
         ${entity.name}(){}
+        ${entity.name}(Uuid parentId)
+        {   parentId_ = parentId; 
+            <#list entity.references as reference>
+            <#if reference.name == "parentLot_">
+            parentLot_ = std::make_shared<Uuid>(parentId);
+            </#if>
+            </#list>
+        }
         </#if>
         </#if>
         Uuid Get${entity.name}Id(void){return id_;} // Id inherited from base class
@@ -206,60 +291,6 @@ namespace ${bc.name} {
         // RavenDB & FFS boilerplate end
     };
 
-</#list> 
-</#if>
-<#-- ValueObject class code generation -->
-<#assign valueobjectNames = valueobjects?map(e -> e.name)>
-<#assign allValueobjectNames = allValueobjectNames + valueobjectNames>
-<#if valueobjects?has_content>
-<#list valueobjects as valueobject>
-    <#if valueobject.name == "Uuid">
-    // Uuid class is not generated, instead included from Verdi
-    <#else>
-    class ${valueobject.name} : public Verdi::ValueObjectBase 
-    {
-    private:
-        // attributes
-        <#list valueobject.attributes as attribute>
-        ${attribute.type} ${attribute.name};
-        </#list>
-        // references
-        <#assign allJsonBoilerPlate = [] />
-        <#assign jsonBoilerPlate = [] />
-        <#list valueobject.references as reference>
-        <#if reference.collectionType?has_content && reference.collectionType.name() == "LIST">
-        std::list<${reference.domainObjectType.name}> ${reference.name}; // ${reference.collectionType.name()}
-        <#assign jsonBoilerPlate = valueobject.references?map(e -> e.name)>
-        <#else>
-        std::shared_ptr<${reference.domainObjectType.name}> ${reference.name}; // ${reference.collectionType.name()}
-        <#assign jsonBoilerPlate = valueobject.references?map(e -> e.name)>
-        </#if>
-        <#assign allJsonBoilerPlate = jsonBoilerPlate>
-        </#list>
-        // Hiberlite boilerplate start
-        friend class hiberlite::access;
-        template < class Archive >
-        void hibernate(Archive & ar)
-        {   
-            <#list valueobject.attributes as attribute>
-            ar & HIBERLITE_NVP(${attribute.name});
-            </#list>
-            <#if jsonBoilerPlate?has_content>
-            <#list jsonBoilerPlate as jbp>
-	        ar & HIBERLITE_NVP(${jbp});
-            </#list>
-            </#if>
-        }
-        // Hiberlite boilerplate end
-    public:
-        <#-- Call method declaration generator -->
-        <@attrOpsMacro.renderDomainObjectOperationsAndAttributes valueobject />
-        virtual ~${valueobject.name}(){}
-        // RavenDB & FFS boilerplate start
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(${valueobject.name}<#list valueobject.attributes as attribute>,${attribute.name}</#list><#if jsonBoilerPlate?has_content><#list jsonBoilerPlate as jbp>,${jbp}</#list></#if>)
-        // RavenDB & FFS boilerplate end
-    };
-    </#if>
 </#list> 
 </#if>
 

@@ -10,9 +10,9 @@
 class LotOpDependentCalcUnit : public raft::kernel
 {
 private:
-    WaferHeightMap *whm;
+    LevelingContext::WaferHeightMap *whm;
 public:
-    LotOpDependentCalcUnit(WaferHeightMap *receivedWhm) : kernel()
+    LotOpDependentCalcUnit(LevelingContext::WaferHeightMap *receivedWhm) : kernel()
     {
       input.addPort< Exposure >("inputExposureData");
       output.addPort< Exposure >( "outputLOPDepData" );

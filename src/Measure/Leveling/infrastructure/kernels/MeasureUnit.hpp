@@ -13,8 +13,8 @@ class MeasureUnit : public raft::kernel
 public:
     MeasureUnit(std::string name = "") : kernel()
     {
-      input.addPort< MarkMeasurement >("inputMeasurement");
-      output.addPort< MarkMeasurement >( "outputMeasurement" );
+      input.addPort< LevelingContext::MarkMeasurement >("inputMeasurement");
+      output.addPort< LevelingContext::MarkMeasurement >( "outputMeasurement" );
       name_ = name;
     }
 
@@ -23,10 +23,10 @@ public:
     virtual raft::kstatus run()
     {
       auto &input_port((this)->input["inputMeasurement"]);
-      auto &a(input_port.template peek<MarkMeasurement>());
+      auto &a(input_port.template peek<LevelingContext::MarkMeasurement>());
 
       // FIXME How to pass the input memory to the output ?
-      auto c(output["outputMeasurement"].template allocate_s<MarkMeasurement>());
+      auto c(output["outputMeasurement"].template allocate_s<LevelingContext::MarkMeasurement>());
       (*c) = a;
       output["outputMeasurement"].send();
       input_port.recycle();

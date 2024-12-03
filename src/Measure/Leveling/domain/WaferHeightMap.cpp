@@ -1,20 +1,6 @@
 #include "WaferHeightMap.hpp"
-#include "GenLogger.hpp"
 
-using namespace Verdi;
-
-WaferHeightMap::WaferHeightMap(Uuid wId) : AggregateRootBase()
-{
-    waferId_ = wId;
-    parentId_ = wId;
-};
-
-WaferHeightMap::WaferHeightMap(Uuid wId, MarkMeasurement m) : AggregateRootBase()
-{
-    waferId_ = wId;
-    parentId_ = wId;
-    measurements_.push_back(m); //First entry
-}
+namespace LevelingContext {
 
 std::list<MarkMeasurement> WaferHeightMap::GetHeightMap(void)
 {
@@ -28,18 +14,10 @@ void WaferHeightMap::AddMarkMeasurement(MarkMeasurement m)
 
 Uuid WaferHeightMap::GetWaferId()
 {
-    return waferId_;
+    return parentId_;
 }
 
-void WaferHeightMap::LogHeightMap() 
-{ 
-    for(MarkMeasurement measIter : measurements_)
-    {
-        GSL::Dprintf(GSL::INFO, "Heightmap Mark Measurement X = ", measIter.GetPosition().GetX(), 
-                                ", Y = ", measIter.GetPosition().GetY(), 
-                                ", Z = ", measIter.GetZ());
-    }
-}
+} // namespace LevelingContext
 
 // Boilerplate
-HIBERLITE_EXPORT_CLASS(WaferHeightMap)
+HIBERLITE_EXPORT_CLASS(LevelingContext::WaferHeightMap)

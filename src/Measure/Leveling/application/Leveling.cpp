@@ -83,7 +83,7 @@ namespace Leveling  { namespace Application
                         std::string wIdstr = j_message["Id"];
                         Uuid targetId(wIdstr);
                         GSL::Dprintf(GSL::DEBUG, "Can delete heightmap data associated with Wafer ID ", targetId.Get());
-                        std::unique_ptr<IRepositoryFactory<WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<WaferHeightMap>>();
+                        std::unique_ptr<IRepositoryFactory<LevelingContext::WaferHeightMap>> repositoryFactory = std::make_unique<RepositoryFactory<LevelingContext::WaferHeightMap>>();
                         auto repository = repositoryFactory->GetRepository(RepositoryTypeBase::REPOSITORY_TYPE, UoWFactory.GetDataBasePtr());
                         auto whmList = repository->GetAllChildren(targetId);
                         for (auto &iter:whmList)
@@ -180,19 +180,19 @@ namespace Leveling  { namespace Application
         whm_handle = waferHeightMap_dw->register_instance(whm_evt);
     }
     
-    DDS::ReturnCode_t Leveling::Publish(std::shared_ptr<WaferHeightMap> waferHeightMap)
+    DDS::ReturnCode_t Leveling::Publish(std::shared_ptr<LevelingContext::WaferHeightMap> waferHeightMap)
     {
       // Get the heightmap to publish
-      std::list<MarkMeasurement> myHeightMap = waferHeightMap->GetHeightMap();
+      std::list<LevelingContext::MarkMeasurement> myHeightMap = waferHeightMap->GetHeightMap();
 
       // DTO assembler start
       scanner::generated::WaferHeightMap newWaferHeightMapDTO;
       newWaferHeightMapDTO.heightMapID = waferHeightMap->GetId().Get().c_str();
       newWaferHeightMapDTO.waferID = waferHeightMap->GetWaferId().Get().c_str();
       newWaferHeightMapDTO.measurements.length(scanner::generated::MAX_MEASUREMENT_STEPS); // Looping through all of the elements:
-      for (int i = 0; MarkMeasurement myMeas : myHeightMap) //C++20 syntax
+      for (int i = 0; LevelingContext::MarkMeasurement myMeas : myHeightMap) //C++20 syntax
       {
-        Position myPosition = myMeas.GetPosition();
+        LevelingContext::Position myPosition = myMeas.GetPosition();
         newWaferHeightMapDTO.measurements[i].xyPosition.xPos = myPosition.GetX(); 
         newWaferHeightMapDTO.measurements[i].xyPosition.yPos = myPosition.GetY(); 
         newWaferHeightMapDTO.measurements[i].zPos = myMeas.GetZ();
@@ -212,17 +212,17 @@ namespace Leveling  { namespace Application
       GSL::Dprintf(GSL::DEBUG, "measureWafer starts with wafer Id = ", waferId.Get());
 
       // Create empty wafer heightmap
-      std::shared_ptr<WaferHeightMap> waferHeightMap = std::make_shared<WaferHeightMap>(waferId);
+      std::shared_ptr<LevelingContext::WaferHeightMap> waferHeightMap = std::make_shared<LevelingContext::WaferHeightMap>(waferId);
       GSL::Dprintf(GSL::DEBUG, "WaferHeightMap created with heightmap ID = ", waferHeightMap->GetId().Get());
       
       // Raft streaming start
-      MarkMeasurement generatedMarkMeasurement;
+      LevelingContext::MarkMeasurement generatedMarkMeasurement;
       PositionSetUnit positionSetUnit;
       MeasureSplitUnit Do_A; // Two output units
       MeasureUnit Do_B("Do_B"), Do_C("Do_C"), Do_D("Do_D"), Do_E("Do_E");
       MeasureJoinUnit Do_F; // Two input units
 
-      using SinkLambda = raft::lambdak<MarkMeasurement>;
+      using SinkLambda = raft::lambdak<LevelingContext::MarkMeasurement>;
       SinkLambda sinkLambda(  1,/* input port */
                               0, /* output port */
                               [&](Port &input,
@@ -250,7 +250,7 @@ namespace Leveling  { namespace Application
       m.exe(); // execute the graph
       //Raft streaming End
       
-      context_->RegisterNew<WaferHeightMap>(waferHeightMap);
+      context_->RegisterNew<LevelingContext::WaferHeightMap>(waferHeightMap);
       
       GSL::Dprintf(GSL::DEBUG, "WaferHeightMap with ID = ", waferHeightMap->GetId().Get(), " persisted");
 

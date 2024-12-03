@@ -2,32 +2,28 @@
 
 namespace LevelingContext {
 
-Position::Position(double x, double y) : x_(x), y_(y) 
+Position::Position(double x, double y) : xpos_(x), ypos_(y) 
 {
 }
 
-/* 
+
 bool Position::operator==(const ValueObjectBase& other) const
-{
-    if (const Position* otherPosition = dynamic_cast<const Position*>(&other))
+{   if (const Position* otherPosition = dynamic_cast<const Position*>(&other))
     {
-        return (x_ == otherPosition->x_) && (y_ == otherPosition->y_);
+        return (xpos_ == otherPosition->xpos_) && (ypos_ == otherPosition->ypos_);
     }
     return false;
 }
-*/
 
-double Position::GetX() const 
-{
-    return x_;
+double Position::GetX()
+{   return xpos_;
 }
 
-double Position::GetY() const 
-{
-    return y_;
+double Position::GetY()
+{   return ypos_;
 }
 
 } // namespace LevelingContext
 
 // Boilerplate
-HIBERLITE_EXPORT_CLASS(Position)
+HIBERLITE_EXPORT_CLASS(LevelingContext::Position)
