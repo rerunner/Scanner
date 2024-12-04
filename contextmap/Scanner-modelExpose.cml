@@ -7,17 +7,20 @@ BoundedContext ExposeContext implements ExposeDomain {
 	responsibilities = "Exposures"
 	implementationTechnology = "C++"
 
-	Aggregate Image {
-		Entity Image {
+	Aggregate Exposure {
+		Entity Exposure {
 			aggregateRoot
-			
-			Uuid imageId
+
+			float myPrediction;
+
+			def void Exposure(float p);
+			def float GetPrediction();
 			
 			Repository ImageRepository {
-				@Image find(Uuid imageId) throws ImageNotFoundException;
-				List<@Image> findAll;
-				store(@Image image);
-				Uuid nextImageId();
+				@Exposure find(Uuid exposureId) throws ExposureNotFoundException;
+				List<@Exposure> findAll;
+				store(@Exposure exposure);
+				Uuid nextExposureId();
 			}
 		}
 	}

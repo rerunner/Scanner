@@ -11,17 +11,17 @@ class PostLotOpDepCalcUnit : public raft::kernel
 public:
     PostLotOpDepCalcUnit() : kernel()
     {
-      input.addPort< Exposure >("inputData");
-      output.addPort< Exposure >( "outputPostLOPDepData" );
+      input.addPort< ExposeContext::Exposure >("inputData");
+      output.addPort< ExposeContext::Exposure >( "outputPostLOPDepData" );
     }
 
     virtual ~PostLotOpDepCalcUnit() = default;
 
     virtual raft::kstatus run()
     {
-      Exposure predictionContainer;
+      ExposeContext::Exposure predictionContainer;
       input[ "inputData" ].pop( predictionContainer ); 
-      const Exposure outputFFContainer{predictionContainer.GetPrediction()};
+      const ExposeContext::Exposure outputFFContainer{predictionContainer.GetPrediction()};
       output[ "outputPostLOPDepData" ].push( outputFFContainer );
       return( raft::proceed );
     }

@@ -11,17 +11,17 @@ class FeedForwardCalcUnit : public raft::kernel
 public:
     FeedForwardCalcUnit() : kernel()
     {
-      input.addPort< Exposure >("inputPrediction");
-      output.addPort< Exposure >( "outputFFData" );
+      input.addPort< ExposeContext::Exposure >("inputPrediction");
+      output.addPort< ExposeContext::Exposure >( "outputFFData" );
     }
 
     virtual ~FeedForwardCalcUnit() = default;
 
     virtual raft::kstatus run()
     {
-      Exposure predictionContainer;
+      ExposeContext::Exposure predictionContainer;
       input[ "inputPrediction" ].pop( predictionContainer ); 
-      const Exposure outputFFContainer{predictionContainer.GetPrediction()};
+      const ExposeContext::Exposure outputFFContainer{predictionContainer.GetPrediction()};
       output[ "outputFFData" ].push( outputFFContainer );
       return( raft::proceed );
     }

@@ -11,7 +11,7 @@ class PredictUnit : public raft::kernel
 public:
   PredictUnit() : kernel()
   {
-    output.addPort< Exposure >( "outputPrediction" );
+    output.addPort< ExposeContext::Exposure >( "outputPrediction" );
   }
 
   virtual ~PredictUnit() = default;
@@ -22,7 +22,7 @@ public:
     for (int i = 0; i < 15; i++) //! max 15 exposures for one image (demo value)
     {
       std::this_thread::sleep_for (std::chrono::microseconds(1)); //! Imagine one calc to take a 1 microsecond.
-      const Exposure out{p};
+      const ExposeContext::Exposure out{p};
       output[ "outputPrediction" ].push( out );
     }
     return( raft::stop );

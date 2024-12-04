@@ -1,5 +1,8 @@
 #pragma once
 
+#if 1
+#include "generatedExposeBoundedContextClasses.hpp"
+#else
 #include <list>
 #include "hiberlite.h"
 #include <nlohmann/json.hpp>
@@ -30,3 +33,4 @@ public:
 
 // Boilerplate
 HIBERLITE_EXPORT_CLASS(Exposure)
+#endif // test

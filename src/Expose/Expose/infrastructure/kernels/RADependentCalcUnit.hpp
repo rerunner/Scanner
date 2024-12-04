@@ -11,17 +11,17 @@ class RADependentCalcUnit : public raft::kernel
 public:
     RADependentCalcUnit() : kernel()
     {
-      input.addPort< Exposure >("inputFFData");
-      output.addPort< Exposure >( "outputRADepData" );
+      input.addPort< ExposeContext::Exposure >("inputFFData");
+      output.addPort< ExposeContext::Exposure >( "outputRADepData" );
     }
 
     virtual ~RADependentCalcUnit() = default;
 
     virtual raft::kstatus run()
     {
-      Exposure predictionContainer;
+      ExposeContext::Exposure predictionContainer;
       input[ "inputFFData" ].pop( predictionContainer ); 
-      const Exposure outputFFContainer{predictionContainer.GetPrediction()};
+      const ExposeContext::Exposure outputFFContainer{predictionContainer.GetPrediction()};
       output[ "outputRADepData" ].push( outputFFContainer );
       return( raft::proceed );
     }

@@ -14,8 +14,8 @@ private:
 public:
     LotOpDependentCalcUnit(LevelingContext::WaferHeightMap *receivedWhm) : kernel()
     {
-      input.addPort< Exposure >("inputExposureData");
-      output.addPort< Exposure >( "outputLOPDepData" );
+      input.addPort< ExposeContext::Exposure >("inputExposureData");
+      output.addPort< ExposeContext::Exposure >( "outputLOPDepData" );
       whm = receivedWhm;
     }
 
@@ -23,9 +23,9 @@ public:
 
     virtual raft::kstatus run()
     {
-      Exposure predictionContainer;
+      ExposeContext::Exposure predictionContainer;
       input[ "inputExposureData" ].pop( predictionContainer ); 
-      const Exposure outputFFContainer{predictionContainer.GetPrediction()};
+      const ExposeContext::Exposure outputFFContainer{predictionContainer.GetPrediction()};
       output[ "outputLOPDepData" ].push( outputFFContainer );
       GSL::Dprintf(GSL::DEBUG, "Raft kernel received waferheightmap ", whm->GetId().Get());
       return( raft::proceed );

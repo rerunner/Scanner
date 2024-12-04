@@ -87,13 +87,15 @@ namespace ${bc.name} {
     class ${valueobject.name} : public Verdi::ValueObjectBase 
     {
     private:
+        <#assign allJsonBoilerPlate = [] />
+        <#assign jsonBoilerPlate = [] />
+        <#assign jsonAttributesBoilerPlate = [] />
         // attributes
         <#list valueobject.attributes as attribute>
         ${attribute.type} ${attribute.name};
+        <#assign jsonAttributesBoilerPlate = valueobject.attributes?map(e -> e.name)>
         </#list>
         // references
-        <#assign allJsonBoilerPlate = [] />
-        <#assign jsonBoilerPlate = [] />
         <#list valueobject.references as reference>
         <#if reference.collectionType?has_content && reference.collectionType.name() == "LIST">
         std::list<${reference.domainObjectType.name}> ${reference.name}; // ${reference.collectionType.name()}
@@ -109,12 +111,14 @@ namespace ${bc.name} {
         template < class Archive >
         void hibernate(Archive & ar)
         {   
-            <#list valueobject.attributes as attribute>
-            ar & HIBERLITE_NVP(${attribute.name});
+            <#if jsonAttributesBoilerPlate?has_content>
+            <#list jsonAttributesBoilerPlate as jabp>
+	        ar & HIBERLITE_NVP(${jabp}); // attribute
             </#list>
+            </#if>
             <#if jsonBoilerPlate?has_content>
             <#list jsonBoilerPlate as jbp>
-	        ar & HIBERLITE_NVP(${jbp});
+	        ar & HIBERLITE_NVP(${jbp}); // reference
             </#list>
             </#if>
         }
@@ -169,9 +173,13 @@ namespace ${bc.name} {
     {
     private:
     </#if>
+        <#assign allJsonBoilerPlate = [] />
+        <#assign jsonBoilerPlate = [] />
+        <#assign jsonAttributesBoilerPlate = [] />
         // attributes
         <#list entity.attributes as attribute>
         ${attribute.type} ${attribute.name};
+        <#assign jsonAttributesBoilerPlate = entity.attributes?map(e -> e.name)>
         </#list>
         // references
         <#list entity.references as reference>
@@ -189,9 +197,14 @@ namespace ${bc.name} {
         void hibernate(Archive & ar)
         {   ar & HIBERLITE_NVP(id_); // From Base class
             ar & HIBERLITE_NVP(parentId_); // From Base class
+            <#if jsonAttributesBoilerPlate?has_content>
+            <#list jsonAttributesBoilerPlate as jabp>
+            ar & HIBERLITE_NVP(${jabp}); // attribute
+            </#list>
+            </#if>
             <#if jsonBoilerPlate?has_content>
             <#list jsonBoilerPlate as jbp>
-	        ar & HIBERLITE_NVP(${jbp});
+	        ar & HIBERLITE_NVP(${jbp}); // reference
             </#list>
             </#if>
         }
@@ -283,11 +296,7 @@ namespace ${bc.name} {
         <@attrOpsMacro.renderDomainObjectOperationsAndAttributes entity />
         virtual ~${entity.name}(){}
         // RavenDB & FFS boilerplate start
-        <#if jsonBoilerPlate?has_content>
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(${entity.name}, id_, parentId_, ${jsonBoilerPlate?join(", ")})
-        <#else>
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(${entity.name}, id_, parentId_)
-	    </#if>
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(${entity.name}, id_, parentId_<#list entity.attributes as attribute>,${attribute.name}</#list><#if jsonBoilerPlate?has_content><#list jsonBoilerPlate as jbp>,${jbp}</#list></#if>)
         // RavenDB & FFS boilerplate end
     };
 

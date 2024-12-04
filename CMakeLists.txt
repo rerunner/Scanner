@@ -171,6 +171,7 @@ add_executable(Expose
 	${src}/src/Measure/Leveling/domain/Position.cpp
 	${src}/src/Measure/Leveling/domain/MarkMeasurement.cpp
 	${src}/src/Measure/Leveling/domain/WaferHeightMap.cpp
+  ${src}/src/Expose/Expose/domain/Exposure.cpp
 	${src}/src/Expose/Expose/application/Expose.cpp
 	${src}/src/Expose/Expose/application/Runner.cpp
 	${src}/src/Expose/Expose/application/ExposeCommand.hpp

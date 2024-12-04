@@ -222,14 +222,14 @@ namespace Expose { namespace Application
             GSL::Dprintf(GSL::DEBUG, "Start expose loop");
             {
                 //! Raft streaming start
-                Exposure generatedExposure;
+                ExposeContext::Exposure generatedExposure;
                 PredictUnit predictUnit;
                 FeedForwardCalcUnit feedForwardCalcUnit;
                 RADependentCalcUnit raDependentCalcUnit;
                 LotOpDependentCalcUnit lotOpDependentCalcUnit(&whmList[0]);
                 PostLotOpDepCalcUnit postLotOpDepCalcUnit;
 
-                using SinkLambdaExposeResult = raft::lambdak<Exposure>;
+                using SinkLambdaExposeResult = raft::lambdak<ExposeContext::Exposure>;
                 SinkLambdaExposeResult sinkLambdaExposeResult(1,/** input port */
                             0, /** output port */
                     [&](Port &input,
