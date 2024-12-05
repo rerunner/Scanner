@@ -19,9 +19,11 @@ execute_process (
 	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/contextmap/;sed '2d;3d' Scanner-model.cml > tempoModel1.cml;cm generate -g generic -f ../include-gen/generatedMCBoundedContextClasses.hpp -i ./tempoModel1.cml -t ./Scanner-DSL-template.ftl;rm ./tempoModel1.cml;popd"
 	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/contextmap/;sed '1d;3d' Scanner-model.cml > tempoModel2.cml;cm generate -g generic -f ../include-gen/generatedMeasureBoundedContextClasses.hpp -i ./tempoModel2.cml -t ./Scanner-DSL-template.ftl;rm ./tempoModel2.cml;popd"
 	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/contextmap/;sed '1d;2d' Scanner-model.cml > tempoModel3.cml;cm generate -g generic -f ../include-gen/generatedExposeBoundedContextClasses.hpp -i ./tempoModel3.cml -t ./Scanner-DSL-template.ftl;rm ./tempoModel3.cml;popd"
-	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/src-gen/;cat ../contextmap/Scanner-model.cml ../contextmap/Scanner-modelMC.cml ../contextmap/Scanner-modelMeasure.cml ../contextmap/Scanner-modelExpose.cml > ./CombinedScannerModel.cml;popd"
-	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/src-gen/;sed -i '1d;2d;3d' ./CombinedScannerModel.cml;popd"
-	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/src-gen/;cm generate -g plantuml -i CombinedScannerModel.cml -o .;popd"
+	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/src-gen/;sed '1d;2d;3d' ../contextmap/Scanner-model.cml > ./CombinedScanner-model.cml;popd"
+	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/src-gen/;tee < ../contextmap/Scanner-modelMC.cml -a ./CombinedScanner-model.cml;popd"
+	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/src-gen/;tee < ../contextmap/Scanner-modelMeasure.cml -a ./CombinedScanner-model.cml;popd"
+	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/src-gen/;tee < ../contextmap/Scanner-modelExpose.cml -a ./CombinedScanner-model.cml;popd"
+	COMMAND bash -c "pushd ${CMAKE_SOURCE_DIR}/src-gen/;cm generate -g plantuml -i CombinedScanner-model.cml -o .;popd"
 )
 
 ## START RAVENRB
