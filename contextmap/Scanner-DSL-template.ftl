@@ -9,6 +9,9 @@
 #include "hiberlite.h"
 #include "domain/base/AggregateRootBase.hpp"
 #include "domain/base/ValueObjectBase.hpp"
+#include "infrastructure/base/IRepositoryFactory.h"
+#include "infrastructure/base/IRepositoryBase.h"
+#include "infrastructure/base/RepositoryFactory.h"
 #include "FiniteStateMachine.hpp"
 #include "GenLogger.hpp"
 
@@ -138,7 +141,7 @@ namespace ${bc.name} {
 </#if>
 <#-- Entity class code generation -->
 <#list entities as entity>
-
+    
     <#if entity.aggregateRoot>
     class ${entity.name} : public std::enable_shared_from_this<${entity.name}> , public Verdi::AggregateRootBase
     {
@@ -299,7 +302,51 @@ namespace ${bc.name} {
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(${entity.name}, id_, parentId_<#list entity.attributes as attribute>,${attribute.name}</#list><#if jsonBoilerPlate?has_content><#list jsonBoilerPlate as jbp>,${jbp}</#list></#if>)
         // RavenDB & FFS boilerplate end
     };
+    <#-- Repository interface code generation -->
+    <#if entity.repository?has_content>
 
+    // Repository interface ${entity.repository.name} found for ${entity.name}
+    class I${entity.repository.name} : public Verdi::IRepositoryBase<${entity.name}>
+    {
+    public:
+        <@attrOpsMacro.renderDomainObjectOperationsAndAttributes entity.repository />
+    };
+
+    //
+    // Infrastructure implementation of ${entity.name}Repository
+    //
+    class ${entity.repository.name} : public I${entity.repository.name}
+    {
+    private:
+        RepositoryFactory<${entity.name}> ${entity.name?lower_case}RepoFactory;
+        IRepositoryBase<${entity.name}> *repo;
+    public:
+        ${entity.repository.name}()
+        {
+            repo = ${entity.name?lower_case}RepoFactory.GetRepository(RepositoryTypeBase::REPOSITORY_TYPE);
+        }
+        void Store(${entity.name} ${entity.name?lower_case}) override 
+        {
+            repo->Store(${entity.name?lower_case});
+        }
+        void Delete(${entity.name} ${entity.name?lower_case}) override
+        {
+            repo->Delete(${entity.name?lower_case});
+        }
+        ${entity.name} Get(Uuid id) override
+        {
+            return repo->Get(id);
+        }
+        std::vector<${entity.name}> GetAll() override
+        {
+            return repo->GetAll();
+        }
+        std::vector<${entity.name}> GetAllChildren(Uuid id) override
+        {
+            return repo->GetAllChildren(id);
+        }
+    };
+    </#if>
 </#list> 
 </#if>
 

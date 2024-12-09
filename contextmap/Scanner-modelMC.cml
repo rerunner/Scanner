@@ -25,11 +25,7 @@ BoundedContext MachineControlContext implements MachineControlDomain {
 			def void AddWafer(@Uuid wId);
     		def void RemoveWafer(@Uuid wId);
 			Repository LotRepository {
-	                 @Lot find(@Uuid lotId) throws LotNotFoundException;
-	                 List<@Lot> findAll;
-	                 store(@Lot lot);
-	                 @Uuid nextLotId();
-				}
+			}
 		}
 	}
 

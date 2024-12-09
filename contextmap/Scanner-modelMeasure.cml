@@ -38,10 +38,6 @@ BoundedContext LevelingContext implements MeasureDomain {
 			// Note: The wafer heightmap is a list of measurements at different points, It does not control the actual sensors.			
 
 			Repository WaferHeightMapRepository {
-					@WaferHeightMap find(Uuid waferHeightMapId) throws WaferHeightMapNotFoundException;
-					List<@WaferHeightMap> findAll;
-					store(@WaferHeightMap heightMap);
-					Uuid nextWaferHeightMapId();
 			}
 		}
 	}

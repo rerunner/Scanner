@@ -16,11 +16,7 @@ BoundedContext ExposeContext implements ExposeDomain {
 			def void Exposure(float p);
 			def float GetPrediction();
 			
-			Repository ImageRepository {
-				@Exposure find(Uuid exposureId) throws ExposureNotFoundException;
-				List<@Exposure> findAll;
-				store(@Exposure exposure);
-				Uuid nextExposureId();
+			Repository ExposureRepository {
 			}
 		}
 	}
