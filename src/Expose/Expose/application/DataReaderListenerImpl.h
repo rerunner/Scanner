@@ -16,9 +16,8 @@
 #include <dds/DCPS/LocalObject.h>
 #include <dds/DCPS/Definitions.h>
 
+#include "domain/Exposure.hpp"
 #include "domain/WaferHeightMap.hpp"
-#include "infrastructure/base/RepositoryFactory.h"
-#include "infrastructure/IWaferHeightMapRepository.hpp"
 #include "infrastructure/base/UnitOfWork.hpp"
 
 using namespace Verdi::unitofwork;

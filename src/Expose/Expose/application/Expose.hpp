@@ -20,8 +20,6 @@
 #include <cppkafka/cppkafka.h>
 
 #include "Uuid.hpp"
-#include "infrastructure/base/RepositoryFactory.h"
-#include "infrastructure/IWaferHeightMapRepository.hpp"
 #include "DataReaderListenerImpl.h"
 #include "infrastructure/base/UnitOfWork.hpp"
 

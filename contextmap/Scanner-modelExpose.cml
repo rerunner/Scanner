@@ -20,4 +20,38 @@ BoundedContext ExposeContext implements ExposeDomain {
 			}
 		}
 	}
+
+	Aggregate WaferHeightMap {
+		ValueObject Position {
+			double xpos_
+			double ypos_
+
+			def Position(double xpos, double ypos);
+			def double GetX();
+			def double GetY();
+		}
+
+		ValueObject MarkMeasurement {
+			Position position_
+			double z_
+
+			def MarkMeasurement(@Position position, double z); 
+			def Position GetPosition();
+			def double GetZ();
+		}
+
+		Entity WaferHeightMap {
+			aggregateRoot
+			- private List<MarkMeasurement> measurements_
+
+			def List<MarkMeasurement> GetHeightMap(); // Return the whole heightmap for the wafer
+			def Uuid GetWaferId();
+			
+			def void AddMarkMeasurement(@MarkMeasurement measurement); // Add one measurement to measurementsList that make the heightmap
+			// Note: The wafer heightmap is a list of measurements at different points, It does not control the actual sensors.			
+
+			Repository WaferHeightMapRepository {
+			}
+		}
+	}
 }

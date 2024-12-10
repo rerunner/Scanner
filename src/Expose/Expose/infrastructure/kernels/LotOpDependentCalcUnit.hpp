@@ -4,15 +4,14 @@
 #include <raftio>
 
 #include "domain/Exposure.hpp"
-#include "domain/WaferHeightMap.hpp"
 
 //FF data for x-n+1 exposures
 class LotOpDependentCalcUnit : public raft::kernel
 {
 private:
-    LevelingContext::WaferHeightMap *whm;
+    ExposeContext::WaferHeightMap *whm;
 public:
-    LotOpDependentCalcUnit(LevelingContext::WaferHeightMap *receivedWhm) : kernel()
+    LotOpDependentCalcUnit(ExposeContext::WaferHeightMap *receivedWhm) : kernel()
     {
       input.addPort< ExposeContext::Exposure >("inputExposureData");
       output.addPort< ExposeContext::Exposure >( "outputLOPDepData" );

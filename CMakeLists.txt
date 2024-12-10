@@ -173,10 +173,10 @@ add_executable(Leveling
 
 add_executable(Expose
 	${src}/src/Expose/Expose/application/main.cpp
-	${src}/src/Measure/Leveling/domain/Position.cpp
-	${src}/src/Measure/Leveling/domain/MarkMeasurement.cpp
-	${src}/src/Measure/Leveling/domain/WaferHeightMap.cpp
-  ${src}/src/Expose/Expose/domain/Exposure.cpp
+	${src}/src/Expose/Expose/domain/Position.cpp
+	${src}/src/Expose/Expose/domain/MarkMeasurement.cpp
+	${src}/src/Expose/Expose/domain/WaferHeightMap.cpp
+	${src}/src/Expose/Expose/domain/Exposure.cpp
 	${src}/src/Expose/Expose/application/Expose.cpp
 	${src}/src/Expose/Expose/application/Runner.cpp
 	${src}/src/Expose/Expose/application/ExposeCommand.hpp
@@ -200,7 +200,7 @@ OPENDDS_TARGET_SOURCES(Leveling
 target_include_directories(Scanner PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/include-gen" "${src}/src" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/include" "${src}/Verdi/include" "${GSL_SOURCE_DIR}/include")
 target_link_libraries(Scanner Verdi GSL Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash xtd ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES} ${CURLPP_LDFLAGS})
 
-target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/include-gen" "${src}/src" "${src}/src/Expose" "${src}/src/Expose/Expose" "${src}/src/MachineControl" "${src}/src/Measure/Leveling" "${src}/include" "${src}/Verdi/include" "${GSL_SOURCE_DIR}/include")
+target_include_directories(Expose PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/include-gen" "${src}/src" "${src}/src/Expose" "${src}/src/Expose/Expose" "${src}/src/MachineControl" "${src}/include" "${src}/Verdi/include" "${GSL_SOURCE_DIR}/include")
 target_link_libraries(Expose Verdi GSL Raven_CppClient_static OpenDDS::OpenDDS oatpp::oatpp oatpp::oatpp-swagger CppKafka::cppkafka nlohmann_json::nlohmann_json xxhash ${RAFT_LIB} ${RAFT_SHM} ${RAFT_RT} ${RAFT_AFFINITY} ${RAFT_DEMANGLE} ${RAFT_CMDARGS} ${BOOST_SYSTEM} ${HIBERLITE} ${CURL_LIBRARIES})
 
 target_include_directories(Leveling PUBLIC "/usr/local/include" "/usr/include/hiberlite" "${RAVENCPP_SRC}/repository/External/xxHash/repository" "${src}/include-gen" "${src}/src" "${src}/src/Measure" "${src}/src/Measure/Leveling" "${src}/src/MachineControl" "${src}/src/Expose/Expose" "${src}/include" "${src}/Verdi/include" "${GSL_SOURCE_DIR}/include")
