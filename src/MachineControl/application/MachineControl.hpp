@@ -7,13 +7,14 @@
 #include "domain/Lot.hpp"
 #include "domain/Wafer.hpp"
 #include "domain/Station.hpp"
-#include "FiniteStateMachine.hpp"
 
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
 
 #include <cppkafka/cppkafka.h>
+
+#include "PTN_Engine/PTN_Engine.h"
 
 #include "GenLogger.hpp"
 #include "infrastructure/base/UnitOfWork.hpp"
@@ -22,89 +23,15 @@ using namespace MachineControlContext;
 
 namespace MachineControl
 {
-    // specific state transition types we support
-    struct transition_to_Executing{};
-    struct transition_to_Idle{};
-
-    // Statemachine start
-    // SEMI Machine states
-    // state definitions
-    namespace state {
-        struct Error;
-        struct Idle;
-        struct Executing;
-    
-        struct Error 
-        { 
-            void on_update() const {
-            GSL::Dprintf(GSL::DEBUG, "MC is running!");
-            }
-
-	    GSL::state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                GSL::Dprintf(GSL::DEBUG, "Leaving Error state with transition to Idle state");
-                return {};
-            }
-
-            template<typename Transition>
-            GSL::invalid_state_transition on_state_transition(const Transition&) const {
-                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Error state!");
-                return {};
-            }
-        };
-        struct Idle 
-        { 
-            // regular on update call 
-            void on_update() const {
-                GSL::Dprintf(GSL::DEBUG, "still waiting");
-            }
-
-            // specific transition to run, where we return the concrete state transition to Executing
-            // to distinguish different state transitions, we use an empty function argument here
-	    GSL::state_transition_to<Executing> on_state_transition(const transition_to_Executing&) const{
-                GSL::Dprintf(GSL::DEBUG, "Leaving Idle state with transition to Executing state");
-                return {};
-            }
-
-            // a template function to indicate all non supported state transitions.
-            template<typename Transition>
-            GSL::invalid_state_transition on_state_transition(const Transition&) const {
-                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Idle state!");
-                return {};
-            }
-        };
-        struct Executing 
-        { 
-            void on_update() const {
-            GSL::Dprintf(GSL::DEBUG, "Machine Control is running!");
-            }
-
-	    GSL::state_transition_to<Idle> on_state_transition(const transition_to_Idle&) const {
-                GSL::Dprintf(GSL::DEBUG, "Leaving Executing state with transition to Idle state");
-                return {};
-            }
-
-            template<typename Transition>
-            GSL::invalid_state_transition on_state_transition(const Transition&) const {
-                GSL::Dprintf(GSL::ERROR, "State transition: ", typeid(Transition).name(), " is not supported in Executing state!");
-                return {};
-            }
-        };
-    }
-
-    // the alias for our state machine with state idle and run
-    // the statemachin is initialized with idle
-    using machinecontrol_state_machine = GSL::state_machine<state::Error, state::Idle, state::Executing>;
-    // Statemachine end
-    
     ////////////////////
     // Class Declaration
     ////////////////////
     class MachineControl
     {
     private:
+        std::unique_ptr<ptne::PTN_Engine> pn;
         curlpp::Cleanup myCleanup; // RAII cleanup
         Verdi::unitofwork::UnitOfWorkFactory UoWFactory;
-        machinecontrol_state_machine machineControlStateMachine;
         // Kafka part
         std::unique_ptr<cppkafka::Configuration> kafkaConsumerConfig;
         std::unique_ptr<cppkafka::Configuration> kafkaProducerConfig;
@@ -127,8 +54,43 @@ namespace MachineControl
         void ProcessMeasureStation();
         void ProcessWaferAtExposeStation();
         void ProcessExposeStation();
-        bool quit_;
+        bool quit_, error_;
         int waferInLotNr;
+        int lotNr, nrOfLots;
+        int nrOfWafersInLot;
+
+        // Petrinet action functions
+        ptne::ActionFunction IdleAction = [&](){
+            GSL::Dprintf(GSL::INFO, "IdleAction Called");
+        };
+
+        ptne::ActionFunction ExecuteAction = [&](){
+            GSL::Dprintf(GSL::INFO, "ExecuteAction Called");
+            executeCommandContext = UoWFactory.GetNewUnitOfWork();
+
+            for (lotNr = 0; lotNr<nrOfLots; lotNr++) // For all lots
+            {
+                currentLot = std::make_shared<Lot>(kafkaProducer);
+                executeCommandContext->RegisterNew(currentLot);
+                do
+                {
+                    ProcessChuck(0);
+                    ProcessChuck(1);
+                    ProcessMeasureStation();
+                    ProcessExposeStation();
+                    std::this_thread::sleep_for (std::chrono::milliseconds(1));
+                } while (waferInLotNr < nrOfWafersInLot);
+                waferInLotNr = 0; // But do check what it means for the last wafer in a lot! Lots must have a seamless jump
+                GSL::Dprintf(GSL::INFO, "Lot ", lotNr, " finished.");
+                executeCommandContext->Commit();
+            } // end for all lots
+            GSL::Dprintf(GSL::INFO, "ExecuteAction Finished");
+            pn->incrementInputPlace("Idle");
+        };
+        // Petrinet condition functions 
+        ptne::ConditionFunction lotsFinished = [&]() { return (lotNr==nrOfLots); };
+        ptne::ConditionFunction wafersAvailable = [&]() { return ((waferInLotNr < nrOfWafersInLot) && (lotNr!=nrOfLots)); };
+        ptne::ConditionFunction errorOccured = [&]() { return error_; };
     public:
         MachineControl();
         ~MachineControl();

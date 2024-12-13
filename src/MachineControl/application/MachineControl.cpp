@@ -10,7 +10,7 @@ using namespace Verdi;
 
 namespace MachineControl
 {
-    MachineControl::MachineControl() : quit_(false), waferInLotNr(0)
+    MachineControl::MachineControl() : quit_(false), error_(false), waferInLotNr(0)
     {
         scannerChucks[0].SetStation(StationEnumType::MeasureStation);
         scannerChucks[1].SetStation(StationEnumType::ExposeStation);
@@ -37,6 +37,32 @@ namespace MachineControl
         // Create a producer instance
         GSL::Dprintf(GSL::DEBUG, "Creating a kafka producer instance");
         kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaProducerConfig);
+
+        // Create the PetriNet Engine
+        pn = std::make_unique<ptne::PTN_Engine>(ptne::PTN_Engine::ACTIONS_THREAD_OPTION::JOB_QUEUE);
+        pn->createPlace({.name="Idle",
+                         .onEnterAction=IdleAction,
+                         .input=true} );
+        pn->createPlace({.name="Executing", 
+                         .onEnterAction=ExecuteAction});
+        pn->createPlace({.name="Error"});
+        //transition_to_Idle
+        pn->createTransition({ .name = "transition_to_Idle",
+						  .activationArcs = { { .placeName = "Executing" } ,
+                                              { .placeName = "Error" } },
+						  .destinationArcs = { { .placeName = "Idle" } },
+                          .additionalConditions={ lotsFinished } });
+        //transition_to_Executing
+        pn->createTransition({ .name = "transition_to_Executing",
+						  .activationArcs = { { .placeName = "Idle" } },
+						  .destinationArcs = { { .placeName = "Executing" } },
+                          .additionalConditions={ wafersAvailable } });
+        //transition_to_Error
+        pn->createTransition({ .name = "transition_to_Error",
+						  .activationArcs = { { .placeName = "Idle" }, { .placeName = "Executing" } },
+						  .destinationArcs = { { .placeName = "Error" } },
+                          .additionalConditions={ errorOccured } });
+        pn->execute(false);
     }
 
     MachineControl::~MachineControl()
@@ -151,6 +177,7 @@ namespace MachineControl
             default:
               // Error
               GSL::Dprintf(GSL::ERROR, "Unknown Station!");
+              error_ = true;
             break;
         }
 
@@ -199,7 +226,7 @@ namespace MachineControl
                 //Nothing
             }
         }
-        else { /* Trouble: cannot happen. */ }
+        else { error_ = true;/* Trouble: cannot happen. */ }
     }
 
     void MachineControl::ProcessWaferAtMeasureStation()
@@ -318,7 +345,7 @@ namespace MachineControl
                 }
             } 
         }
-        else { /* Trouble: cannot happen. */ }
+        else { error_ = true;/* Trouble: cannot happen. */ }
     }
 
     void MachineControl::ProcessWaferAtExposeStation()
@@ -411,19 +438,13 @@ namespace MachineControl
                             std::for_each(lotWafers.cbegin(),lotWafers.cend(), checkMessageLambda);
                         }
                     }
-#if 0
-                    else if (mTopic == "waferStateTopic")
-                    {
-                        json j_message = json::from_cbor(record.get_payload());
-                        GSL::Dprintf(GSL::INFO, "For Wafer Id = ", j_message["Id"], " new wafer state = ", j_message["State"]);
-                    } 
-#endif
                 }
                 else if (!record.is_eof()) {
                     // Is it an error notification, handle it.
                     // This is explicitly skipping EOF notifications as they're not actually errors,
                     // but that's how rdkafka provides them
-                    GSL::Dprintf(GSL::ERROR, "Expose kafka error");    
+                    GSL::Dprintf(GSL::ERROR, "Expose kafka error");
+                    error_ = true;
                 }
             }
         } while(!quit_);
@@ -431,7 +452,9 @@ namespace MachineControl
 
     void MachineControl::Initialize()
     {
-        machineControlStateMachine.on_state_transition(transition_to_Idle{});
+        nrOfLots = 0;
+        nrOfWafersInLot = 0;
+
         eventListenerThread = std::thread(&MachineControl::eventListenerThreadHandler, this);
         
         bool levelingAlive = true;
@@ -467,31 +490,16 @@ namespace MachineControl
                 std::this_thread::sleep_for (std::chrono::seconds(5)); // Wait for leveling to initialize. 
             }
         } while (!exposeAlive);
+
+        pn->incrementInputPlace("Idle");
     }
 
-    void MachineControl::Execute(int nrOfLots, int nrOfWafersInLot)
+    void MachineControl::Execute(int nrOfLotsRequested, int nrOfWafersInLotRequested)
     {
-        executeCommandContext = UoWFactory.GetNewUnitOfWork();
-        machineControlStateMachine.on_state_transition(transition_to_Executing{});
-
-        for (int lotNr = 0; lotNr<nrOfLots; lotNr++) // For all lots
-        {
-            currentLot = std::make_shared<Lot>(kafkaProducer);
-            executeCommandContext->RegisterNew(currentLot);
-            do
-            {
-                ProcessChuck(0);
-                ProcessChuck(1);
-                ProcessMeasureStation();
-                ProcessExposeStation();
-                std::this_thread::sleep_for (std::chrono::milliseconds(1));
-            } while (waferInLotNr < nrOfWafersInLot);
-            waferInLotNr = 0; // But do check what it means for the last wafer in a lot! Lots must have a seamless jump
-            GSL::Dprintf(GSL::INFO, "Lot ", lotNr, " finished.");
-            executeCommandContext->Commit();
-        } // end for all lots
-        GSL::Dprintf(GSL::INFO, "MachineControl Execute command finished, moving to Idle state");
-        machineControlStateMachine.on_state_transition(transition_to_Idle{});
-        GSL::Dprintf(GSL::INFO, "MachineControl in Idle state, command exit.");
+        GSL::Dprintf(GSL::INFO, "MachineControl::Execute() enter.");
+        lotNr = 0;
+        nrOfLots = nrOfLotsRequested;
+        nrOfWafersInLot = nrOfWafersInLotRequested;
+        GSL::Dprintf(GSL::INFO, "MachineControl::Execute() exit.");
     }
 }
