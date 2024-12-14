@@ -12,9 +12,6 @@ namespace MachineControl
 {
     MachineControl::MachineControl() : quit_(false), error_(false), waferInLotNr(0)
     {
-        scannerChucks[0].SetStation(StationEnumType::MeasureStation);
-        scannerChucks[1].SetStation(StationEnumType::ExposeStation);
-
         // Create the Kafka config
         GSL::Dprintf(GSL::DEBUG, "Creating the Kafka consumer config");
         std::vector<cppkafka::ConfigurationOption> kafkaConsumerConfigOptions;
@@ -37,32 +34,6 @@ namespace MachineControl
         // Create a producer instance
         GSL::Dprintf(GSL::DEBUG, "Creating a kafka producer instance");
         kafkaProducer = std::make_shared<cppkafka::Producer>(*kafkaProducerConfig);
-
-        // Create the PetriNet Engine
-        pn = std::make_unique<ptne::PTN_Engine>(ptne::PTN_Engine::ACTIONS_THREAD_OPTION::JOB_QUEUE);
-        pn->createPlace({.name="Idle",
-                         .onEnterAction=IdleAction,
-                         .input=true} );
-        pn->createPlace({.name="Executing", 
-                         .onEnterAction=ExecuteAction});
-        pn->createPlace({.name="Error"});
-        //transition_to_Idle
-        pn->createTransition({ .name = "transition_to_Idle",
-						  .activationArcs = { { .placeName = "Executing" } ,
-                                              { .placeName = "Error" } },
-						  .destinationArcs = { { .placeName = "Idle" } },
-                          .additionalConditions={ lotsFinished } });
-        //transition_to_Executing
-        pn->createTransition({ .name = "transition_to_Executing",
-						  .activationArcs = { { .placeName = "Idle" } },
-						  .destinationArcs = { { .placeName = "Executing" } },
-                          .additionalConditions={ wafersAvailable } });
-        //transition_to_Error
-        pn->createTransition({ .name = "transition_to_Error",
-						  .activationArcs = { { .placeName = "Idle" }, { .placeName = "Executing" } },
-						  .destinationArcs = { { .placeName = "Error" } },
-                          .additionalConditions={ errorOccured } });
-        pn->execute(false);
     }
 
     MachineControl::~MachineControl()
@@ -452,8 +423,37 @@ namespace MachineControl
 
     void MachineControl::Initialize()
     {
+        scannerChucks[0].SetStation(StationEnumType::MeasureStation);
+        scannerChucks[1].SetStation(StationEnumType::ExposeStation);
+
         nrOfLots = 0;
         nrOfWafersInLot = 0;
+
+        // Create the PetriNet Engine
+        pn = std::make_unique<ptne::PTN_Engine>(ptne::PTN_Engine::ACTIONS_THREAD_OPTION::JOB_QUEUE);
+        pn->createPlace({.name="Idle",
+                         .onEnterAction=IdleAction,
+                         .input=true} );
+        pn->createPlace({.name="Executing", 
+                         .onEnterAction=ExecuteAction});
+        pn->createPlace({.name="Error"});
+        //transition_to_Idle
+        pn->createTransition({ .name = "transition_to_Idle",
+						  .activationArcs = { { .placeName = "Executing" } ,
+                                              { .placeName = "Error" } },
+						  .destinationArcs = { { .placeName = "Idle" } },
+                          .additionalConditions={ lotsFinished } });
+        //transition_to_Executing
+        pn->createTransition({ .name = "transition_to_Executing",
+						  .activationArcs = { { .placeName = "Idle" } },
+						  .destinationArcs = { { .placeName = "Executing" } },
+                          .additionalConditions={ wafersAvailable } });
+        //transition_to_Error
+        pn->createTransition({ .name = "transition_to_Error",
+						  .activationArcs = { { .placeName = "Idle" }, { .placeName = "Executing" } },
+						  .destinationArcs = { { .placeName = "Error" } },
+                          .additionalConditions={ errorOccured } });
+        pn->execute(false);
 
         eventListenerThread = std::thread(&MachineControl::eventListenerThreadHandler, this);
         
